@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=5.0, user-scalable=yes">
 <title>Swing Bros Championship & Budget Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -28,9 +28,10 @@ body{font-family:'Poppins',system-ui,sans-serif;color:var(--ink);line-height:1.5
   padding:22px 28px;box-shadow:var(--shadow-lg);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;position:relative;overflow:hidden}
 .header::after{content:"🏌️";position:absolute;right:-10px;bottom:-20px;font-size:120px;opacity:.08}
 .header .titlewrap{flex:1;min-width:260px}
-.header h1{font-size:clamp(18px,2.4vw,26px);font-weight:800;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;line-height:1.25}
+.header h1{font-size:clamp(26px,4vw,40px);font-weight:800;display:flex;align-items:center;gap:12px;flex-wrap:wrap;line-height:1.1;letter-spacing:.5px}
 .header h1 .edit-title{background:transparent;border:none;color:#fff;font:inherit;font-weight:800;border-bottom:2px dashed rgba(255,255,255,.3);outline:none;max-width:100%;display:inline;white-space:normal;overflow-wrap:anywhere;line-height:1.25}
 .header .sub{opacity:.85;font-size:13px;margin-top:4px}
+.header .subtitle{font-size:clamp(13px,1.6vw,17px);font-weight:600;opacity:.92;margin-top:2px;letter-spacing:.3px}
 .header .right{display:flex;align-items:center;gap:16px}
 .season-badge{background:var(--gold);color:#3a2f05;padding:10px 22px;border-radius:14px;text-align:center;box-shadow:var(--shadow);font-weight:800;flex-shrink:0}
 .season-badge .s{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;opacity:.75;font-weight:700}
@@ -151,33 +152,33 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
   .wrap{max-width:100%}
   .header{padding:16px;border-radius:14px;flex-direction:column;align-items:stretch;gap:12px}
   .header .titlewrap{min-width:0}
-  .header h1{font-size:18px;gap:8px;line-height:1.25}
-  .header h1 .edit-title{min-width:0;width:100%;font-size:17px}
+  .header h1{font-size:30px;gap:8px;line-height:1.05}
+  .header h1 .edit-title{min-width:0;font-size:30px}
+  .header .subtitle{font-size:14px}
   .header .sub{font-size:11.5px}
   .header .right{justify-content:space-between;width:100%}
   .theme-btn{width:40px;height:40px;font-size:18px}.sync{font-size:11px;padding:6px 11px}
-  .season-badge{padding:7px 12px}
-  .season-badge .y{font-size:24px}
-  .season-badge .y input{width:84px;min-width:84px;font-size:24px;text-align:center}
+  .season-badge{padding:7px 14px}
+  .season-badge .y{font-size:26px}
+  .season-badge .y input{width:5ch;min-width:5ch;font-size:26px;text-align:center}
   section{margin-top:20px;scroll-margin-top:12px}
   .section-title{font-size:17px}
-  .card{padding:14px;border-radius:14px}
+  .card{padding:12px;border-radius:14px}
+  .cols-2{grid-template-columns:1fr !important}
   .dash{grid-template-columns:1fr 1fr;gap:10px}
   .stat{padding:13px}.stat .value{font-size:18px}.stat .label{font-size:10.5px}
   .budget-big{padding:22px}.budget-big .amt{font-size:34px}
-
-  /* ---- REAL tables (not card-stacks): smaller + horizontal scroll ---- */
-  .table-scroll{-webkit-overflow-scrolling:touch;position:relative}
-  table{font-size:12px;min-width:560px}             /* keep columns; scroll sideways */
-  thead th{padding:8px 7px;font-size:11px}
-  tbody td{padding:7px 7px}
-  .rankbadge{width:22px;height:22px;font-size:11px}
-  .pill{font-size:10px;padding:2px 7px}
-  .money-pos,.money-neg{padding:2px 6px}
-  .btn-sm{padding:5px 9px;font-size:11px}
-  /* scroll hint shown above scrollable tables */
+  .table-scroll{-webkit-overflow-scrolling:touch;overflow-x:auto}
+  table{font-size:13.5px;min-width:600px}
+  thead th{padding:9px 8px;font-size:12px;white-space:nowrap}
+  tbody td{padding:8px 8px}
+  .rankbadge{width:24px;height:24px;font-size:11px}
+  .pill{font-size:10.5px;padding:2px 7px}
+  .btn-sm{padding:6px 10px;font-size:11px}
   .scrollhint{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);margin-bottom:6px}
-
+  #history{min-width:780px}
+  #history td:nth-child(5){min-width:360px}
+  #history td:nth-child(5) div{white-space:nowrap}
   .modal-ov{padding:0}
   .modal{max-width:100%;min-height:100%;border-radius:0;padding:20px 16px 90px}
   .modal h3{font-size:18px}.player-block{padding:12px}
@@ -197,6 +198,7 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
 @media (max-width:380px){.dash{grid-template-columns:1fr}}
 
 .scrollhint{display:none}
+#history td:nth-child(5){min-width:260px}
 </style>
 </head>
 <body>
@@ -206,7 +208,8 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
 <div class="wrap">
   <div class="header">
     <div class="titlewrap">
-      <h1>🏆 <span class="edit-title" id="titleInput" contenteditable="true" spellcheck="false">Swing Bros Championship and Budget Dashboard</span></h1>
+      <h1>🏆 <span class="edit-title" id="titleInput" contenteditable="true" spellcheck="false">Swing Bros</span></h1>
+      <div class="subtitle">Championship and Budget Dashboard</div>
       <div class="sub">Live-synced to Google Sheets · use the <b>＋</b> button (bottom-right) to add data</div>
     </div>
     <div class="right">
@@ -362,6 +365,7 @@ function fmtMoney(n){return (n<0?"-":"")+Math.abs(n).toFixed(2).replace('.',',')
 function fmtNum(n,d=1){return (n===null||n===undefined||isNaN(n))?"–":Number(n).toFixed(d).replace('.',',');}
 function fmtPar(n){if(n===null||n===undefined||isNaN(n))return "–";n=Number(n);const r=(Math.round(n*100)/100);const txt=(r%1===0)?String(Math.abs(r)):String(Math.abs(r)).replace('.',',');return (r>0?"+":(r<0?"−":"±"))+txt;}
 function toast(m,t="ok"){const el=$("#toast");el.textContent=m;el.className="toast show "+t;clearTimeout(el._t);el._t=setTimeout(()=>el.className="toast",2600);}
+function keyTitle(t){t=String(t||"").trim();if(!t)return "Swing Bros";return t.replace(/\s*Championship and Budget Dashboard\s*/i,"").trim()||"Swing Bros";}
 function playerColor(name){const p=state.players.find(x=>x.name===name);return p?p.color:"#888";}
 function hdcOn(name,date){const h=state.hdcHistory[name]||[];let v=h.length?h[0].hdc:0;for(const e of h){if(e.date<=date)v=e.hdc;else break;}return Number(v);}
 function currentHdc(name){const h=state.hdcHistory[name]||[];return h.length?Number(h[h.length-1].hdc):0;}
@@ -745,7 +749,7 @@ function wireUI(){
   populateSelect($("#gd_mode"),GAME_MODES);populateSelect($("#ng_type"),NON_GOLF_TYPES);
   populateSelect($("#ng_payer"),state.players.map(p=>p.name),true);
   $$(".cur-sym").forEach(e=>e.textContent=CURRENCY);
-  $("#titleInput").textContent=state.title;$("#yearInput").value=state.year;
+  $("#titleInput").textContent=keyTitle(state.title);$("#yearInput").value=state.year;
   $("#titleInput").addEventListener("input",e=>{state.title=e.target.textContent.trim();save();});
   $("#yearInput").addEventListener("input",e=>{state.year=e.target.value;save();});
   setTheme(state.theme||"light");
@@ -770,12 +774,12 @@ function wireUI(){
   document.querySelectorAll(".table-scroll").forEach(function(ts){
     if(ts.previousElementSibling && ts.previousElementSibling.classList && ts.previousElementSibling.classList.contains("scrollhint")) return;
     var h=document.createElement("div"); h.className="scrollhint";
-    h.innerHTML="\u2194\ufe0f Swipe sideways to see all columns \u00b7 or rotate your phone \ud83d\udd04";
+    h.innerHTML="\u2194\ufe0f Swipe to see more \u00b7 rotate \ud83d\udd04 or pinch to zoom";
     ts.parentNode.insertBefore(h, ts);
   });
   setupScrollSpy();document.documentElement.style.scrollBehavior="smooth";
 }
-function wireAfterData(){$("#titleInput").textContent=state.title;$("#yearInput").value=state.year;populateSelect($("#ng_payer"),state.players.map(p=>p.name),true);$$(".cur-sym").forEach(e=>e.textContent=CURRENCY);}
+function wireAfterData(){$("#titleInput").textContent=keyTitle(state.title);$("#yearInput").value=state.year;populateSelect($("#ng_payer"),state.players.map(p=>p.name),true);$$(".cur-sym").forEach(e=>e.textContent=CURRENCY);}
 
 window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=deleteCashIn;window.deleteAppt=deleteAppt;window.markGolfPaid=markGolfPaid;window.markCashPaid=markCashPaid;window.toggleCashPaid=toggleCashPaid;
 
