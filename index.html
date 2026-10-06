@@ -28,14 +28,14 @@ body{font-family:'Poppins',system-ui,sans-serif;color:var(--ink);line-height:1.5
   padding:22px 28px;box-shadow:var(--shadow-lg);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;position:relative;overflow:hidden}
 .header::after{content:"🏌️";position:absolute;right:-10px;bottom:-20px;font-size:120px;opacity:.08}
 .header .titlewrap{flex:1;min-width:260px}
-.header h1{font-size:clamp(18px,2.6vw,27px);font-weight:800;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.header h1 .edit-title{background:transparent;border:none;color:#fff;font:inherit;font-weight:800;border-bottom:2px dashed rgba(255,255,255,.3);outline:none;min-width:360px;max-width:100%}
+.header h1{font-size:clamp(18px,2.4vw,26px);font-weight:800;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;line-height:1.25}
+.header h1 .edit-title{background:transparent;border:none;color:#fff;font:inherit;font-weight:800;border-bottom:2px dashed rgba(255,255,255,.3);outline:none;max-width:100%;display:inline;white-space:normal;overflow-wrap:anywhere;line-height:1.25}
 .header .sub{opacity:.85;font-size:13px;margin-top:4px}
 .header .right{display:flex;align-items:center;gap:16px}
-.season-badge{background:var(--gold);color:#3a2f05;padding:10px 20px;border-radius:14px;text-align:center;box-shadow:var(--shadow);font-weight:800}
+.season-badge{background:var(--gold);color:#3a2f05;padding:10px 22px;border-radius:14px;text-align:center;box-shadow:var(--shadow);font-weight:800;flex-shrink:0}
 .season-badge .s{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;opacity:.75;font-weight:700}
-.season-badge .y{font-size:30px;line-height:1;display:flex;align-items:center;gap:4px;white-space:nowrap}
-.season-badge .y input{background:transparent;border:none;color:#3a2f05;font:inherit;font-weight:800;width:92px;min-width:92px;outline:none;text-align:center;letter-spacing:0}
+.season-badge .y{font-size:28px;line-height:1;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.season-badge .y input{background:transparent;border:none;color:#3a2f05;font:inherit;font-weight:800;width:5ch;min-width:5ch;outline:none;text-align:center;letter-spacing:.5px;padding:0}
 .theme-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer;transition:.2s}
 .theme-btn:hover{background:rgba(255,255,255,.3);transform:scale(1.08)}
 /* sync status chip */
@@ -151,33 +151,33 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
   .wrap{max-width:100%}
   .header{padding:16px;border-radius:14px;flex-direction:column;align-items:stretch;gap:12px}
   .header .titlewrap{min-width:0}
-  .header h1{font-size:19px;gap:8px}
-  .header h1 .edit-title{min-width:0;width:100%;font-size:18px}
+  .header h1{font-size:18px;gap:8px;line-height:1.25}
+  .header h1 .edit-title{min-width:0;width:100%;font-size:17px}
   .header .sub{font-size:11.5px}
   .header .right{justify-content:space-between;width:100%}
   .theme-btn{width:40px;height:40px;font-size:18px}.sync{font-size:11px;padding:6px 11px}
+  .season-badge{padding:7px 12px}
+  .season-badge .y{font-size:24px}
+  .season-badge .y input{width:84px;min-width:84px;font-size:24px;text-align:center}
   section{margin-top:20px;scroll-margin-top:12px}
   .section-title{font-size:17px}
-  .card{padding:15px;border-radius:14px}
+  .card{padding:14px;border-radius:14px}
   .dash{grid-template-columns:1fr 1fr;gap:10px}
   .stat{padding:13px}.stat .value{font-size:18px}.stat .label{font-size:10.5px}
   .budget-big{padding:22px}.budget-big .amt{font-size:34px}
-  table.m-stack{min-width:0;width:100%;border-collapse:separate;border-spacing:0}
-  table.m-stack thead{display:none}
-  table.m-stack tbody,table.m-stack tr,table.m-stack td{display:block;width:100%}
-  table.m-stack tr{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:10px 12px;margin-bottom:12px}
-  table.m-stack tr.leader{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-light),var(--shadow)}
-  table.m-stack td{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;border:none;border-bottom:1px solid var(--border);font-size:14px;text-align:right}
-  table.m-stack td:last-child{border-bottom:none}
-  table.m-stack td::before{content:attr(data-label);font-weight:600;color:var(--muted);font-size:12px;text-align:left;flex:0 0 46%}
-  table.m-stack td.m-title{text-align:left;font-size:15.5px;font-weight:700;color:var(--ink);border-bottom:2px solid var(--border);padding-bottom:9px;margin-bottom:3px}
-  table.m-stack td.m-title::before{content:""}
-  table.m-stack td.m-title .player-dot{width:14px;height:14px}
-  table.m-stack td.m-actions{justify-content:flex-end;gap:8px;border-bottom:none}
-  table.m-stack td.m-actions::before{content:""}
-  table.m-stack td.m-actions button{padding:8px 16px;font-size:13px;width:auto}
-  table.m-stack td.m-block{flex-direction:column;align-items:stretch;text-align:left}
-  table.m-stack td.m-block::before{flex:none;margin-bottom:4px}
+
+  /* ---- REAL tables (not card-stacks): smaller + horizontal scroll ---- */
+  .table-scroll{-webkit-overflow-scrolling:touch;position:relative}
+  table{font-size:12px;min-width:560px}             /* keep columns; scroll sideways */
+  thead th{padding:8px 7px;font-size:11px}
+  tbody td{padding:7px 7px}
+  .rankbadge{width:22px;height:22px;font-size:11px}
+  .pill{font-size:10px;padding:2px 7px}
+  .money-pos,.money-neg{padding:2px 6px}
+  .btn-sm{padding:5px 9px;font-size:11px}
+  /* scroll hint shown above scrollable tables */
+  .scrollhint{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);margin-bottom:6px}
+
   .modal-ov{padding:0}
   .modal{max-width:100%;min-height:100%;border-radius:0;padding:20px 16px 90px}
   .modal h3{font-size:18px}.player-block{padding:12px}
@@ -196,6 +196,7 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
 }
 @media (max-width:380px){.dash{grid-template-columns:1fr}}
 
+.scrollhint{display:none}
 </style>
 </head>
 <body>
@@ -205,7 +206,7 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
 <div class="wrap">
   <div class="header">
     <div class="titlewrap">
-      <h1>🏆 <input class="edit-title" id="titleInput" value="Swing Bros Championship and Budget Dashboard"></h1>
+      <h1>🏆 <span class="edit-title" id="titleInput" contenteditable="true" spellcheck="false">Swing Bros Championship and Budget Dashboard</span></h1>
       <div class="sub">Live-synced to Google Sheets · use the <b>＋</b> button (bottom-right) to add data</div>
     </div>
     <div class="right">
@@ -744,8 +745,8 @@ function wireUI(){
   populateSelect($("#gd_mode"),GAME_MODES);populateSelect($("#ng_type"),NON_GOLF_TYPES);
   populateSelect($("#ng_payer"),state.players.map(p=>p.name),true);
   $$(".cur-sym").forEach(e=>e.textContent=CURRENCY);
-  $("#titleInput").value=state.title;$("#yearInput").value=state.year;
-  $("#titleInput").addEventListener("input",e=>{state.title=e.target.value;save();});
+  $("#titleInput").textContent=state.title;$("#yearInput").value=state.year;
+  $("#titleInput").addEventListener("input",e=>{state.title=e.target.textContent.trim();save();});
   $("#yearInput").addEventListener("input",e=>{state.year=e.target.value;save();});
   setTheme(state.theme||"light");
   $("#gd_indivCounts").addEventListener("change",()=>{updateScoringNote();buildPlayersForm();});
@@ -765,9 +766,16 @@ function wireUI(){
   $$("[data-close]").forEach(b=>b.addEventListener("click",closeModal));
   $$(".modal-ov").forEach(ov=>ov.addEventListener("click",e=>{if(e.target===ov)closeModal();}));
   document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();$("#fab").classList.remove("open");}});
+  // Add a "swipe / rotate" scroll hint above each wide table (shown only on mobile via CSS).
+  document.querySelectorAll(".table-scroll").forEach(function(ts){
+    if(ts.previousElementSibling && ts.previousElementSibling.classList && ts.previousElementSibling.classList.contains("scrollhint")) return;
+    var h=document.createElement("div"); h.className="scrollhint";
+    h.innerHTML="\u2194\ufe0f Swipe sideways to see all columns \u00b7 or rotate your phone \ud83d\udd04";
+    ts.parentNode.insertBefore(h, ts);
+  });
   setupScrollSpy();document.documentElement.style.scrollBehavior="smooth";
 }
-function wireAfterData(){$("#titleInput").value=state.title;$("#yearInput").value=state.year;populateSelect($("#ng_payer"),state.players.map(p=>p.name),true);$$(".cur-sym").forEach(e=>e.textContent=CURRENCY);}
+function wireAfterData(){$("#titleInput").textContent=state.title;$("#yearInput").value=state.year;populateSelect($("#ng_payer"),state.players.map(p=>p.name),true);$$(".cur-sym").forEach(e=>e.textContent=CURRENCY);}
 
 window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=deleteCashIn;window.deleteAppt=deleteAppt;window.markGolfPaid=markGolfPaid;window.markCashPaid=markCashPaid;window.toggleCashPaid=toggleCashPaid;
 
