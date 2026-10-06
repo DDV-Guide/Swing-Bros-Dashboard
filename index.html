@@ -136,130 +136,6 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
 #boot .ball{font-size:54px;animation:spin 1.4s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #boot p{color:var(--muted);font-weight:600}
-
-/* =====================================================================
-   MOBILE OPTIMISATION  (phones ≤ 720px)
-   - stacked "card" tables with data-labels
-   - bigger tap targets, readable type
-   - sticky bottom navigation to jump between sections
-   ===================================================================== */
-.mnav{display:none}                     /* hidden on desktop */
-@media (max-width:720px){
-  body{padding:10px 10px 86px}          /* leave room for bottom nav */
-  .wrap{max-width:100%}
-
-  /* ---- Header ---- */
-  .header{padding:16px 16px;border-radius:14px;flex-direction:column;align-items:stretch;gap:12px}
-  .header .titlewrap{min-width:0}
-  .header h1{font-size:19px;gap:8px}
-  .header h1 .edit-title{min-width:0;width:100%;font-size:18px}
-  .header .sub{font-size:11.5px}
-  .header .right{justify-content:space-between;width:100%}
-  .season-badge{padding:7px 14px}
-  .season-badge .y{font-size:24px}
-  .season-badge .y input{width:62px;font-size:24px}
-  .theme-btn{width:40px;height:40px;font-size:18px}
-  .sync{font-size:11px;padding:6px 11px}
-
-  /* ---- Spacing / headings ---- */
-  section{margin-top:20px;scroll-margin-top:12px}
-  .section-title{font-size:17px}
-  .card{padding:15px;border-radius:14px}
-
-  /* ---- Summary stat cards: 2 per row ---- */
-  .dash{grid-template-columns:1fr 1fr;gap:10px}
-  .stat{padding:13px}
-  .stat .value{font-size:18px}
-  .stat .label{font-size:10.5px}
-
-  /* ---- Budget tile ---- */
-  .budget-big{padding:22px}
-  .budget-big .amt{font-size:34px}
-
-  /* ---- TURN WIDE TABLES INTO STACKED CARDS ---- */
-  table.m-stack{min-width:0;width:100%;border-collapse:separate;border-spacing:0}
-  table.m-stack thead{display:none}                     /* hide header row */
-  table.m-stack tbody,table.m-stack tr,table.m-stack td{display:block;width:100%}
-  table.m-stack tr{
-    background:var(--card);border:1px solid var(--border);border-radius:14px;
-    box-shadow:var(--shadow);padding:10px 12px;margin-bottom:12px;position:relative;
-  }
-  table.m-stack tr.leader{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-light),var(--shadow)}
-  table.m-stack td{
-    display:flex;justify-content:space-between;align-items:center;gap:12px;
-    padding:7px 0;border:none;border-bottom:1px solid var(--border);font-size:14px;text-align:right;
-  }
-  table.m-stack td:last-child{border-bottom:none}
-  table.m-stack td::before{
-    content:attr(data-label);font-weight:600;color:var(--muted);font-size:12px;
-    text-align:left;flex:0 0 46%;text-transform:none;
-  }
-  /* first cell (rank/date) becomes a title bar */
-  table.m-stack td.m-title{
-    text-align:left;font-size:15.5px;font-weight:700;color:var(--ink);
-    border-bottom:2px solid var(--border);padding-bottom:9px;margin-bottom:3px;
-  }
-  table.m-stack td.m-title::before{content:""}
-  table.m-stack td.m-title .player-dot{width:14px;height:14px}
-  /* actions row full-width buttons */
-  table.m-stack td.m-actions{justify-content:flex-end;gap:8px;border-bottom:none}
-  table.m-stack td.m-actions::before{content:""}
-  table.m-stack td.m-actions button{padding:8px 16px;font-size:13px}
-  /* details cell (history) left aligned, no label */
-  table.m-stack td.m-block{flex-direction:column;align-items:stretch;text-align:left}
-  table.m-stack td.m-block::before{flex:none;margin-bottom:4px}
-
-  /* ---- Modals full-screen & scrollable ---- */
-  .modal-ov{padding:0}
-  .modal{max-width:100%;min-height:100%;border-radius:0;padding:20px 16px 90px}
-  .modal h3{font-size:18px}
-  .player-block{padding:12px}
-  .row-3,.row-2{grid-template-columns:1fr !important}
-  input,select{font-size:16px;padding:12px}      /* 16px avoids iOS zoom-on-focus */
-  .btn,.btn-outline,.btn-gold,.btn-red{padding:13px 18px;font-size:15px;width:100%}
-  .modal .toolbar .btn,.modal .toolbar .btn-outline{width:100%}
-  .checkbox-row{align-items:flex-start}
-  .checkbox-row input{width:22px;height:22px;margin-top:2px;flex:none}
-
-  /* ---- Global action buttons stack ---- */
-  #sec-actions .toolbar{flex-direction:column}
-  #sec-actions .toolbar button{width:100%}
-
-  /* ---- Appointments ---- */
-  .appt{flex-direction:column;align-items:flex-start;gap:4px}
-  .appt .when{align-self:flex-start}
-
-  /* ---- Play-off banner / notes smaller ---- */
-  .po-banner{font-size:12.5px;padding:10px 12px}
-  .small-muted{font-size:11.5px}
-
-  /* ---- FAB sits above bottom nav ---- */
-  .fab{right:16px;bottom:74px}
-  .fab-main{width:56px;height:56px;font-size:28px}
-
-  /* ---- STICKY BOTTOM NAV ---- */
-  .mnav{
-    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:850;
-    background:var(--card);border-top:1px solid var(--border);
-    box-shadow:0 -4px 20px rgba(0,0,0,.12);padding:6px 4px;
-    justify-content:space-around;align-items:stretch;
-    padding-bottom:calc(6px + env(safe-area-inset-bottom));
-  }
-  .mnav a{
-    flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
-    text-decoration:none;color:var(--muted);font-size:10px;font-weight:600;
-    padding:5px 2px;border-radius:10px;transition:.15s;
-  }
-  .mnav a .mi{font-size:20px;line-height:1}
-  .mnav a:active{background:var(--green-100)}
-  .mnav a.active{color:var(--green-600)}
-}
-
-/* very small phones: summary 1 per row */
-@media (max-width:380px){
-  .dash{grid-template-columns:1fr}
-}
-
 </style>
 </head>
 <body>
@@ -279,58 +155,49 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
     </div>
   </div>
 
-  <section id="sec-summary"><div class="section-title"><span class="ico">📊</span> Season Summary</div><div class="dash" id="dashboard"></div></section>
+  <section><div class="section-title"><span class="ico">📊</span> Season Summary</div><div class="dash" id="dashboard"></div></section>
 
-  <section id="sec-leaderboard">
+  <section>
     <div class="section-title"><span class="ico">🥇</span> Season Leaderboard <span class="pill po" style="font-size:12px">Play-off until Island Masters 2027</span></div>
     <div class="card">
       <div class="po-banner" id="poBanner">🏝️ <span></span></div>
-      <div class="table-scroll"><table id="leaderboard" class="m-stack">
+      <div class="table-scroll"><table id="leaderboard">
         <thead><tr><th>#</th><th>Player</th><th>Hdc</th><th>Points</th><th>Projected shots for final round</th><th>Total strokes</th><th>Avg gross</th><th>Avg net</th><th>Best round</th><th>Worst round</th></tr></thead>
         <tbody></tbody></table></div>
       <p class="small-muted">“Projected shots for final round” = stroke bonus the current standings would give on the Island Masters 2027 final: leader −5, 2nd −3, 3rd −1. Scores are shown relative to par (e.g. +2 or −2). Avg net uses the handicap valid on each round's date.</p>
     </div>
   </section>
 
-  <section id="sec-history"><div class="section-title"><span class="ico">📅</span> Game Day History</div>
-    <div class="card"><div class="table-scroll"><table id="history" class="m-stack"><thead><tr><th>Date</th><th>Mode</th><th>Course</th><th>Indiv?</th><th>Details (strokes · pts · €)</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div></section>
+  <section><div class="section-title"><span class="ico">📅</span> Game Day History</div>
+    <div class="card"><div class="table-scroll"><table id="history"><thead><tr><th>Date</th><th>Mode</th><th>Course</th><th>Indiv?</th><th>Details (strokes · pts · €)</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div></section>
 
-  <section id="sec-payin"><div class="section-title"><span class="ico">💶</span> Pay-in from last match day</div>
+  <section><div class="section-title"><span class="ico">💶</span> Pay-in from last match day</div>
     <div class="card"><p class="settle-note" id="settleHeader"></p>
-      <div class="table-scroll"><table id="settleTable" class="m-stack"><thead><tr><th>Player</th><th>What</th><th>Amount to pay to our PayPal</th></tr></thead><tbody></tbody></table></div>
+      <div class="table-scroll"><table id="settleTable"><thead><tr><th>Player</th><th>What</th><th>Amount to pay to our PayPal</th></tr></thead><tbody></tbody></table></div>
       <p class="small-muted">Amounts are the money entries recorded for the most recent game day. Forward this list so everyone knows what to transfer.</p></div></section>
 
-  <section id="sec-cash"><div class="section-title"><span class="ico">🪙</span> Cash Pool &amp; Competitions</div>
+  <section><div class="section-title"><span class="ico">🪙</span> Cash Pool &amp; Competitions</div>
     <div class="grid cols-2">
       <div class="card budget-big" style="display:flex;flex-direction:column;justify-content:center">
         <div class="lbl">Our budget (paid in by all of us)</div><div class="amt" id="totalBudget">0,00 €</div>
         <div class="small-muted" style="color:#cfe6da" id="budgetMeta"></div></div>
       <div class="card"><h3 style="color:var(--green-500);margin-bottom:12px;font-size:16px">Cash-in ranking (birthday payments excluded)</h3>
-        <div class="table-scroll"><table id="cashTable" class="m-stack"><thead><tr><th>#</th><th>Name</th><th>Total</th><th>Golf</th><th>PGA</th><th>FIFA</th><th>Others</th><th>#</th></tr></thead><tbody></tbody></table></div></div>
+        <div class="table-scroll"><table id="cashTable"><thead><tr><th>#</th><th>Name</th><th>Total</th><th>Golf</th><th>PGA</th><th>FIFA</th><th>Others</th><th>#</th></tr></thead><tbody></tbody></table></div></div>
     </div>
   </section>
 
-  <section id="sec-next"><div class="section-title"><span class="ico">🗓️</span> What's Next — Swing Bros Appointments</div><div class="card" id="apptList"></div></section>
+  <section><div class="section-title"><span class="ico">🗓️</span> What's Next — Swing Bros Appointments</div><div class="card" id="apptList"></div></section>
 
-  <section id="sec-cashhist"><div class="section-title"><span class="ico">🪙</span> Cash-in &amp; expense history</div>
-    <div class="card"><div class="table-scroll"><table id="ngHistory" class="m-stack"><thead><tr><th>Date</th><th>Flow</th><th>Category</th><th>Name / details</th><th>Player</th><th>Amount</th><th></th></tr></thead><tbody></tbody></table></div></div></section>
+  <section><div class="section-title"><span class="ico">🪙</span> Cash-in &amp; expense history</div>
+    <div class="card"><div class="table-scroll"><table id="ngHistory"><thead><tr><th>Date</th><th>Flow</th><th>Category</th><th>Name / details</th><th>Player</th><th>Amount</th><th></th></tr></thead><tbody></tbody></table></div></div></section>
 
-  <section id="sec-actions"><div class="card"><div class="toolbar">
+  <section><div class="card"><div class="toolbar">
     <button class="btn-gold" id="exportBtn">⬇️ Export CSV</button>
     <button class="btn-outline" id="reloadBtn">🔄 Reload from Sheet</button>
     <button class="btn-red" id="resetBtn">🗑️ Reset Season</button>
   </div></div></section>
   <p class="small-muted" style="text-align:center;margin:24px 0">Swing Bros · live-synced to Google Sheets.</p>
 </div>
-
-<!-- Mobile bottom navigation (hidden on desktop) -->
-<nav class="mnav" id="mnav">
-  <a href="#sec-summary"><span class="mi">📊</span>Summary</a>
-  <a href="#sec-leaderboard"><span class="mi">🥇</span>Table</a>
-  <a href="#sec-history"><span class="mi">📅</span>Games</a>
-  <a href="#sec-cash"><span class="mi">🪙</span>Budget</a>
-  <a href="#sec-next"><span class="mi">🗓️</span>Next</a>
-</nav>
 
 <div class="fab" id="fab"><div class="fab-items">
   <div class="fab-item"><span class="lbl">Adjust handicaps</span><button class="btn-circ" data-open="hdc">🎯</button></div>
@@ -391,6 +258,10 @@ const GAME_MODES=["Stroke Play","Match Play","Stableford","Scramble","Rotating-S
 const NON_GOLF_TYPES=["Golf","PGA","FIFA","Others"];
 let CURRENCY="€";
 let PLAYOFF_SHOTS=[5,3,1,0];
+/* Budget baseline: the known budget on a given date. Entries AFTER this date adjust it.
+   Set via Settings keys "BudgetBaseline" (e.g. 120) and "BudgetBaselineDate" (YYYY-MM-DD). */
+let BUDGET_BASELINE=null;      // number or null
+let BUDGET_BASELINE_DATE="";   // YYYY-MM-DD
 
 /* =================================================================
    STATE (built from the Sheet). Internal shape:
@@ -412,6 +283,28 @@ function playerColor(name){const p=state.players.find(x=>x.name===name);return p
 function hdcOn(name,date){const h=state.hdcHistory[name]||[];let v=h.length?h[0].hdc:0;for(const e of h){if(e.date<=date)v=e.hdc;else break;}return Number(v);}
 function currentHdc(name){const h=state.hdcHistory[name]||[];return h.length?Number(h[h.length-1].hdc):0;}
 const B=v=>String(v).toUpperCase()==="TRUE"||v===true;
+/* Robust numeric parser: handles numbers, German comma-decimals ("0,875"),
+   thousands separators, and blank/garbage safely. */
+function num(v){
+  if(v===null||v===undefined||v==="") return 0;
+  if(typeof v==="number") return isNaN(v)?0:v;
+  let str=String(v).trim();
+  if(str==="") return 0;
+  // keep only digits, separators and sign
+  str=str.replace(/[^0-9.,\-]/g,"");
+  if(str===""||str==="-") return 0;
+  const hasComma=str.indexOf(",")>-1, hasDot=str.indexOf(".")>-1;
+  if(hasComma&&hasDot){
+    // last separator is the decimal; the other is thousands
+    if(str.lastIndexOf(",")>str.lastIndexOf(".")){ str=str.replace(/\./g,"").replace(",", "."); }
+    else { str=str.replace(/,/g,""); }
+  } else if(hasComma){
+    // comma is the decimal separator (German)
+    str=str.replace(/\./g,"").replace(",", ".");
+  }
+  const n=parseFloat(str);
+  return isNaN(n)?0:n;
+}
 function dstr(v){ // normalise date values returned by Sheets (may be ISO string)
   if(!v) return "";
   if(typeof v==="string"){const m=v.match(/^\d{4}-\d{2}-\d{2}/);if(m)return m[0];const d=new Date(v);if(!isNaN(d))return d.toISOString().slice(0,10);return v;}
@@ -428,29 +321,31 @@ function fromSheet(data){
   (data.Players||[]).forEach(r=>{if(r.Name)s.players.push({name:String(r.Name).trim(),color:String(r.Color||"#888").trim(),active:B(r["Active(TRUE/FALSE)"]!==undefined?r["Active(TRUE/FALSE)"]:r.Active)});});
   s.players.forEach(p=>s.hdcHistory[p.name]=[]);
   (data.Handicaps||[]).forEach(r=>{const n=String(r.Player||"").trim();if(!n)return;if(!s.hdcHistory[n])s.hdcHistory[n]=[];
-    s.hdcHistory[n].push({date:dstr(r["EffectiveDate(YYYY-MM-DD)"]||r.EffectiveDate||"1900-01-01")||"1900-01-01",hdc:Number(r.Hdc)||0});});
+    s.hdcHistory[n].push({date:dstr(r["EffectiveDate(YYYY-MM-DD)"]||r.EffectiveDate||"1900-01-01")||"1900-01-01",hdc:num(r.Hdc)});});
   Object.values(s.hdcHistory).forEach(h=>h.sort((a,b)=>a.date.localeCompare(b.date)));
   // group GameDays by GameID
   const games={};
   (data.GameDays||[]).forEach(r=>{const id=String(r.GameID||"").trim();if(!id||!r.Player)return;
     if(!games[id])games[id]={id,date:dstr(r["Date(YYYY-MM-DD)"]||r.Date),mode:String(r.Mode||""),course:String(r.Course||""),
       indivCounts:B(r.IndivCounts),isPlayoff:B(r.IsPlayoff),rows:[]};
-    const strokes=(r.Strokes===""||r.Strokes===null||r.Strokes===undefined)?null:Number(r.Strokes);
+    const strokes=(r.Strokes===""||r.Strokes===null||r.Strokes===undefined)?null:num(r.Strokes);
     games[id].rows.push({player:String(r.Player).trim(),strokes:(strokes===null||isNaN(strokes))?null:strokes,
-      points:Number(r.Points)||0,money:Number(r.Money)||0});});
+      points:num(r.Points),money:num(r.Money)});});
   s.gameDays=Object.values(games).sort((a,b)=>a.date.localeCompare(b.date));
   (data.Cash||[]).forEach(r=>{const flow=String(r["Flow(In/Out)"]||r.Flow||"In").trim();const id=String(r.EntryID||uid());
-    const amount=Number(r.Amount)||0;const date=dstr(r["Date(YYYY-MM-DD)"]||r.Date);
+    const amount=num(r.Amount);const date=dstr(r["Date(YYYY-MM-DD)"]||r.Date);
     if(flow==="Out")s.outflows.push({id,date,name:String(r.Name||""),amount});
     else s.cashIns.push({id,date,type:String(r.Category||"Others"),name:String(r.Name||""),payer:String(r.Player||"").trim(),amount,count:B(r.CountInRanking)});});
   (data.Appointments||[]).forEach(r=>{if(r.What)s.appts.push({id:String(r.ApptID||uid()),what:String(r.What),when:String(r.When||"")});});
   (data.Settings||[]).forEach(r=>{const k=String(r.Key||"").trim();const v=r.Value;
     if(k==="Title")s.title=String(v);if(k==="Year")s.year=String(v).replace(/\.0$/,"");if(k==="Currency")CURRENCY=String(v)||"€";
-    if(k==="Theme")s.theme=String(v)||"light";if(k==="PlayoffShots"&&v){PLAYOFF_SHOTS=String(v).split(",").map(x=>Number(x.trim())||0);}});
+    if(k==="Theme")s.theme=String(v)||"light";if(k==="PlayoffShots"&&v){PLAYOFF_SHOTS=String(v).split(",").map(x=>num(x.trim())||0);}
+    if(k==="BudgetBaseline"&&v!==""&&v!==null&&v!==undefined){BUDGET_BASELINE=num(v);}
+    if(k==="BudgetBaselineDate"&&v){BUDGET_BASELINE_DATE=dstr(v);}});
   // Game-day money is the single source of truth: drop any previously-linked Golf cash-ins
   // (identified by the "C<gameId>_" id pattern) and rebuild them from the games.
   s.cashIns=s.cashIns.filter(c=>!/^C(G[0-9a-z]+)_/.test(String(c.id)));
-  s.gameDays.forEach(g=>{g.rows.forEach(r=>{const amt=Number(r.money)||0;if(amt>0){
+  s.gameDays.forEach(g=>{g.rows.forEach(r=>{const amt=num(r.money);if(amt>0){
     s.cashIns.push({id:"C"+g.id+"_"+r.player.replace(/\s+/g,""),gameId:g.id,date:g.date,type:"Golf",
       name:"Match day "+g.date+(g.course?" · "+g.course:""),payer:r.player,amount:amt,count:true});}});});
   return s;
@@ -503,7 +398,7 @@ function save(){apiSave();}  // alias used everywhere
 function standingsBefore(beforeDate){
   const pts={};state.players.forEach(p=>pts[p.name]=0);
   state.gameDays.forEach(g=>{if(g.isPlayoff)return;if(beforeDate&&g.date>=beforeDate)return;
-    g.rows.forEach(r=>{if(pts[r.player]!==undefined)pts[r.player]+=Number(r.points)||0;});});
+    g.rows.forEach(r=>{if(pts[r.player]!==undefined)pts[r.player]+=num(r.points);});});
   return Object.entries(pts).sort((a,b)=>b[1]-a[1]);
 }
 function playoffShotsFor(name,beforeDate){const st=standingsBefore(beforeDate);const i=st.findIndex(e=>e[0]===name);return(i>=0&&i<PLAYOFF_SHOTS.length)?PLAYOFF_SHOTS[i]:0;}
@@ -591,7 +486,7 @@ function saveHdc(){const date=$("#hdc_date").value;if(!date)return toast("Pick a
    ================================================================= */
 function computeStats(){const stats={};
   state.players.forEach(p=>stats[p.name]={name:p.name,color:p.color,curHdc:currentHdc(p.name),points:0,rounds:0,totalStrokes:0,scoredRounds:0,netSum:0,best:null,worst:null,bestCourse:"",worstCourse:"",money:0});
-  state.gameDays.forEach(g=>g.rows.forEach(r=>{const s=stats[r.player];if(!s)return;s.points+=Number(r.points)||0;s.rounds++;s.money+=Number(r.money)||0;
+  state.gameDays.forEach(g=>g.rows.forEach(r=>{const s=stats[r.player];if(!s)return;s.points+=num(r.points);s.rounds++;s.money+=num(r.money);
     if(r.strokes!==null&&!isNaN(r.strokes)){const bonus=g.isPlayoff?playoffShotsFor(r.player,g.date):0;s.totalStrokes+=r.strokes;s.scoredRounds++;s.netSum+=r.strokes-hdcOn(r.player,g.date)-bonus;
       if(s.best===null||r.strokes<s.best){s.best=r.strokes;s.bestCourse=g.course||"";}if(s.worst===null||r.strokes>s.worst){s.worst=r.strokes;s.worstCourse=g.course||"";}}}));
   Object.values(stats).forEach(s=>{s.avgGross=s.scoredRounds?s.totalStrokes/s.scoredRounds:null;s.avgNet=s.scoredRounds?s.netSum/s.scoredRounds:null;s.projShots=projectedShots(s.name);});return stats;}
@@ -600,7 +495,7 @@ function syncGameCashIns(game){
   state.cashIns=state.cashIns.filter(c=>c.gameId!==game.id);
   // create one Golf cash-in per player who owes money (>0) on this game
   game.rows.forEach(r=>{
-    const amt=Number(r.money)||0;
+    const amt=num(r.money);
     if(amt>0){
       state.cashIns.push({
         id:"C"+game.id+"_"+r.player.replace(/\s+/g,""),
@@ -616,10 +511,18 @@ function syncGameCashIns(game){
   });
 }
 function removeGameCashIns(gameId){state.cashIns=state.cashIns.filter(c=>c.gameId!==gameId);}
-function budgetTotal(){return state.cashIns.reduce((a,c)=>a+Number(c.amount),0)-state.outflows.reduce((a,c)=>a+Number(c.amount),0);}
+function budgetTotal(){
+  if(BUDGET_BASELINE!==null){
+    const d=BUDGET_BASELINE_DATE||"0000-00-00";
+    const inAfter=state.cashIns.filter(c=>String(c.date)>d).reduce((a,c)=>a+num(c.amount),0);
+    const outAfter=state.outflows.filter(c=>String(c.date)>d).reduce((a,c)=>a+num(c.amount),0);
+    return BUDGET_BASELINE+inAfter-outAfter;
+  }
+  return state.cashIns.reduce((a,c)=>a+num(c.amount),0)-state.outflows.reduce((a,c)=>a+num(c.amount),0);
+}
 function renderDashboard(stats){const arr=Object.values(stats);const totalDays=state.gameDays.length;const winner=arr.slice().sort((a,b)=>b.points-a.points)[0];
   let lowest=null,lw="",lc="";arr.forEach(s=>{if(s.best!==null&&(lowest===null||s.best<lowest)){lowest=s.best;lw=s.name;lc=s.bestCourse;}});
-  const ct={};state.players.forEach(p=>ct[p.name]=0);state.cashIns.forEach(c=>{if(c.count&&ct[c.payer]!==undefined)ct[c.payer]+=c.amount;});const tp=Object.entries(ct).sort((a,b)=>b[1]-a[1])[0];
+  const ct={};state.players.forEach(p=>ct[p.name]=0);state.cashIns.forEach(c=>{if(c.count&&ct[c.payer]!==undefined)ct[c.payer]+=num(c.amount);});const tp=Object.entries(ct).sort((a,b)=>b[1]-a[1])[0];
   $("#dashboard").innerHTML=`
     <div class="stat"><div class="label">Game days played</div><div class="value">${totalDays}</div><div class="meta">${arr.reduce((a,s)=>a+s.scoredRounds,0)} rounds with score</div></div>
     <div class="stat gold"><div class="label">🏆 Current leader</div><div class="value">${winner&&winner.points>0?winner.name:'–'}</div><div class="meta">${winner?fmtNum(winner.points,2)+' pts · −'+(winner.projShots||0)+' shots final':''}</div></div>
@@ -640,74 +543,17 @@ function renderHistory(){const tb=$("#history tbody");const sorted=state.gameDay
     <td style="white-space:nowrap"><button class="btn-outline btn-sm" onclick="editGame('${g.id}')">✏️</button> <button class="btn-red btn-sm" onclick="deleteGame('${g.id}')">🗑️</button></td></tr>`).join(""):`<tr><td colspan="6" style="color:var(--muted)">No game days yet.</td></tr>`;}
 function renderSettlement(){const tb=$("#settleTable tbody");if(!state.gameDays.length){tb.innerHTML=`<tr><td colspan="3" style="color:var(--muted)">No match days yet.</td></tr>`;$("#settleHeader").textContent="";return;}
   const last=state.gameDays.slice().sort((a,b)=>b.date.localeCompare(a.date))[0];$("#settleHeader").innerHTML=`Most recent match day: <b>${last.date}</b>${last.course?' · '+last.course:''} · <span class="pill ${last.isPlayoff?'po':''}">${last.mode}</span>`;
-  const owed=last.rows.filter(r=>Number(r.money)>0);if(!owed.length){tb.innerHTML=`<tr><td colspan="3" style="color:var(--muted)">No pay-in amounts recorded for this match day.</td></tr>`;return;}
-  tb.innerHTML=owed.map(r=>`<tr><td><span class="player-dot" style="background:${playerColor(r.player)}"></span> ${r.player}</td><td>Match day ${last.date}${last.course?' · '+last.course:''}</td><td><span class="money-neg">${fmtMoney(r.money)}</span></td></tr>`).join("")+`<tr style="font-weight:800"><td>Total</td><td></td><td><span class="pts">${fmtMoney(owed.reduce((a,r)=>a+Number(r.money),0))}</span></td></tr>`;}
+  const owed=last.rows.filter(r=>num(r.money)>0);if(!owed.length){tb.innerHTML=`<tr><td colspan="3" style="color:var(--muted)">No pay-in amounts recorded for this match day.</td></tr>`;return;}
+  tb.innerHTML=owed.map(r=>`<tr><td><span class="player-dot" style="background:${playerColor(r.player)}"></span> ${r.player}</td><td>Match day ${last.date}${last.course?' · '+last.course:''}</td><td><span class="money-neg">${fmtMoney(r.money)}</span></td></tr>`).join("")+`<tr style="font-weight:800"><td>Total</td><td></td><td><span class="pts">${fmtMoney(owed.reduce((a,r)=>a+num(r.money),0))}</span></td></tr>`;}
 function renderCash(){const map={};state.players.forEach(p=>map[p.name]={name:p.name,color:p.color,total:0,Golf:0,PGA:0,FIFA:0,Others:0,count:0});
-  state.cashIns.forEach(c=>{if(!c.count)return;const m=map[c.payer];if(!m)return;const cat=["Golf","PGA","FIFA"].includes(c.type)?c.type:"Others";m[cat]+=c.amount;m.total+=c.amount;m.count++;});
+  state.cashIns.forEach(c=>{if(!c.count)return;const m=map[c.payer];if(!m)return;const cat=["Golf","PGA","FIFA"].includes(c.type)?c.type:"Others";m[cat]+=num(c.amount);m.total+=num(c.amount);m.count++;});
   $("#totalBudget").textContent=fmtMoney(budgetTotal());$("#budgetMeta").textContent=state.cashIns.length+" cash-ins · "+state.outflows.length+" expenses";
   const arr=Object.values(map).sort((a,b)=>b.total-a.total);
   $("#cashTable tbody").innerHTML=arr.map((m,i)=>`<tr><td><span class="rankbadge ${i===0&&m.total>0?'r1':''}">${i+1}</span></td><td><span class="player-dot" style="background:${m.color}"></span> ${m.name}</td><td class="pts">${fmtMoney(m.total)}</td><td>${fmtMoney(m.Golf)}</td><td>${fmtMoney(m.PGA)}</td><td>${fmtMoney(m.FIFA)}</td><td>${fmtMoney(m.Others)}</td><td>${m.count}</td></tr>`).join("");
   const inR=state.cashIns.map(c=>({...c,flow:"In"}));const outR=state.outflows.map(o=>({...o,flow:"Out",type:"Expense",payer:""}));const all=inR.concat(outR).sort((a,b)=>b.date.localeCompare(a.date));
   $("#ngHistory tbody").innerHTML=all.length?all.map(c=>`<tr><td>${c.date}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type||'–'}${c.gameId?' <span class=\'pill\'>⛳ from game</span>':''}</td><td>${c.name||'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${c.payer}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td>${c.gameId?'<span class="small-muted">via game</span>':`<button class="btn-red btn-sm" onclick="deleteCashIn('${c.id}')">🗑️</button>`}</td></tr>`).join(""):`<tr><td colspan="7" style="color:var(--muted)">No entries yet.</td></tr>`;}
 function renderAppts(){$("#apptList").innerHTML=state.appts.length?state.appts.map(a=>{const po=/island|play.?off|final/i.test(a.what);return `<div class="appt ${po?'playoff':''}"><div class="what">${a.what}</div><div style="display:flex;align-items:center;gap:8px"><span class="when">${a.when}</span><button onclick="deleteAppt('${a.id}')">✕</button></div></div>`;}).join(""):`<p style="color:var(--muted)">No upcoming appointments.</p>`;}
-
-/* ---- MOBILE: decorate table cells with labels for stacked card view ---- */
-const M_LABELS={
-  leaderboard:["#","Player","Hdc","Points","Projected shots","Total strokes","Avg gross","Avg net","Best round","Worst round"],
-  history:["Date","Mode","Course","Indiv?","Details","Actions"],
-  settleTable:["Player","What","Amount to pay in"],
-  cashTable:["#","Name","Total","Golf","PGA","FIFA","Others","#"],
-  ngHistory:["Date","Flow","Category","Name / details","Player","Amount",""]
-};
-function decorateMobileTables(){
-  Object.keys(M_LABELS).forEach(function(tid){
-    const tbl=document.getElementById(tid); if(!tbl) return;
-    const labels=M_LABELS[tid];
-    tbl.querySelectorAll("tbody tr").forEach(function(tr){
-      const tds=tr.querySelectorAll("td");
-      tds.forEach(function(td,i){
-        td.setAttribute("data-label", labels[i]!==undefined?labels[i]:"");
-        td.classList.remove("m-title","m-actions","m-block");
-      });
-      if(!tds.length) return;
-      // first cell = title bar (skip single "empty state" rows that span columns)
-      if(tds.length>1){
-        tds[0].classList.add("m-title");
-        // if this table has a Player name right after rank, merge it into the title
-      }
-      // table-specific tweaks
-      if(tid==="leaderboard" && tds[1]){ tds[0].classList.add("m-title"); // keep rank as title
-        // move player name into title text visually: label the player row too
-      }
-      if(tid==="history"){
-        if(tds[4]) tds[4].classList.add("m-block");     // details block
-        if(tds[5]) tds[5].classList.add("m-actions");    // edit/delete
-      }
-      if(tid==="ngHistory"){
-        if(tds[6]) tds[6].classList.add("m-actions");
-      }
-    });
-  });
-}
-
-/* ---- MOBILE: scroll-spy for bottom nav highlight ---- */
-function setupScrollSpy(){
-  const map=[["sec-summary","Summary"],["sec-leaderboard","Table"],["sec-history","Games"],
-             ["sec-cash","Budget"],["sec-next","Next"]];
-  const links=document.querySelectorAll(".mnav a");
-  function onScroll(){
-    let current=map[0][0];
-    map.forEach(function(m){
-      const el=document.getElementById(m[0]);
-      if(el && el.getBoundingClientRect().top<=120) current=m[0];
-    });
-    links.forEach(function(a){a.classList.toggle("active",a.getAttribute("href")==="#"+current);});
-  }
-  window.addEventListener("scroll",onScroll,{passive:true});
-  onScroll();
-}
-
-function renderAll(){const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();decorateMobileTables();}
+function renderAll(){const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();}
 
 /* EXPORT */
 function exportCSV(){const stats=computeStats();const arr=Object.values(stats).sort((a,b)=>b.points-a.points);
@@ -764,8 +610,6 @@ window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=delete
     await apiLoad();
     wireUI();
     renderAll();
-    setupScrollSpy();
-    document.documentElement.style.scrollBehavior="smooth";
     $("#boot").style.display="none";
   }catch(e){
     $("#boot").innerHTML='<div class="ball" style="animation:none">⚠️</div><p style="max-width:460px;text-align:center">Could not load from Google Sheets.<br><br>Check that your Apps Script Web App is deployed with access set to <b>Anyone</b>, then reload this page.<br><br><small>'+e+'</small></p>';
