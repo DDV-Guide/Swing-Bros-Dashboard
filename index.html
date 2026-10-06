@@ -81,6 +81,13 @@ tbody tr.leader{background:linear-gradient(90deg,var(--gold-light),transparent);
 .appt .when{font-style:italic;color:var(--red);font-weight:600;white-space:nowrap}
 .appt.playoff .when{color:#6a5410}
 .appt button{background:transparent;border:none;color:var(--red);font-size:16px;padding:2px 6px;cursor:pointer}
+.appt.dated{background:var(--green-pos-bg);border-left-color:var(--green-pos)}
+.appt.dated .when{color:var(--green-pos)}
+.appt.tbd{background:#fff8e1;border-left-color:var(--gold)}
+.appt.tbd .when{color:#8a6d1b}
+html[data-theme="dark"] .appt.tbd{background:#3a3115}
+html[data-theme="dark"] .appt.tbd .when{color:var(--gold-light)}
+
 button{font-family:inherit;cursor:pointer;border:none;border-radius:10px;font-weight:600;transition:.15s}
 .btn{background:var(--green-600);color:#fff;padding:11px 20px;font-size:14px}.btn:hover{background:var(--green-700);transform:translateY(-1px)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
@@ -227,7 +234,7 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
   <section id="sec-payin"><div class="section-title"><span class="ico">💶</span> Outstanding payments (golf &amp; non-golf)</div>
     <div class="card"><p class="settle-note" id="settleHeader"></p>
       <div class="table-scroll"><table id="settleTable" class="m-stack"><thead><tr><th>Player</th><th>What</th><th>Amount to pay to our PayPal</th><th>Paid?</th></tr></thead><tbody></tbody></table></div>
-      <p class="small-muted">Shows unpaid <b>golf pay-ins</b> (latest match day) <b>and</b> unpaid <b>non-golf cash-ins</b> (PGA, FIFA, Others). Tick <b>Paid?</b> once transferred — the row disappears and the check-off is saved to the Google Sheet (the <b>Paid</b> column in GameDays / Cash). New entries start unticked. This does not change the budget.</p></div></section>
+      <p class="small-muted">Amounts are the money entries recorded for the most recent game day. Forward this list so everyone knows what to transfer.</p></div></section>
 
   <section id="sec-cash"><div class="section-title"><span class="ico">🪙</span> Cash Pool &amp; Competitions</div>
     <div class="grid cols-2">
@@ -320,7 +327,7 @@ const NON_GOLF_TYPES=["Golf","PGA","FIFA","Others"];
 let CURRENCY="€";
 let PLAYOFF_SHOTS=[5,3,1,0];
 let BUDGET_BASELINE=null;
-let BUDGET_BASELINE_DATE="2026-10-06";
+let BUDGET_BASELINE_DATE="";
 
 /* =================================================================
    STATE (built from the Sheet). Internal shape:
@@ -331,7 +338,7 @@ let BUDGET_BASELINE_DATE="2026-10-06";
    ================================================================= */
 let state=null;
 let saveTimer=null, saving=false;
-let LOADED=false;  // true only after a successful live load; gates saving
+let LOADED=false;
 
 /* ---------- HELPERS ---------- */
 const $=s=>document.querySelector(s);const $$=s=>document.querySelectorAll(s);
@@ -434,26 +441,21 @@ async function apiLoad(){
   }catch(e){clearTimeout(to);throw e;}
 }
 async function apiSave(){
-  // debounced full-dataset save to Google Sheets
   clearTimeout(saveTimer);
   setSync("saving","Saving…");
   saveTimer=setTimeout(async()=>{
     try{
       saving=true;
       const res=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(toSheet())});
-      // Apps Script returns {status:'ok'}; if we can read it, treat as confirmed.
       let ok=res && res.ok;
-      try{const j=await res.json(); if(j && j.status) ok=true;}catch(_){/* opaque is fine */}
-      // refresh local cache with what we just saved
+      try{const j=await res.json(); if(j && j.status) ok=true;}catch(_){}
       try{localStorage.setItem(CACHE_KEY,JSON.stringify(toSheet()));}catch(_){ }
       setSync(ok?"":"err", ok?"Synced ✓":"Saved? verify");
-    }catch(e){
-      setSync("err","Save failed – tap 🔄 Reload");
-      toast("Could not save to Google Sheets. Check the Apps Script deployment (Anyone) and connection.","err");
-    }finally{saving=false;}
+    }catch(e){ setSync("err","Save failed – tap 🔄 Reload"); toast("Could not save to Google Sheets. Check deployment (Anyone) & connection.","err"); }
+    finally{saving=false;}
   },400);
 }
-function save(){ if(!LOADED){ setSync('err','Not saved – data not loaded yet'); return; } apiSave(); }  // guarded alias
+function save(){ if(!LOADED){ setSync('err','Not saved – data not loaded yet'); return; } apiSave(); }
 
 /* =================================================================
    STANDINGS / PLAYOFF
@@ -579,8 +581,8 @@ function removeGameCashIns(gameId){state.cashIns=state.cashIns.filter(c=>c.gameI
 function budgetTotal(){
   if(BUDGET_BASELINE!==null){
     const d=BUDGET_BASELINE_DATE||"0000-00-00";
-    const inA=state.cashIns.filter(c=>String(c.date)>d).reduce((a,c)=>a+num(c.amount),0);
-    const outA=state.outflows.filter(c=>String(c.date)>d).reduce((a,c)=>a+num(c.amount),0);
+    const inA=state.cashIns.filter(c=>String(c.date)>=d).reduce((a,c)=>a+num(c.amount),0);
+    const outA=state.outflows.filter(c=>String(c.date)>=d).reduce((a,c)=>a+num(c.amount),0);
     return BUDGET_BASELINE+inA-outA;
   }
   return state.cashIns.reduce((a,c)=>a+num(c.amount),0)-state.outflows.reduce((a,c)=>a+num(c.amount),0);
@@ -606,17 +608,9 @@ function renderHistory(){const tb=$("#history tbody");const sorted=state.gameDay
   tb.innerHTML=sorted.length?sorted.map(g=>`<tr><td>${g.date}</td><td><span class="pill ${g.isPlayoff?'po':''}">${g.isPlayoff?'🏝️ '+g.mode:g.mode}</span></td><td>${g.course||'–'}</td><td>${g.indivCounts?'✔ yes':'–'}</td>
     <td>${g.rows.map(r=>{const b=g.isPlayoff?playoffShotsFor(r.player,g.date):0;return `<div style="font-size:12.5px"><span class="player-dot" style="background:${playerColor(r.player)}"></span> ${r.player}: ${r.strokes!==null?fmtPar(r.strokes)+(b?` (−${b})`:'')+' · ':''}${fmtNum(r.points,2)} pts${r.money?' · '+fmtMoney(r.money):''}</div>`;}).join("")}</td>
     <td style="white-space:nowrap"><button class="btn-outline btn-sm" onclick="editGame('${g.id}')">✏️</button> <button class="btn-red btn-sm" onclick="deleteGame('${g.id}')">🗑️</button></td></tr>`).join(""):`<tr><td colspan="6" style="color:var(--muted)">No game days yet.</td></tr>`;}
-function toggleCashPaid(cashId){
-  const c=state.cashIns.find(x=>x.id===cashId); if(!c) return;
-  c.paid=!c.paid; save(); renderCash(); renderSettlement();
-  toast(c.paid?"Marked as paid ✔":"Marked as unpaid");
-}
 function renderSettlement(){
   const tb=$("#settleTable tbody");
-  // Collect outstanding items from BOTH sources:
-  //  1) Golf pay-ins = latest match day's player money (tracked via GameDays "Paid")
-  //  2) Non-golf cash-ins = unpaid Cash entries with a payer (tracked via Cash "Paid")
-  const items=[]; // {kind, gameId?, cashId?, player, what, amount}
+  const items=[];
   let headerTxt="";
   if(state.gameDays.length){
     const last=state.gameDays.slice().sort((a,b)=>b.date.localeCompare(a.date))[0];
@@ -626,7 +620,6 @@ function renderSettlement(){
         what:`⛳ Golf · ${last.date}${last.course?' · '+last.course:''}`,amount:num(r.money)});
     });
   }
-  // non-golf outstanding cash-ins (exclude golf-linked ones; those are handled above)
   state.cashIns.filter(c=>c.payer && !c.gameId && c.type!=="Golf" && num(c.amount)>0 && !c.paid).forEach(c=>{
     items.push({kind:"cash",cashId:c.id,player:c.payer,
       what:`${c.type?c.type+" · ":""}${c.name||""} (${c.date})`,amount:num(c.amount)});
@@ -638,9 +631,7 @@ function renderSettlement(){
   }
   tb.innerHTML=items.map(it=>{
     const safePlayer=it.player.replace(/\\/g,"").replace(/'/g,"\\'");
-    const call = it.kind==="golf"
-      ? `markGolfPaid('${it.gameId}','${safePlayer}')`
-      : `markCashPaid('${it.cashId}')`;
+    const call = it.kind==="golf" ? `markGolfPaid('${it.gameId}','${safePlayer}')` : `markCashPaid('${it.cashId}')`;
     return `<tr>
       <td><span class="player-dot" style="background:${playerColor(it.player)}"></span> ${it.player}</td>
       <td>${it.what}</td>
@@ -653,11 +644,15 @@ function renderSettlement(){
 function markGolfPaid(gameId, player){
   const g=state.gameDays.find(x=>x.id===gameId); if(!g) return;
   const row=g.rows.find(r=>r.player===player); if(!row) return;
-  row.paid=true; save(); renderSettlement(); toast("Marked as paid ✔");
+  row.paid=!row.paid; save(); renderAll(); toast(row.paid?"Marked as paid ✔":"Marked as unpaid");
 }
 function markCashPaid(cashId){
   const c=state.cashIns.find(x=>x.id===cashId); if(!c) return;
-  c.paid=true; save(); renderSettlement(); toast("Marked as paid ✔");
+  c.paid=!c.paid; save(); renderAll(); toast(c.paid?"Marked as paid ✔":"Marked as unpaid");
+}
+function toggleCashPaid(cashId){
+  const c=state.cashIns.find(x=>x.id===cashId); if(!c) return;
+  c.paid=!c.paid; save(); renderAll(); toast(c.paid?"Marked as paid ✔":"Marked as unpaid");
 }
 function renderCash(){const map={};state.players.forEach(p=>map[p.name]={name:p.name,color:p.color,total:0,Golf:0,PGA:0,FIFA:0,Others:0,count:0});
   state.cashIns.forEach(c=>{if(!c.count)return;const m=map[c.payer];if(!m)return;const cat=["Golf","PGA","FIFA"].includes(c.type)?c.type:"Others";m[cat]+=num(c.amount);m.total+=num(c.amount);m.count++;});
@@ -666,7 +661,7 @@ function renderCash(){const map={};state.players.forEach(p=>map[p.name]={name:p.
   $("#cashTable tbody").innerHTML=arr.map((m,i)=>`<tr><td><span class="rankbadge ${i===0&&m.total>0?'r1':''}">${i+1}</span></td><td><span class="player-dot" style="background:${m.color}"></span> ${m.name}</td><td class="pts">${fmtMoney(m.total)}</td><td>${fmtMoney(m.Golf)}</td><td>${fmtMoney(m.PGA)}</td><td>${fmtMoney(m.FIFA)}</td><td>${fmtMoney(m.Others)}</td><td>${m.count}</td></tr>`).join("");
   const inR=state.cashIns.map(c=>({...c,flow:"In"}));const outR=state.outflows.map(o=>({...o,flow:"Out",type:"Expense",payer:""}));const all=inR.concat(outR).sort((a,b)=>b.date.localeCompare(a.date));
   $("#ngHistory tbody").innerHTML=all.length?all.map(c=>{const payable=(c.flow==="In") && c.payer && !c.gameId;const paidCell = c.gameId ? '<span class="small-muted">via game</span>' : (payable ? `<input type="checkbox" class="paid-chk" title="Mark as paid" style="width:20px;height:20px;cursor:pointer" ${c.paid?"checked":""} onclick="toggleCashPaid(\'${c.id}\')">` : '<span class="small-muted">—</span>');const actionCell = c.gameId ? '<span class="small-muted">⛳ from game</span>' : `<button class="btn-red btn-sm" onclick="deleteCashIn(\'${c.id}\')">🗑️</button>`;return `<tr><td>${c.date}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type||'–'}${c.gameId?' <span class=\'pill\'>⛳</span>':''}</td><td>${c.name||'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${c.payer}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td style="text-align:center">${paidCell}</td><td style="text-align:center">${actionCell}</td></tr>`;}).join(""):`<tr><td colspan="8" style="color:var(--muted)">No entries yet.</td></tr>`;}
-function renderAppts(){$("#apptList").innerHTML=state.appts.length?state.appts.map(a=>{const po=/island|play.?off|final/i.test(a.what);return `<div class="appt ${po?'playoff':''}"><div class="what">${a.what}</div><div style="display:flex;align-items:center;gap:8px"><span class="when">${a.when}</span><button onclick="deleteAppt('${a.id}')">✕</button></div></div>`;}).join(""):`<p style="color:var(--muted)">No upcoming appointments.</p>`;}
+function renderAppts(){$("#apptList").innerHTML=state.appts.length?state.appts.map(a=>{const po=/island|play.?off|final/i.test(a.what);const w=String(a.when||"").trim();const hasDate=/\d/.test(w) && !/^tbd$/i.test(w) && !/^n\/?a$/i.test(w);const cls=po?"playoff":(hasDate?"dated":"tbd");return `<div class="appt ${cls}"><div class="what">${a.what}</div><div style="display:flex;align-items:center;gap:8px"><span class="when">${w||"tbd"}</span><button onclick="deleteAppt('${a.id}')">✕</button></div></div>`;}).join(""):`<p style="color:var(--muted)">No upcoming appointments.</p>`;}
 
 const M_LABELS={
   leaderboard:["#","Player","Hdc","Points","Proj. shots","Total","Avg gross","Avg net","Best","Worst"],
@@ -751,12 +746,11 @@ window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=delete
 
 (async function start(){
   try{
-    await apiLoad();                 // LIVE Google Sheet is the single source of truth
-    LOADED=true;                     // enable saving only after a good load
+    await apiLoad();
+    LOADED=true;
     wireUI(); renderAll();
     $("#boot").style.display="none";
   }catch(e){
-    // Live load failed -> try last cached copy, but DO NOT allow saving (prevents overwriting the sheet)
     let usedCache=false;
     try{
       const cached=localStorage.getItem(CACHE_KEY);
@@ -766,7 +760,7 @@ window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=delete
       setSync("err","Offline – read-only (last saved)");
       toast("Could not reach Google Sheets. Showing last data in read-only mode.","err");
     }else{
-      $("#boot").innerHTML='<div class="ball" style="animation:none">⚠️</div><p style="max-width:480px;text-align:center">Could not load from Google Sheets.<br><br>1) Open your Apps Script → <b>Deploy → Manage deployments → Edit</b> → <b>Who has access: Anyone</b> → <b>New version</b> → Deploy.<br>2) Then reload this page.<br><br><small>'+e+'</small></p>';
+      $("#boot").innerHTML='<div class="ball" style="animation:none">⚠️</div><p style="max-width:480px;text-align:center">Could not load from Google Sheets.<br><br>Open Apps Script → <b>Deploy → Manage deployments → Edit</b> → <b>Who has access: Anyone</b> → <b>New version</b> → Deploy, then reload.<br><br><small>'+e+'</small></p>';
       setSync("err","Offline");
     }
   }
