@@ -268,6 +268,7 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
 </nav>
 
 <div class="fab" id="fab"><div class="fab-items">
+  <div class="fab-item"><span class="lbl">Play-off shots</span><button class="btn-circ" data-open="shots">🏝️</button></div>
   <div class="fab-item"><span class="lbl">Adjust handicaps</span><button class="btn-circ" data-open="hdc">🎯</button></div>
   <div class="fab-item"><span class="lbl">New appointment</span><button class="btn-circ" data-open="appt">🗓️</button></div>
   <div class="fab-item"><span class="lbl">New cash-in / expense</span><button class="btn-circ" data-open="cash">🪙</button></div>
@@ -313,6 +314,20 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
   <div class="field" style="max-width:220px"><label>Effective from</label><input type="date" id="hdc_date"></div>
   <div id="hdcList"></div>
   <button class="btn" id="saveHdcBtn" style="margin-top:14px">💾 Save handicap change</button>
+</div></div>
+
+<!-- MODAL SHOTS -->
+<div class="modal-ov" id="modal-shots"><div class="modal"><div class="modal-head"><h3>🏝️ Play-off shots (Island Masters final)</h3><button class="close-x" data-close>×</button></div>
+  <p class="small-muted" style="margin-bottom:14px">Set how many bonus shots each standings position gets on the final round. These are a proposal and can be re-adjusted anytime after aligning with the others.</p>
+  <div class="row row-2">
+    <div class="field"><label>🥇 1st place (leader) — shots</label><input type="number" step="1" min="0" id="sh_1" placeholder="5"></div>
+    <div class="field"><label>🥈 2nd place — shots</label><input type="number" step="1" min="0" id="sh_2" placeholder="3"></div>
+  </div>
+  <div class="row row-2">
+    <div class="field"><label>🥉 3rd place — shots</label><input type="number" step="1" min="0" id="sh_3" placeholder="1"></div>
+    <div class="field"><label>4th place — shots</label><input type="number" step="1" min="0" id="sh_4" placeholder="0"></div>
+  </div>
+  <button class="btn" id="saveShotsBtn" style="margin-top:6px">💾 Save play-off shots</button>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -542,6 +557,15 @@ function deleteAppt(id){state.appts=state.appts.filter(x=>x.id!==id);save();rend
 function buildHdcForm(){$("#hdcList").innerHTML=state.players.map(p=>{const hist=state.hdcHistory[p.name]||[];const last=hist.length?hist[hist.length-1]:{hdc:0};
   const txt=hist.map(e=>`${e.date==="1900-01-01"?"start":e.date}: ${e.hdc}`).join("  →  ");
   return `<div class="hdc-row"><div class="nm"><span class="player-dot" style="background:${p.color}"></span><div>${p.name}<div class="hdc-hist">history: ${txt}</div></div></div><input type="number" step="0.1" class="hdc-input" data-name="${p.name}" value="${last.hdc}"></div>`;}).join("");}
+function saveShots(){
+  const v=[num($("#sh_1").value),num($("#sh_2").value),num($("#sh_3").value),num($("#sh_4").value)];
+  if(v.some(x=>isNaN(x)||x<0)) return toast("Enter valid shot numbers (0 or more).","err");
+  PLAYOFF_SHOTS=v;
+  save();            // persists to Settings 'PlayoffShots' in Google Sheet
+  renderAll();       // leaderboard "Projected shots" + banner update
+  toast("Play-off shots updated ✔");
+  closeModal();
+}
 function saveHdc(){const date=$("#hdc_date").value;if(!date)return toast("Pick an effective date.","err");let ch=0;
   $$(".hdc-input").forEach(inp=>{const name=inp.dataset.name,val=parseFloat(inp.value);if(isNaN(val))return;const hist=state.hdcHistory[name];const ex=hist.find(e=>e.date===date);
     if(ex){if(ex.hdc!==val){ex.hdc=val;ch++;}}else if(hdcOn(name,date)!==val){hist.push({date,hdc:val});ch++;}});
@@ -708,7 +732,8 @@ function exportCSV(){const stats=computeStats();const arr=Object.values(stats).s
 /* MODAL/FAB/THEME */
 function openModal(key){closeModal();$("#modal-"+key).classList.add("show");$("#fab").classList.remove("open");const today=new Date().toISOString().slice(0,10);
   if(key==="game"&&!editingGameId){$("#gd_date").value=today;$("#gd_playoff").checked=false;updateScoringNote();updatePlayoffInfo();buildPlayersForm();}
-  if(key==="cash"){$("#ng_date").value=today;}if(key==="hdc"){$("#hdc_date").value=today;buildHdcForm();}}
+  if(key==="cash"){$("#ng_date").value=today;}if(key==="hdc"){$("#hdc_date").value=today;buildHdcForm();}
+  if(key==="shots"){$("#sh_1").value=(PLAYOFF_SHOTS[0]!==undefined?PLAYOFF_SHOTS[0]:5);$("#sh_2").value=(PLAYOFF_SHOTS[1]!==undefined?PLAYOFF_SHOTS[1]:3);$("#sh_3").value=(PLAYOFF_SHOTS[2]!==undefined?PLAYOFF_SHOTS[2]:1);$("#sh_4").value=(PLAYOFF_SHOTS[3]!==undefined?PLAYOFF_SHOTS[3]:0);}}
 function closeModal(){$$(".modal-ov").forEach(m=>m.classList.remove("show"));}
 function setTheme(t){document.documentElement.setAttribute("data-theme",t);$("#themeBtn").textContent=t==="dark"?"☀️":"🌙";if(state){state.theme=t;}}
 
@@ -730,6 +755,7 @@ function wireUI(){
   $("#addGameBtn").addEventListener("click",addOrSaveGame);
   $("#cancelEditBtn").addEventListener("click",()=>{exitEdit();resetGameFormValues();closeModal();});
   $("#addNgBtn").addEventListener("click",addCashIn);$("#addApBtn").addEventListener("click",addAppt);$("#saveHdcBtn").addEventListener("click",saveHdc);
+  $("#saveShotsBtn").addEventListener("click",saveShots);
   $("#exportBtn").addEventListener("click",exportCSV);
   $("#reloadBtn").addEventListener("click",async()=>{try{await apiLoad();LOADED=true;wireAfterData();renderAll();toast("Reloaded from Google Sheets ✔");}catch(e){toast("Reload failed – check Apps Script deployment (Anyone).","err");}});
   $("#themeBtn").addEventListener("click",()=>{const t=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";setTheme(t);save();});
