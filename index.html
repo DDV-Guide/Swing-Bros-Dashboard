@@ -326,8 +326,8 @@ const GAME_MODES=["Stroke Play","Match Play","Stableford","Scramble","Rotating-S
 const NON_GOLF_TYPES=["Golf","PGA","FIFA","Others"];
 let CURRENCY="€";
 let PLAYOFF_SHOTS=[5,3,1,0];
-let BUDGET_BASELINE=null;
-let BUDGET_BASELINE_DATE="";
+let BUDGET_BASELINE=120;      // default anchor; override via Settings "BudgetBaseline"
+let BUDGET_BASELINE_DATE=new Date().toISOString().slice(0,10);  // default = today; override via Settings "BudgetBaselineDate"
 
 /* =================================================================
    STATE (built from the Sheet). Internal shape:
@@ -579,13 +579,14 @@ function syncGameCashIns(game){
 }
 function removeGameCashIns(gameId){state.cashIns=state.cashIns.filter(c=>c.gameId!==gameId);}
 function budgetTotal(){
-  if(BUDGET_BASELINE!==null){
-    const d=BUDGET_BASELINE_DATE||"0000-00-00";
-    const inA=state.cashIns.filter(c=>String(c.date)>=d).reduce((a,c)=>a+num(c.amount),0);
-    const outA=state.outflows.filter(c=>String(c.date)>=d).reduce((a,c)=>a+num(c.amount),0);
-    return BUDGET_BASELINE+inA-outA;
-  }
-  return state.cashIns.reduce((a,c)=>a+num(c.amount),0)-state.outflows.reduce((a,c)=>a+num(c.amount),0);
+  // Anchored budget: BUDGET_BASELINE (e.g. 120 EUR) is the balance as of (the start of) BUDGET_BASELINE_DATE.
+  // Entries dated ON OR AFTER the baseline date adjust it. Historical entries (dated before) are ignored,
+  // so the balance can never be dragged down by old data.
+  const base = (BUDGET_BASELINE!==null && !isNaN(BUDGET_BASELINE)) ? BUDGET_BASELINE : 0;
+  const d = BUDGET_BASELINE_DATE || "9999-12-31";
+  const inA  = state.cashIns.filter(c=>String(c.date)>=d).reduce((a,c)=>a+num(c.amount),0);
+  const outA = state.outflows.filter(c=>String(c.date)>=d).reduce((a,c)=>a+num(c.amount),0);
+  return base + inA - outA;
 }
 function renderDashboard(stats){const arr=Object.values(stats);const totalDays=state.gameDays.length;const winner=arr.slice().sort((a,b)=>b.points-a.points)[0];
   let lowest=null,lw="",lc="";arr.forEach(s=>{if(s.best!==null&&(lowest===null||s.best<lowest)){lowest=s.best;lw=s.name;lc=s.bestCourse;}});
