@@ -319,8 +319,8 @@ const GAME_MODES=["Stroke Play","Match Play","Stableford","Scramble","Rotating-S
 const NON_GOLF_TYPES=["Golf","PGA","FIFA","Others"];
 let CURRENCY="€";
 let PLAYOFF_SHOTS=[5,3,1,0];
-let BUDGET_BASELINE=null;
-let BUDGET_BASELINE_DATE="";
+let BUDGET_BASELINE=120;
+let BUDGET_BASELINE_DATE="2026-10-06";
 
 /* =================================================================
    STATE (built from the Sheet). Internal shape:
@@ -331,6 +331,7 @@ let BUDGET_BASELINE_DATE="";
    ================================================================= */
 let state=null;
 let saveTimer=null, saving=false;
+let LOADED=false;  // true only after a successful live load; gates saving
 
 /* ---------- HELPERS ---------- */
 const $=s=>document.querySelector(s);const $$=s=>document.querySelectorAll(s);
@@ -416,13 +417,14 @@ function toSheet(){
    API (GET load / POST save)
    ================================================================= */
 function setSync(status,text){const c=$("#syncChip");c.className="sync "+status;$("#syncText").textContent=text;}
-const CACHE_KEY="swingBrosCache_v1";
+const CACHE_KEY="swingBrosCache_v3";
 async function apiLoad(){
   setSync("loading","Loading…");
   const ctrl=new AbortController();
   const to=setTimeout(()=>ctrl.abort(),20000);
   try{
-    const res=await fetch(API_URL,{method:"GET",signal:ctrl.signal});
+    const url=API_URL+(API_URL.indexOf("?")>-1?"&":"?")+"t="+Date.now();
+    const res=await fetch(url,{method:"GET",signal:ctrl.signal,cache:"no-store"});
     clearTimeout(to);
     if(!res.ok)throw new Error("HTTP "+res.status);
     const data=await res.json();
@@ -444,7 +446,7 @@ async function apiSave(){
     finally{saving=false;}
   },500);
 }
-function save(){apiSave();}  // alias used everywhere
+function save(){ if(!LOADED){ setSync('err','Not saved – data not loaded yet'); return; } apiSave(); }  // guarded alias
 
 /* =================================================================
    STANDINGS / PLAYOFF
@@ -721,7 +723,7 @@ function wireUI(){
   $("#cancelEditBtn").addEventListener("click",()=>{exitEdit();resetGameFormValues();closeModal();});
   $("#addNgBtn").addEventListener("click",addCashIn);$("#addApBtn").addEventListener("click",addAppt);$("#saveHdcBtn").addEventListener("click",saveHdc);
   $("#exportBtn").addEventListener("click",exportCSV);
-  $("#reloadBtn").addEventListener("click",async()=>{try{await apiLoad();wireAfterData();renderAll();toast("Reloaded from Google Sheets ✔");}catch(e){toast("Reload failed.","err");}});
+  $("#reloadBtn").addEventListener("click",async()=>{try{await apiLoad();LOADED=true;wireAfterData();renderAll();toast("Reloaded from Google Sheets ✔");}catch(e){toast("Reload failed – check Apps Script deployment (Anyone).","err");}});
   $("#themeBtn").addEventListener("click",()=>{const t=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";setTheme(t);save();});
   $("#resetBtn").addEventListener("click",()=>{toast("To reset, clear the rows in the Google Sheet directly.","err");});
   $("#fabMain").addEventListener("click",()=>$("#fab").classList.toggle("open"));
@@ -736,18 +738,23 @@ function wireAfterData(){$("#titleInput").value=state.title;$("#yearInput").valu
 window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=deleteCashIn;window.deleteAppt=deleteAppt;window.markGolfPaid=markGolfPaid;window.markCashPaid=markCashPaid;
 
 (async function start(){
-  let shownCache=false;
   try{
-    const cached=localStorage.getItem(CACHE_KEY);
-    if(cached){ state=fromSheet(JSON.parse(cached)); wireUI(); renderAll(); $("#boot").style.display="none"; setSync("loading","Updating…"); shownCache=true; }
-  }catch(e){}
-  try{
-    await apiLoad();
-    if(shownCache){ wireAfterData(); renderAll(); } else { wireUI(); renderAll(); $("#boot").style.display="none"; }
+    await apiLoad();                 // LIVE Google Sheet is the single source of truth
+    LOADED=true;                     // enable saving only after a good load
+    wireUI(); renderAll();
+    $("#boot").style.display="none";
   }catch(e){
-    if(shownCache){ setSync("err","Offline – showing last saved"); }
-    else{
-      $("#boot").innerHTML='<div class="ball" style="animation:none">⚠️</div><p style="max-width:460px;text-align:center">Could not load from Google Sheets.<br><br>Check that your Apps Script Web App is deployed with access set to <b>Anyone</b>, then reload this page.<br><br><small>'+e+'</small></p>';
+    // Live load failed -> try last cached copy, but DO NOT allow saving (prevents overwriting the sheet)
+    let usedCache=false;
+    try{
+      const cached=localStorage.getItem(CACHE_KEY);
+      if(cached){ state=fromSheet(JSON.parse(cached)); wireUI(); renderAll(); $("#boot").style.display="none"; usedCache=true; }
+    }catch(_){}
+    if(usedCache){
+      setSync("err","Offline – read-only (last saved)");
+      toast("Could not reach Google Sheets. Showing last data in read-only mode.","err");
+    }else{
+      $("#boot").innerHTML='<div class="ball" style="animation:none">⚠️</div><p style="max-width:480px;text-align:center">Could not load from Google Sheets.<br><br>1) Open your Apps Script → <b>Deploy → Manage deployments → Edit</b> → <b>Who has access: Anyone</b> → <b>New version</b> → Deploy.<br>2) Then reload this page.<br><br><small>'+e+'</small></p>';
       setSync("err","Offline");
     }
   }
