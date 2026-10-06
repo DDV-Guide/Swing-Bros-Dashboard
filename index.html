@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swing Bros Championship & Budget Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green-900:#0f3d2e;--green-800:#14503b;--green-700:#1b6b4f;--green-600:#22855f;
+  --green-500:#2fa373;--green-100:#e6f4ec;--gold:#c9a227;--gold-light:#f3e4a6;
+  --ink:#1d2721;--muted:#6b7a72;--bg:#f4f7f4;--card:#ffffff;
+  --red:#d1495b;--red-bg:#fdecef;--green-pos:#1b9c6b;--green-pos-bg:#e6f6ef;
+  --shadow:0 6px 22px rgba(16,54,39,.08);--shadow-lg:0 12px 40px rgba(16,54,39,.14);
+  --radius:16px;--border:#d9e4dd;--table-head:#0f3d2e;--input-bg:#fff;--dash-tile:#13251d;
+}
+html[data-theme="dark"]{
+  --ink:#e8f0ea;--muted:#8fa399;--bg:#0d1613;--card:#152420;--green-100:#1c3328;--border:#2a4034;
+  --table-head:#0a2419;--red-bg:#3a1c22;--green-pos-bg:#13332a;--input-bg:#1a2b24;--dash-tile:#0b1813;
+  --shadow:0 6px 22px rgba(0,0,0,.4);--shadow-lg:0 12px 40px rgba(0,0,0,.5);--gold-light:#d9c27a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',system-ui,sans-serif;color:var(--ink);line-height:1.5;padding:18px;
+  background:radial-gradient(1200px 500px at 90% -10%, var(--green-100) 0%, transparent 60%),var(--bg);transition:background .3s,color .3s}
+.wrap{max-width:1320px;margin:0 auto}
+.header{background:linear-gradient(120deg,var(--green-900),var(--green-700));color:#fff;border-radius:var(--radius);
+  padding:22px 28px;box-shadow:var(--shadow-lg);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;position:relative;overflow:hidden}
+.header::after{content:"🏌️";position:absolute;right:-10px;bottom:-20px;font-size:120px;opacity:.08}
+.header .titlewrap{flex:1;min-width:260px}
+.header h1{font-size:clamp(18px,2.6vw,27px);font-weight:800;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.header h1 .edit-title{background:transparent;border:none;color:#fff;font:inherit;font-weight:800;border-bottom:2px dashed rgba(255,255,255,.3);outline:none;min-width:360px;max-width:100%}
+.header .sub{opacity:.85;font-size:13px;margin-top:4px}
+.header .right{display:flex;align-items:center;gap:16px}
+.season-badge{background:var(--gold);color:#3a2f05;padding:10px 20px;border-radius:14px;text-align:center;box-shadow:var(--shadow);font-weight:800}
+.season-badge .s{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;opacity:.75;font-weight:700}
+.season-badge .y{font-size:30px;line-height:1;display:flex;align-items:center;gap:4px}
+.season-badge .y input{background:transparent;border:none;color:#3a2f05;font:inherit;font-weight:800;width:76px;outline:none;text-align:center}
+.theme-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer;transition:.2s}
+.theme-btn:hover{background:rgba(255,255,255,.3);transform:scale(1.08)}
+/* sync status chip */
+.sync{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.14);color:#fff;padding:7px 14px;border-radius:20px;font-size:12.5px;font-weight:600}
+.sync .dot{width:9px;height:9px;border-radius:50%;background:#9fe0bf;box-shadow:0 0 0 0 rgba(159,224,191,.6)}
+.sync.saving .dot{background:#f3e4a6;animation:pulse 1s infinite}
+.sync.err .dot{background:#ff7a86}
+.sync.loading .dot{background:#f3e4a6;animation:pulse 1s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(243,228,166,.6)}70%{box-shadow:0 0 0 8px rgba(243,228,166,0)}100%{box-shadow:0 0 0 0 rgba(243,228,166,0)}}
+section{margin-top:26px;animation:fade .5s ease}
+.section-title{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;color:var(--green-500);margin-bottom:14px;flex-wrap:wrap}
+.section-title .ico{font-size:22px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+.grid{display:grid;gap:18px}.cols-2{grid-template-columns:1fr 1fr}
+@media(max-width:900px){.cols-2{grid-template-columns:1fr}}
+.dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
+.stat{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border-left:5px solid var(--green-500);transition:.2s}
+.stat:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.stat .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.stat .value{font-size:22px;font-weight:800;color:var(--green-500);margin-top:4px}
+.stat .meta{font-size:12px;color:var(--muted)}
+.stat.gold{border-left-color:var(--gold)}.stat.red{border-left-color:var(--red)}
+.table-scroll{overflow-x:auto;border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:620px}
+thead th{background:var(--table-head);color:#fff;padding:11px 10px;text-align:left;font-weight:600;white-space:nowrap}
+thead th:first-child{border-top-left-radius:10px}thead th:last-child{border-top-right-radius:10px}
+tbody td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--ink)}
+tbody tr{transition:.15s}tbody tr:hover{background:var(--green-100)}
+tbody tr.leader{background:linear-gradient(90deg,var(--gold-light),transparent);font-weight:600}
+.rankbadge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--green-700);color:#fff;font-weight:700;font-size:12px}
+.rankbadge.r1{background:var(--gold);color:#3a2f05}
+.money-pos{color:var(--green-pos);font-weight:700;background:var(--green-pos-bg);padding:3px 8px;border-radius:8px}
+.money-neg{color:var(--red);font-weight:700;background:var(--red-bg);padding:3px 8px;border-radius:8px}
+.pts{font-weight:800;color:var(--green-500)}
+.shotbadge{background:var(--gold-light);color:#6a5410;font-weight:700;padding:3px 9px;border-radius:20px;font-size:12px}
+.player-dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+.budget-big{background:linear-gradient(135deg,var(--dash-tile),var(--green-800));color:#fff;border-radius:var(--radius);padding:30px;text-align:center;box-shadow:var(--shadow)}
+.budget-big .lbl{font-size:13px;letter-spacing:1px;text-transform:uppercase;opacity:.7}
+.budget-big .amt{font-size:46px;font-weight:800;color:#fff;margin-top:6px}
+.appt{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--red-bg);border-left:5px solid var(--red);padding:10px 14px;border-radius:10px;margin-bottom:8px}
+.appt.playoff{background:var(--gold-light);border-left-color:var(--gold)}
+.appt .what{font-weight:600;color:var(--ink)}
+.appt .when{font-style:italic;color:var(--red);font-weight:600;white-space:nowrap}
+.appt.playoff .when{color:#6a5410}
+.appt button{background:transparent;border:none;color:var(--red);font-size:16px;padding:2px 6px;cursor:pointer}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:10px;font-weight:600;transition:.15s}
+.btn{background:var(--green-600);color:#fff;padding:11px 20px;font-size:14px}.btn:hover{background:var(--green-700);transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-gold{background:var(--gold);color:#3a2f05}.btn-gold:hover{background:#b8921f}
+.btn-outline{background:var(--card);color:var(--green-500);border:1.5px solid var(--green-500)}.btn-outline:hover{background:var(--green-100)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#b53a4a}
+.btn-sm{padding:6px 12px;font-size:12px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field label{font-size:13px;font-weight:600;color:var(--green-500)}
+input,select{font-family:inherit;font-size:14px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--input-bg);color:var(--ink);outline:none;transition:.15s;width:100%}
+input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba(47,163,115,.15)}
+.row{display:grid;gap:12px}.row-3{grid-template-columns:1fr 1fr 1fr}.row-2{grid-template-columns:1fr 1fr}
+@media(max-width:700px){.row-3,.row-2{grid-template-columns:1fr}}
+.currency-wrap{position:relative}.currency-wrap .sym{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:600}.currency-wrap input{padding-left:26px}
+.player-block{border:1.5px dashed var(--border);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--green-100)}
+.player-block h4{font-size:14px;color:var(--green-500);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.checkbox-row{display:flex;align-items:center;gap:10px;background:var(--green-100);padding:10px 14px;border-radius:10px;margin-bottom:12px}
+.checkbox-row input{width:auto}.hidden{display:none !important}
+.small-muted{font-size:12px;color:var(--muted);margin-top:6px}
+.pill{display:inline-block;background:var(--green-100);color:var(--green-500);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.pill.po{background:var(--gold-light);color:#6a5410}
+.fab{position:fixed;right:26px;bottom:26px;z-index:800}
+.fab-main{width:62px;height:62px;border-radius:50%;background:var(--gold);color:#3a2f05;font-size:30px;font-weight:700;box-shadow:var(--shadow-lg);display:flex;align-items:center;justify-content:center;transition:.25s}
+.fab-main:hover{transform:scale(1.07)}.fab.open .fab-main{transform:rotate(135deg);background:var(--red);color:#fff}
+.fab-items{position:absolute;bottom:76px;right:4px;display:flex;flex-direction:column;gap:12px;align-items:flex-end}
+.fab-item{display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(12px) scale(.9);pointer-events:none;transition:.2s}
+.fab.open .fab-item{opacity:1;transform:none;pointer-events:auto}
+.fab.open .fab-item:nth-child(1){transition-delay:.03s}.fab.open .fab-item:nth-child(2){transition-delay:.06s}
+.fab.open .fab-item:nth-child(3){transition-delay:.09s}.fab.open .fab-item:nth-child(4){transition-delay:.12s}.fab.open .fab-item:nth-child(5){transition-delay:.15s}
+.fab-item .lbl{background:var(--card);color:var(--ink);padding:6px 12px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:var(--shadow);white-space:nowrap}
+.fab-item .btn-circ{width:46px;height:46px;border-radius:50%;background:var(--green-600);color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
+.fab-item .btn-circ:hover{background:var(--green-700)}
+.modal-ov{position:fixed;inset:0;background:rgba(10,20,15,.55);backdrop-filter:blur(3px);z-index:900;display:none;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto}
+.modal-ov.show{display:flex;animation:fade .25s}
+.modal{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:720px;padding:26px;animation:pop .3s}
+.modal h3{color:var(--green-500);font-size:20px;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.modal .close-x{position:absolute;top:16px;right:20px;background:transparent;border:none;font-size:26px;color:var(--muted);cursor:pointer}
+.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;position:relative}
+@keyframes pop{from{transform:scale(.95);opacity:0}to{transform:none;opacity:1}}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--ink);color:var(--bg);padding:12px 22px;border-radius:12px;box-shadow:var(--shadow-lg);z-index:999;transition:.35s;font-size:14px;max-width:90%}
+.toast.show{transform:translateX(-50%) translateY(0)}.toast.err{background:var(--red);color:#fff}.toast.ok{background:var(--green-600);color:#fff}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.flash{animation:flash .6s ease}@keyframes flash{0%{background:var(--gold-light)}100%{background:transparent}}
+.editing{outline:3px solid var(--gold);border-radius:var(--radius)}
+.hdc-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.hdc-row .nm{flex:1;font-weight:600;display:flex;align-items:center;gap:8px}.hdc-row input{width:90px}
+.hdc-hist{font-size:11px;color:var(--muted);margin-top:3px}
+.info-box{background:var(--green-100);border-left:4px solid var(--green-500);padding:12px 14px;border-radius:10px;font-size:13px;margin-bottom:14px}
+.settle-note{font-size:12.5px;color:var(--muted);margin-bottom:10px}
+.po-banner{background:linear-gradient(90deg,var(--gold),#e5c766);color:#3a2f05;padding:12px 18px;border-radius:12px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+/* loading overlay */
+#boot{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+#boot .ball{font-size:54px;animation:spin 1.4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#boot p{color:var(--muted);font-weight:600}
+</style>
+</head>
+<body>
+
+<div id="boot"><div class="ball">⛳</div><p>Loading Swing Bros data from Google Sheets…</p></div>
+
+<div class="wrap">
+  <div class="header">
+    <div class="titlewrap">
+      <h1>🏆 <input class="edit-title" id="titleInput" value="Swing Bros Championship and Budget Dashboard"></h1>
+      <div class="sub">Live-synced to Google Sheets · use the <b>＋</b> button (bottom-right) to add data</div>
+    </div>
+    <div class="right">
+      <span class="sync loading" id="syncChip"><span class="dot"></span><span id="syncText">Loading…</span></span>
+      <button class="theme-btn" id="themeBtn" title="Toggle dark mode">🌙</button>
+      <div class="season-badge"><span class="s">Season</span><span class="y">🏌️<input id="yearInput" value="2026"></span></div>
+    </div>
+  </div>
+
+  <section><div class="section-title"><span class="ico">📊</span> Season Summary</div><div class="dash" id="dashboard"></div></section>
+
+  <section>
+    <div class="section-title"><span class="ico">🥇</span> Season Leaderboard <span class="pill po" style="font-size:12px">Play-off until Island Masters 2027</span></div>
+    <div class="card">
+      <div class="po-banner" id="poBanner">🏝️ <span></span></div>
+      <div class="table-scroll"><table id="leaderboard">
+        <thead><tr><th>#</th><th>Player</th><th>Hdc</th><th>Points</th><th>Projected shots for final round</th><th>Total strokes</th><th>Avg gross</th><th>Avg net</th><th>Best round</th><th>Worst round</th></tr></thead>
+        <tbody></tbody></table></div>
+      <p class="small-muted">“Projected shots for final round” = stroke bonus the current standings would give on the Island Masters 2027 final: leader −5, 2nd −3, 3rd −1. Scores are shown relative to par (e.g. +2 or −2). Avg net uses the handicap valid on each round's date.</p>
+    </div>
+  </section>
+
+  <section><div class="section-title"><span class="ico">📅</span> Game Day History</div>
+    <div class="card"><div class="table-scroll"><table id="history"><thead><tr><th>Date</th><th>Mode</th><th>Course</th><th>Indiv?</th><th>Details (strokes · pts · €)</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div></section>
+
+  <section><div class="section-title"><span class="ico">💶</span> Pay-in from last match day</div>
+    <div class="card"><p class="settle-note" id="settleHeader"></p>
+      <div class="table-scroll"><table id="settleTable"><thead><tr><th>Player</th><th>What</th><th>Amount to pay to our PayPal</th></tr></thead><tbody></tbody></table></div>
+      <p class="small-muted">Amounts are the money entries recorded for the most recent game day. Forward this list so everyone knows what to transfer.</p></div></section>
+
+  <section><div class="section-title"><span class="ico">🪙</span> Cash Pool &amp; Competitions</div>
+    <div class="grid cols-2">
+      <div class="card budget-big" style="display:flex;flex-direction:column;justify-content:center">
+        <div class="lbl">Our budget (paid in by all of us)</div><div class="amt" id="totalBudget">0,00 €</div>
+        <div class="small-muted" style="color:#cfe6da" id="budgetMeta"></div></div>
+      <div class="card"><h3 style="color:var(--green-500);margin-bottom:12px;font-size:16px">Cash-in ranking (birthday payments excluded)</h3>
+        <div class="table-scroll"><table id="cashTable"><thead><tr><th>#</th><th>Name</th><th>Total</th><th>Golf</th><th>PGA</th><th>FIFA</th><th>Others</th><th>#</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
+  </section>
+
+  <section><div class="section-title"><span class="ico">🗓️</span> What's Next — Swing Bros Appointments</div><div class="card" id="apptList"></div></section>
+
+  <section><div class="section-title"><span class="ico">🪙</span> Cash-in &amp; expense history</div>
+    <div class="card"><div class="table-scroll"><table id="ngHistory"><thead><tr><th>Date</th><th>Flow</th><th>Category</th><th>Name / details</th><th>Player</th><th>Amount</th><th></th></tr></thead><tbody></tbody></table></div></div></section>
+
+  <section><div class="card"><div class="toolbar">
+    <button class="btn-gold" id="exportBtn">⬇️ Export CSV</button>
+    <button class="btn-outline" id="reloadBtn">🔄 Reload from Sheet</button>
+    <button class="btn-red" id="resetBtn">🗑️ Reset Season</button>
+  </div></div></section>
+  <p class="small-muted" style="text-align:center;margin:24px 0">Swing Bros · live-synced to Google Sheets.</p>
+</div>
+
+<div class="fab" id="fab"><div class="fab-items">
+  <div class="fab-item"><span class="lbl">Adjust handicaps</span><button class="btn-circ" data-open="hdc">🎯</button></div>
+  <div class="fab-item"><span class="lbl">New appointment</span><button class="btn-circ" data-open="appt">🗓️</button></div>
+  <div class="fab-item"><span class="lbl">New cash-in / expense</span><button class="btn-circ" data-open="cash">🪙</button></div>
+  <div class="fab-item"><span class="lbl">New game day</span><button class="btn-circ" data-open="game">⛳</button></div>
+</div><button class="fab-main" id="fabMain">＋</button></div>
+
+<!-- MODAL GAME -->
+<div class="modal-ov" id="modal-game"><div class="modal" id="gameFormCard"><div class="modal-head"><h3>⛳ <span id="gameModalTitle">Add a Game Day</span></h3><button class="close-x" data-close>×</button></div>
+  <div class="row row-3">
+    <div class="field"><label>Date</label><input type="date" id="gd_date"></div>
+    <div class="field"><label>Game Mode</label><select id="gd_mode"></select></div>
+    <div class="field"><label>Course name (optional)</label><input type="text" id="gd_course" placeholder="e.g. Son Muntaner"></div></div>
+  <div class="checkbox-row"><input type="checkbox" id="gd_playoff"><label for="gd_playoff" style="margin:0"><b>🏝️ Play-off / Final Day</b> — auto-apply standings bonus shots (−5 / −3 / −1) to net</label></div>
+  <div class="info-box hidden" id="poInfo"></div>
+  <div class="checkbox-row"><input type="checkbox" id="gd_indivCounts"><label for="gd_indivCounts" style="margin:0">Individual stroke score counts (e.g. Rotating Threesome)</label></div>
+  <p class="small-muted" id="scoringNote"></p>
+  <div id="playersForm"></div>
+  <p class="small-muted">💶 The “Money to pay in” amounts are automatically added to the budget as <b>Golf cash-ins</b> and appear in the cash-in ranking &amp; history.</p>
+  <div class="toolbar" style="margin-top:14px"><button class="btn" id="addGameBtn">➕ Add Game Day</button><button class="btn-outline hidden" id="cancelEditBtn">Cancel edit</button></div>
+</div></div>
+
+<!-- MODAL CASH -->
+<div class="modal-ov" id="modal-cash"><div class="modal"><div class="modal-head"><h3>🪙 Add Cash-in / Expense</h3><button class="close-x" data-close>×</button></div>
+  <div class="row row-2"><div class="field"><label>Flow</label><select id="ng_flow"><option value="In">Cash-in (money IN)</option><option value="Out">Expense (money OUT)</option></select></div>
+    <div class="field"><label>Date</label><input type="date" id="ng_date"></div></div>
+  <div class="row row-2"><div class="field"><label>Category</label><select id="ng_type"></select></div>
+    <div class="field"><label>Who pays / spends</label><select id="ng_payer"></select></div></div>
+  <div class="field"><label>Name / description</label><input type="text" id="ng_name" placeholder="e.g. FIFA Finale, Son Gual 18 Loch…"></div>
+  <div class="field" style="max-width:260px"><label>Amount</label><div class="currency-wrap"><span class="sym cur-sym">€</span><input type="number" step="0.01" min="0" id="ng_amount" placeholder="0.00"></div></div>
+  <button class="btn" id="addNgBtn" style="margin-top:6px">➕ Add entry</button>
+</div></div>
+
+<!-- MODAL APPT -->
+<div class="modal-ov" id="modal-appt"><div class="modal"><div class="modal-head"><h3>🗓️ Add Appointment</h3><button class="close-x" data-close>×</button></div>
+  <div class="row row-2"><div class="field"><label>What</label><input type="text" id="ap_what" placeholder="e.g. SB Abend"></div>
+    <div class="field"><label>When</label><input type="text" id="ap_when" placeholder="e.g. 07.08.26 or 11.-15.09.26"></div></div>
+  <button class="btn" id="addApBtn" style="margin-top:6px">➕ Add appointment</button>
+</div></div>
+
+<!-- MODAL HDC -->
+<div class="modal-ov" id="modal-hdc"><div class="modal"><div class="modal-head"><h3>🎯 Adjust Handicaps</h3><button class="close-x" data-close>×</button></div>
+  <p class="small-muted" style="margin-bottom:14px">Set an <b>effective date</b> + the new handicap. Future rounds on/after that date use the new value; past rounds keep the handicap valid on their date.</p>
+  <div class="field" style="max-width:220px"><label>Effective from</label><input type="date" id="hdc_date"></div>
+  <div id="hdcList"></div>
+  <button class="btn" id="saveHdcBtn" style="margin-top:14px">💾 Save handicap change</button>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =================================================================
+   CONFIG
+   ================================================================= */
+const API_URL="https://script.google.com/macros/s/AKfycby8rdVbEAmfBgDjUYMZ4_yI4HzUjoyovCGGcSxjTNJBKTUwVew73seWO_dmMSrcKh8g/exec";   // <-- your Google Apps Script Web App URL
+const GAME_MODES=["Stroke Play","Match Play","Stableford","Scramble","Rotating-Scramble","Shramble","Best Ball","Rotating Threesome","WOLF","Play-off / Final Day"];
+const NON_GOLF_TYPES=["Golf","PGA","FIFA","Others"];
+let CURRENCY="€";
+let PLAYOFF_SHOTS=[5,3,1,0];
+
+/* =================================================================
+   STATE (built from the Sheet). Internal shape:
+   state.players=[{name,color}]; state.hdcHistory={name:[{date,hdc}]}
+   state.gameDays=[{id,date,mode,course,indivCounts,isPlayoff,rows:[{player,strokes,points,money}]}]
+   state.cashIns=[{id,date,type,name,payer,amount,count}]; state.outflows=[{id,date,name,amount}]
+   state.appts=[{id,what,when}]; title, year, theme
+   ================================================================= */
+let state=null;
+let saveTimer=null, saving=false;
+
+/* ---------- HELPERS ---------- */
+const $=s=>document.querySelector(s);const $$=s=>document.querySelectorAll(s);
+function fmtMoney(n){return (n<0?"-":"")+Math.abs(n).toFixed(2).replace('.',',')+" "+CURRENCY;}
+function fmtNum(n,d=1){return (n===null||n===undefined||isNaN(n))?"–":Number(n).toFixed(d).replace('.',',');}
+function fmtPar(n){if(n===null||n===undefined||isNaN(n))return "–";n=Number(n);const r=(Math.round(n*100)/100);const txt=(r%1===0)?String(Math.abs(r)):String(Math.abs(r)).replace('.',',');return (r>0?"+":(r<0?"−":"±"))+txt;}
+function toast(m,t="ok"){const el=$("#toast");el.textContent=m;el.className="toast show "+t;clearTimeout(el._t);el._t=setTimeout(()=>el.className="toast",2600);}
+function playerColor(name){const p=state.players.find(x=>x.name===name);return p?p.color:"#888";}
+function hdcOn(name,date){const h=state.hdcHistory[name]||[];let v=h.length?h[0].hdc:0;for(const e of h){if(e.date<=date)v=e.hdc;else break;}return Number(v);}
+function currentHdc(name){const h=state.hdcHistory[name]||[];return h.length?Number(h[h.length-1].hdc):0;}
+const B=v=>String(v).toUpperCase()==="TRUE"||v===true;
+function dstr(v){ // normalise date values returned by Sheets (may be ISO string)
+  if(!v) return "";
+  if(typeof v==="string"){const m=v.match(/^\d{4}-\d{2}-\d{2}/);if(m)return m[0];const d=new Date(v);if(!isNaN(d))return d.toISOString().slice(0,10);return v;}
+  const d=new Date(v);return isNaN(d)?"":d.toISOString().slice(0,10);
+}
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+/* =================================================================
+   SHEET <-> STATE CONVERSION
+   ================================================================= */
+function fromSheet(data){
+  const s={players:[],hdcHistory:{},gameDays:[],cashIns:[],outflows:[],appts:[],
+           title:"Swing Bros Championship and Budget Dashboard",year:"2026",theme:"light"};
+  (data.Players||[]).forEach(r=>{if(r.Name)s.players.push({name:String(r.Name).trim(),color:String(r.Color||"#888").trim(),active:B(r["Active(TRUE/FALSE)"]!==undefined?r["Active(TRUE/FALSE)"]:r.Active)});});
+  s.players.forEach(p=>s.hdcHistory[p.name]=[]);
+  (data.Handicaps||[]).forEach(r=>{const n=String(r.Player||"").trim();if(!n)return;if(!s.hdcHistory[n])s.hdcHistory[n]=[];
+    s.hdcHistory[n].push({date:dstr(r["EffectiveDate(YYYY-MM-DD)"]||r.EffectiveDate||"1900-01-01")||"1900-01-01",hdc:Number(r.Hdc)||0});});
+  Object.values(s.hdcHistory).forEach(h=>h.sort((a,b)=>a.date.localeCompare(b.date)));
+  // group GameDays by GameID
+  const games={};
+  (data.GameDays||[]).forEach(r=>{const id=String(r.GameID||"").trim();if(!id||!r.Player)return;
+    if(!games[id])games[id]={id,date:dstr(r["Date(YYYY-MM-DD)"]||r.Date),mode:String(r.Mode||""),course:String(r.Course||""),
+      indivCounts:B(r.IndivCounts),isPlayoff:B(r.IsPlayoff),rows:[]};
+    const strokes=(r.Strokes===""||r.Strokes===null||r.Strokes===undefined)?null:Number(r.Strokes);
+    games[id].rows.push({player:String(r.Player).trim(),strokes:(strokes===null||isNaN(strokes))?null:strokes,
+      points:Number(r.Points)||0,money:Number(r.Money)||0});});
+  s.gameDays=Object.values(games).sort((a,b)=>a.date.localeCompare(b.date));
+  (data.Cash||[]).forEach(r=>{const flow=String(r["Flow(In/Out)"]||r.Flow||"In").trim();const id=String(r.EntryID||uid());
+    const amount=Number(r.Amount)||0;const date=dstr(r["Date(YYYY-MM-DD)"]||r.Date);
+    if(flow==="Out")s.outflows.push({id,date,name:String(r.Name||""),amount});
+    else s.cashIns.push({id,date,type:String(r.Category||"Others"),name:String(r.Name||""),payer:String(r.Player||"").trim(),amount,count:B(r.CountInRanking)});});
+  (data.Appointments||[]).forEach(r=>{if(r.What)s.appts.push({id:String(r.ApptID||uid()),what:String(r.What),when:String(r.When||"")});});
+  (data.Settings||[]).forEach(r=>{const k=String(r.Key||"").trim();const v=r.Value;
+    if(k==="Title")s.title=String(v);if(k==="Year")s.year=String(v).replace(/\.0$/,"");if(k==="Currency")CURRENCY=String(v)||"€";
+    if(k==="Theme")s.theme=String(v)||"light";if(k==="PlayoffShots"&&v){PLAYOFF_SHOTS=String(v).split(",").map(x=>Number(x.trim())||0);}});
+  // Game-day money is the single source of truth: drop any previously-linked Golf cash-ins
+  // (identified by the "C<gameId>_" id pattern) and rebuild them from the games.
+  s.cashIns=s.cashIns.filter(c=>!/^C(G[0-9a-z]+)_/.test(String(c.id)));
+  s.gameDays.forEach(g=>{g.rows.forEach(r=>{const amt=Number(r.money)||0;if(amt>0){
+    s.cashIns.push({id:"C"+g.id+"_"+r.player.replace(/\s+/g,""),gameId:g.id,date:g.date,type:"Golf",
+      name:"Match day "+g.date+(g.course?" · "+g.course:""),payer:r.player,amount:amt,count:true});}});});
+  return s;
+}
+function toSheet(){
+  const Players=state.players.map(p=>({Name:p.name,Color:p.color,"Active(TRUE/FALSE)":p.active===false?"FALSE":"TRUE"}));
+  const Handicaps=[];Object.keys(state.hdcHistory).forEach(n=>state.hdcHistory[n].forEach(e=>Handicaps.push({Player:n,"EffectiveDate(YYYY-MM-DD)":e.date,Hdc:e.hdc})));
+  const GameDays=[];state.gameDays.forEach(g=>g.rows.forEach(r=>GameDays.push({GameID:g.id,"Date(YYYY-MM-DD)":g.date,Mode:g.mode,Course:g.course,
+    IndivCounts:g.indivCounts?"TRUE":"FALSE",IsPlayoff:g.isPlayoff?"TRUE":"FALSE",Player:r.player,
+    Strokes:(r.strokes===null?"":r.strokes),Points:r.points,Money:r.money})));
+  const Cash=[];
+  state.cashIns.forEach(c=>Cash.push({EntryID:c.id,"Date(YYYY-MM-DD)":c.date,"Flow(In/Out)":"In",Category:c.type,Name:c.name,Player:c.payer,Amount:c.amount,CountInRanking:c.count?"TRUE":"FALSE"}));
+  state.outflows.forEach(o=>Cash.push({EntryID:o.id,"Date(YYYY-MM-DD)":o.date,"Flow(In/Out)":"Out",Category:"Expense",Name:o.name,Player:"",Amount:o.amount,CountInRanking:"FALSE"}));
+  const Appointments=state.appts.map(a=>({ApptID:a.id,What:a.what,When:a.when}));
+  const Settings=[{Key:"Title",Value:state.title},{Key:"Year",Value:state.year},{Key:"Currency",Value:CURRENCY},
+    {Key:"PlayoffShots",Value:PLAYOFF_SHOTS.join(",")},{Key:"Theme",Value:state.theme}];
+  return {Players,Handicaps,GameDays,Cash,Appointments,Settings};
+}
+
+/* =================================================================
+   API (GET load / POST save)
+   ================================================================= */
+function setSync(status,text){const c=$("#syncChip");c.className="sync "+status;$("#syncText").textContent=text;}
+async function apiLoad(){
+  setSync("loading","Loading…");
+  const res=await fetch(API_URL,{method:"GET"});
+  if(!res.ok)throw new Error("HTTP "+res.status);
+  const data=await res.json();
+  state=fromSheet(data);
+  setSync("","Synced ✓");
+}
+async function apiSave(){
+  // debounced full-dataset save
+  clearTimeout(saveTimer);
+  setSync("saving","Saving…");
+  saveTimer=setTimeout(async()=>{
+    try{
+      saving=true;
+      await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(toSheet())});
+      setSync("","Synced ✓");
+    }catch(e){setSync("err","Save failed – retry");toast("Could not save to Google Sheets. Check your connection.","err");}
+    finally{saving=false;}
+  },500);
+}
+function save(){apiSave();}  // alias used everywhere
+
+/* =================================================================
+   STANDINGS / PLAYOFF
+   ================================================================= */
+function standingsBefore(beforeDate){
+  const pts={};state.players.forEach(p=>pts[p.name]=0);
+  state.gameDays.forEach(g=>{if(g.isPlayoff)return;if(beforeDate&&g.date>=beforeDate)return;
+    g.rows.forEach(r=>{if(pts[r.player]!==undefined)pts[r.player]+=Number(r.points)||0;});});
+  return Object.entries(pts).sort((a,b)=>b[1]-a[1]);
+}
+function playoffShotsFor(name,beforeDate){const st=standingsBefore(beforeDate);const i=st.findIndex(e=>e[0]===name);return(i>=0&&i<PLAYOFF_SHOTS.length)?PLAYOFF_SHOTS[i]:0;}
+function projectedShots(name){const st=standingsBefore(null);const i=st.findIndex(e=>e[0]===name);return(i>=0&&i<PLAYOFF_SHOTS.length)?PLAYOFF_SHOTS[i]:0;}
+
+/* =================================================================
+   FORM BUILDERS
+   ================================================================= */
+let editingGameId=null;
+function populateSelect(sel,items,blank){sel.innerHTML=(blank?'<option value="">—</option>':'')+items.map(i=>`<option value="${i}">${i}</option>`).join("");}
+function buildPlayersForm(){
+  const wrap=$("#playersForm");const indiv=$("#gd_indivCounts").checked;
+  wrap.innerHTML=state.players.map((p,i)=>`
+    <div class="player-block"><h4><span class="player-dot" style="background:${p.color}"></span>Slot ${i+1}</h4>
+      <div class="row row-3">
+        <div class="field"><label>Player</label><select data-slot="${i}" class="pf-player">${state.players.map(pl=>`<option value="${pl.name}" ${pl.name===p.name?'selected':''}>${pl.name} (hdc ${currentHdc(pl.name)})</option>`).join("")}</select></div>
+        <div class="field"><label>Points won this day</label><input type="number" step="0.01" min="0" class="pf-points" data-slot="${i}" placeholder="0"></div>
+        <div class="field"><label>Money (${CURRENCY}) to pay in</label><div class="currency-wrap"><span class="sym">${CURRENCY}</span><input type="number" step="0.01" min="0" class="pf-money" data-slot="${i}" placeholder="0.00"></div></div></div>
+      <div class="row row-3 pf-strokes-row ${indiv?'':'hidden'}">
+        <div class="field"><label>Score vs. par (e.g. 2 = +2, -2 = −2)</label><input type="number" step="1" class="pf-strokes" data-slot="${i}" placeholder="e.g. 2 or -2"></div>
+        <div class="field"><label>Play-off bonus shots</label><input type="number" class="pf-bonus" data-slot="${i}" readonly value="0" style="background:var(--green-100)"></div>
+        <div class="field"><label>Net (score − hdc − bonus)</label><input type="number" class="pf-net" data-slot="${i}" placeholder="auto" readonly style="background:var(--green-100)"></div></div>
+    </div>`).join("");
+  const rc=slot=>{const name=wrap.querySelector(`.pf-player[data-slot="${slot}"]`).value;const str=wrap.querySelector(`.pf-strokes[data-slot="${slot}"]`);
+    const date=$("#gd_date").value||new Date().toISOString().slice(0,10);const bonus=$("#gd_playoff").checked?playoffShotsFor(name,date):0;
+    wrap.querySelector(`.pf-bonus[data-slot="${slot}"]`).value=bonus;
+    const net=str.value===""?"":(Number(str.value)-hdcOn(name,date)-bonus);wrap.querySelector(`.pf-net[data-slot="${slot}"]`).value=net===""?"":net;};
+  wrap.querySelectorAll(".pf-strokes").forEach(inp=>inp.addEventListener("input",()=>rc(inp.dataset.slot)));
+  wrap.querySelectorAll(".pf-player").forEach(sel=>sel.addEventListener("change",()=>rc(sel.dataset.slot)));
+  wrap.querySelectorAll(".pf-player").forEach((s,i)=>rc(i));
+}
+function updateScoringNote(){$("#scoringNote").innerHTML=$("#gd_indivCounts").checked
+  ?"📌 <b>Rotating Threesome / indiv counts:</b> Team 0,25 pts per 6 holes (max 0,75; tie → 0,125 each). Individual net: best 0,75 · 2nd 0,50 · 3rd 0,25 · 4th 0. Enter the combined <i>Points won</i> per player."
+  :"📌 <b>Scramble / team modes:</b> only the day result counts. Enter the points each player earned.";}
+function updatePlayoffInfo(){const po=$("#gd_playoff").checked;const box=$("#poInfo");
+  if(po){box.classList.remove("hidden");const date=$("#gd_date").value||new Date().toISOString().slice(0,10);const st=standingsBefore(date);
+    box.innerHTML="🏝️ <b>Play-off seeding (standings before this day):</b> "+st.map((e,i)=>`${i+1}. ${e[0]} (${fmtNum(e[1],2)} pts, −${PLAYOFF_SHOTS[i]||0})`).join(" · ")+". Bonus shots are subtracted from net automatically.";
+    if(!$("#gd_indivCounts").checked){$("#gd_indivCounts").checked=true;updateScoringNote();buildPlayersForm();}}
+  else box.classList.add("hidden");}
+
+/* =================================================================
+   GAME CRUD
+   ================================================================= */
+function readGameForm(){const date=$("#gd_date").value,mode=$("#gd_mode").value,course=$("#gd_course").value.trim(),indiv=$("#gd_indivCounts").checked,po=$("#gd_playoff").checked;
+  const rows=[],names=new Set();for(let i=0;i<state.players.length;i++){const name=$(`.pf-player[data-slot="${i}"]`).value;
+    const points=parseFloat($(`.pf-points[data-slot="${i}"]`).value)||0;const money=parseFloat($(`.pf-money[data-slot="${i}"]`).value)||0;
+    const sr=$(`.pf-strokes[data-slot="${i}"]`).value;const strokes=sr!==""?Number(sr):null;names.add(name);
+    rows.push({player:name,strokes:(strokes===null||isNaN(strokes))?null:strokes,points,money});}return{date,mode,course,indiv,po,rows,uniq:names.size};}
+function addOrSaveGame(){const g=readGameForm();
+  if(!g.date)return toast("Please pick a date.","err");if(g.uniq!==state.players.length)return toast("Each slot must have a different player.","err");
+  if(g.indiv&&g.rows.some(r=>r.strokes===null))return toast("Individual counts: enter strokes for all 4 players.","err");
+  const entry={id:editingGameId||("G"+uid()),date:g.date,mode:g.mode,course:g.course,indivCounts:g.indiv,isPlayoff:g.po,rows:g.rows};
+  if(editingGameId){state.gameDays[state.gameDays.findIndex(x=>x.id===editingGameId)]=entry;toast("Game day updated ✔");exitEdit();}
+  else{state.gameDays.push(entry);toast(g.po?"🏝️ Play-off day added ✔":"Game day added ✔");}
+  syncGameCashIns(entry);
+  save();renderAll();resetGameFormValues();closeModal();}
+function resetGameFormValues(){$("#gd_course").value="";$("#gd_playoff").checked=false;$$(".pf-points,.pf-money,.pf-strokes,.pf-net").forEach(i=>i.value="");}
+function editGame(id){const g=state.gameDays.find(x=>x.id===id);if(!g)return;editingGameId=id;openModal("game");
+  $("#gameModalTitle").textContent="Edit Game Day";$("#gd_date").value=g.date;$("#gd_mode").value=g.mode;$("#gd_course").value=g.course||"";
+  $("#gd_indivCounts").checked=!!g.indivCounts;$("#gd_playoff").checked=!!g.isPlayoff;updateScoringNote();updatePlayoffInfo();buildPlayersForm();
+  g.rows.forEach((r,i)=>{$(`.pf-player[data-slot="${i}"]`).value=r.player;$(`.pf-points[data-slot="${i}"]`).value=r.points;$(`.pf-money[data-slot="${i}"]`).value=r.money;const st=$(`.pf-strokes[data-slot="${i}"]`);if(r.strokes!==null){st.value=r.strokes;st.dispatchEvent(new Event("input"));}});
+  $("#addGameBtn").textContent="💾 Save changes";$("#cancelEditBtn").classList.remove("hidden");$("#gameFormCard").classList.add("editing");}
+function exitEdit(){editingGameId=null;$("#gameModalTitle").textContent="Add a Game Day";$("#addGameBtn").textContent="➕ Add Game Day";$("#cancelEditBtn").classList.add("hidden");$("#gameFormCard").classList.remove("editing");}
+function deleteGame(id){if(!confirm("Delete this game day?"))return;state.gameDays=state.gameDays.filter(x=>x.id!==id);removeGameCashIns(id);if(editingGameId===id)exitEdit();save();renderAll();toast("Game day deleted");}
+
+/* CASH / APPT / HDC */
+function addCashIn(){const flow=$("#ng_flow").value,type=$("#ng_type").value,date=$("#ng_date").value,name=$("#ng_name").value.trim(),payer=$("#ng_payer").value,amount=parseFloat($("#ng_amount").value);
+  if(!date)return toast("Pick a date.","err");if(isNaN(amount)||amount<=0)return toast("Enter a valid amount > 0.","err");
+  if(flow==="Out")state.outflows.push({id:"C"+uid(),date,name:name||type,amount});
+  else state.cashIns.push({id:"C"+uid(),date,type,name:name||type,payer,amount,count:!!payer});
+  save();renderAll();toast((flow==="Out"?"Expense":"Cash-in")+" added ✔");$("#ng_name").value="";$("#ng_amount").value="";closeModal();}
+function deleteCashIn(id){const linked=state.cashIns.find(x=>x.id===id&&x.gameId);if(linked){toast("This cash-in comes from a game day. Edit or delete that game day instead.","err");return;}if(!confirm("Delete this entry?"))return;state.cashIns=state.cashIns.filter(x=>x.id!==id);state.outflows=state.outflows.filter(x=>x.id!==id);save();renderAll();}
+function addAppt(){const what=$("#ap_what").value.trim(),when=$("#ap_when").value.trim();if(!what||!when)return toast("Fill in both fields.","err");state.appts.push({id:"A"+uid(),what,when});save();renderAll();$("#ap_what").value="";$("#ap_when").value="";toast("Appointment added ✔");closeModal();}
+function deleteAppt(id){state.appts=state.appts.filter(x=>x.id!==id);save();renderAll();}
+function buildHdcForm(){$("#hdcList").innerHTML=state.players.map(p=>{const hist=state.hdcHistory[p.name]||[];const last=hist.length?hist[hist.length-1]:{hdc:0};
+  const txt=hist.map(e=>`${e.date==="1900-01-01"?"start":e.date}: ${e.hdc}`).join("  →  ");
+  return `<div class="hdc-row"><div class="nm"><span class="player-dot" style="background:${p.color}"></span><div>${p.name}<div class="hdc-hist">history: ${txt}</div></div></div><input type="number" step="0.1" class="hdc-input" data-name="${p.name}" value="${last.hdc}"></div>`;}).join("");}
+function saveHdc(){const date=$("#hdc_date").value;if(!date)return toast("Pick an effective date.","err");let ch=0;
+  $$(".hdc-input").forEach(inp=>{const name=inp.dataset.name,val=parseFloat(inp.value);if(isNaN(val))return;const hist=state.hdcHistory[name];const ex=hist.find(e=>e.date===date);
+    if(ex){if(ex.hdc!==val){ex.hdc=val;ch++;}}else if(hdcOn(name,date)!==val){hist.push({date,hdc:val});ch++;}});
+  Object.values(state.hdcHistory).forEach(h=>h.sort((a,b)=>a.date.localeCompare(b.date)));save();renderAll();buildHdcForm();toast(ch?`Saved ${ch} change(s) ✔`:"No changes detected");if(ch)closeModal();}
+
+/* =================================================================
+   STATS + RENDER
+   ================================================================= */
+function computeStats(){const stats={};
+  state.players.forEach(p=>stats[p.name]={name:p.name,color:p.color,curHdc:currentHdc(p.name),points:0,rounds:0,totalStrokes:0,scoredRounds:0,netSum:0,best:null,worst:null,bestCourse:"",worstCourse:"",money:0});
+  state.gameDays.forEach(g=>g.rows.forEach(r=>{const s=stats[r.player];if(!s)return;s.points+=Number(r.points)||0;s.rounds++;s.money+=Number(r.money)||0;
+    if(r.strokes!==null&&!isNaN(r.strokes)){const bonus=g.isPlayoff?playoffShotsFor(r.player,g.date):0;s.totalStrokes+=r.strokes;s.scoredRounds++;s.netSum+=r.strokes-hdcOn(r.player,g.date)-bonus;
+      if(s.best===null||r.strokes<s.best){s.best=r.strokes;s.bestCourse=g.course||"";}if(s.worst===null||r.strokes>s.worst){s.worst=r.strokes;s.worstCourse=g.course||"";}}}));
+  Object.values(stats).forEach(s=>{s.avgGross=s.scoredRounds?s.totalStrokes/s.scoredRounds:null;s.avgNet=s.scoredRounds?s.netSum/s.scoredRounds:null;s.projShots=projectedShots(s.name);});return stats;}
+function syncGameCashIns(game){
+  // remove existing linked cash-ins for this game
+  state.cashIns=state.cashIns.filter(c=>c.gameId!==game.id);
+  // create one Golf cash-in per player who owes money (>0) on this game
+  game.rows.forEach(r=>{
+    const amt=Number(r.money)||0;
+    if(amt>0){
+      state.cashIns.push({
+        id:"C"+game.id+"_"+r.player.replace(/\s+/g,""),
+        gameId:game.id,
+        date:game.date,
+        type:"Golf",
+        name:"Match day "+game.date+(game.course?" · "+game.course:""),
+        payer:r.player,
+        amount:amt,
+        count:true
+      });
+    }
+  });
+}
+function removeGameCashIns(gameId){state.cashIns=state.cashIns.filter(c=>c.gameId!==gameId);}
+function budgetTotal(){return state.cashIns.reduce((a,c)=>a+Number(c.amount),0)-state.outflows.reduce((a,c)=>a+Number(c.amount),0);}
+function renderDashboard(stats){const arr=Object.values(stats);const totalDays=state.gameDays.length;const winner=arr.slice().sort((a,b)=>b.points-a.points)[0];
+  let lowest=null,lw="",lc="";arr.forEach(s=>{if(s.best!==null&&(lowest===null||s.best<lowest)){lowest=s.best;lw=s.name;lc=s.bestCourse;}});
+  const ct={};state.players.forEach(p=>ct[p.name]=0);state.cashIns.forEach(c=>{if(c.count&&ct[c.payer]!==undefined)ct[c.payer]+=c.amount;});const tp=Object.entries(ct).sort((a,b)=>b[1]-a[1])[0];
+  $("#dashboard").innerHTML=`
+    <div class="stat"><div class="label">Game days played</div><div class="value">${totalDays}</div><div class="meta">${arr.reduce((a,s)=>a+s.scoredRounds,0)} rounds with score</div></div>
+    <div class="stat gold"><div class="label">🏆 Current leader</div><div class="value">${winner&&winner.points>0?winner.name:'–'}</div><div class="meta">${winner?fmtNum(winner.points,2)+' pts · −'+(winner.projShots||0)+' shots final':''}</div></div>
+    <div class="stat"><div class="label">🎯 Lowest single round</div><div class="value">${lowest!==null?fmtPar(lowest):'–'}</div><div class="meta">${lowest!==null?lw+(lc?' · '+lc:''):''}</div></div>
+    <div class="stat gold"><div class="label">🪙 Top cash contributor</div><div class="value">${tp&&tp[1]>0?tp[0]:'–'}</div><div class="meta">${tp&&tp[1]>0?fmtMoney(tp[1]):''}</div></div>
+    <div class="stat"><div class="label">💶 Our budget</div><div class="value">${fmtMoney(budgetTotal())}</div><div class="meta">paid in by all of us</div></div>`;}
+function renderLeaderboard(stats){const arr=Object.values(stats).sort((a,b)=>b.points-a.points||((a.avgNet??999)-(b.avgNet??999)));const tb=$("#leaderboard tbody");
+  tb.innerHTML=arr.map((s,i)=>`<tr class="${i===0&&s.points>0?'leader':''}"><td><span class="rankbadge ${i===0?'r1':''}">${i+1}</span></td>
+    <td><span class="player-dot" style="background:${s.color};margin-right:6px"></span>${s.name} ${i===0&&s.points>0?'🏆':''}</td>
+    <td>${fmtNum(s.curHdc,1)}</td><td class="pts">${fmtNum(s.points,2)}</td><td>${s.projShots>0?`<span class="shotbadge">−${s.projShots} shots</span>`:'–'}</td>
+    <td>${s.totalStrokes?fmtPar(s.totalStrokes):'–'}</td><td>${s.avgGross!==null?fmtPar(s.avgGross):'–'}</td><td>${s.avgNet!==null?fmtPar(s.avgNet):'–'}</td>
+    <td>${s.best!==null?fmtPar(s.best)+(s.bestCourse?' · '+s.bestCourse:''):'–'}</td><td>${s.worst!==null?fmtPar(s.worst)+(s.worstCourse?' · '+s.worstCourse:''):'–'}</td></tr>`).join("");
+  tb.classList.remove("flash");void tb.offsetWidth;tb.classList.add("flash");
+  const st=standingsBefore(null);$("#poBanner").querySelector("span").innerHTML="<b>Projected shots for final round:</b> if the season ended today, "+st.slice(0,3).map((e,i)=>`${e[0]} gets −${PLAYOFF_SHOTS[i]} shot${PLAYOFF_SHOTS[i]===1?'':'s'}`).join(", ")+" on the Island Masters 2027 final round.";}
+function renderHistory(){const tb=$("#history tbody");const sorted=state.gameDays.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  tb.innerHTML=sorted.length?sorted.map(g=>`<tr><td>${g.date}</td><td><span class="pill ${g.isPlayoff?'po':''}">${g.isPlayoff?'🏝️ '+g.mode:g.mode}</span></td><td>${g.course||'–'}</td><td>${g.indivCounts?'✔ yes':'–'}</td>
+    <td>${g.rows.map(r=>{const b=g.isPlayoff?playoffShotsFor(r.player,g.date):0;return `<div style="font-size:12.5px"><span class="player-dot" style="background:${playerColor(r.player)}"></span> ${r.player}: ${r.strokes!==null?fmtPar(r.strokes)+(b?` (−${b})`:'')+' · ':''}${fmtNum(r.points,2)} pts${r.money?' · '+fmtMoney(r.money):''}</div>`;}).join("")}</td>
+    <td style="white-space:nowrap"><button class="btn-outline btn-sm" onclick="editGame('${g.id}')">✏️</button> <button class="btn-red btn-sm" onclick="deleteGame('${g.id}')">🗑️</button></td></tr>`).join(""):`<tr><td colspan="6" style="color:var(--muted)">No game days yet.</td></tr>`;}
+function renderSettlement(){const tb=$("#settleTable tbody");if(!state.gameDays.length){tb.innerHTML=`<tr><td colspan="3" style="color:var(--muted)">No match days yet.</td></tr>`;$("#settleHeader").textContent="";return;}
+  const last=state.gameDays.slice().sort((a,b)=>b.date.localeCompare(a.date))[0];$("#settleHeader").innerHTML=`Most recent match day: <b>${last.date}</b>${last.course?' · '+last.course:''} · <span class="pill ${last.isPlayoff?'po':''}">${last.mode}</span>`;
+  const owed=last.rows.filter(r=>Number(r.money)>0);if(!owed.length){tb.innerHTML=`<tr><td colspan="3" style="color:var(--muted)">No pay-in amounts recorded for this match day.</td></tr>`;return;}
+  tb.innerHTML=owed.map(r=>`<tr><td><span class="player-dot" style="background:${playerColor(r.player)}"></span> ${r.player}</td><td>Match day ${last.date}${last.course?' · '+last.course:''}</td><td><span class="money-neg">${fmtMoney(r.money)}</span></td></tr>`).join("")+`<tr style="font-weight:800"><td>Total</td><td></td><td><span class="pts">${fmtMoney(owed.reduce((a,r)=>a+Number(r.money),0))}</span></td></tr>`;}
+function renderCash(){const map={};state.players.forEach(p=>map[p.name]={name:p.name,color:p.color,total:0,Golf:0,PGA:0,FIFA:0,Others:0,count:0});
+  state.cashIns.forEach(c=>{if(!c.count)return;const m=map[c.payer];if(!m)return;const cat=["Golf","PGA","FIFA"].includes(c.type)?c.type:"Others";m[cat]+=c.amount;m.total+=c.amount;m.count++;});
+  $("#totalBudget").textContent=fmtMoney(budgetTotal());$("#budgetMeta").textContent=state.cashIns.length+" cash-ins · "+state.outflows.length+" expenses";
+  const arr=Object.values(map).sort((a,b)=>b.total-a.total);
+  $("#cashTable tbody").innerHTML=arr.map((m,i)=>`<tr><td><span class="rankbadge ${i===0&&m.total>0?'r1':''}">${i+1}</span></td><td><span class="player-dot" style="background:${m.color}"></span> ${m.name}</td><td class="pts">${fmtMoney(m.total)}</td><td>${fmtMoney(m.Golf)}</td><td>${fmtMoney(m.PGA)}</td><td>${fmtMoney(m.FIFA)}</td><td>${fmtMoney(m.Others)}</td><td>${m.count}</td></tr>`).join("");
+  const inR=state.cashIns.map(c=>({...c,flow:"In"}));const outR=state.outflows.map(o=>({...o,flow:"Out",type:"Expense",payer:""}));const all=inR.concat(outR).sort((a,b)=>b.date.localeCompare(a.date));
+  $("#ngHistory tbody").innerHTML=all.length?all.map(c=>`<tr><td>${c.date}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type||'–'}${c.gameId?' <span class=\'pill\'>⛳ from game</span>':''}</td><td>${c.name||'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${c.payer}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td>${c.gameId?'<span class="small-muted">via game</span>':`<button class="btn-red btn-sm" onclick="deleteCashIn('${c.id}')">🗑️</button>`}</td></tr>`).join(""):`<tr><td colspan="7" style="color:var(--muted)">No entries yet.</td></tr>`;}
+function renderAppts(){$("#apptList").innerHTML=state.appts.length?state.appts.map(a=>{const po=/island|play.?off|final/i.test(a.what);return `<div class="appt ${po?'playoff':''}"><div class="what">${a.what}</div><div style="display:flex;align-items:center;gap:8px"><span class="when">${a.when}</span><button onclick="deleteAppt('${a.id}')">✕</button></div></div>`;}).join(""):`<p style="color:var(--muted)">No upcoming appointments.</p>`;}
+function renderAll(){const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();}
+
+/* EXPORT */
+function exportCSV(){const stats=computeStats();const arr=Object.values(stats).sort((a,b)=>b.points-a.points);
+  let csv="SWING BROS SEASON "+state.year+"\n\nLEADERBOARD\nRank;Player;Hdc;Points;PlayoffShots;Rounds;TotalStrokes;AvgGross;AvgNet;Best;Worst;MoneyBalance\n";
+  arr.forEach((s,i)=>{csv+=`${i+1};${s.name};${s.curHdc};${fmtNum(s.points,2)};${s.projShots};${s.rounds};${s.totalStrokes};${fmtNum(s.avgGross,2)};${fmtNum(s.avgNet,2)};${s.best??''};${s.worst??''};${fmtNum(s.money,2)}\n`;});
+  csv+="\nGAME DAY HISTORY\nDate;Mode;Playoff;Course;Player;Strokes;Hdc;Bonus;Net;Points;Money\n";
+  state.gameDays.forEach(g=>g.rows.forEach(r=>{const h=r.strokes!==null?hdcOn(r.player,g.date):'';const b=g.isPlayoff&&r.strokes!==null?playoffShotsFor(r.player,g.date):0;const net=r.strokes!==null?r.strokes-h-b:'';csv+=`${g.date};${g.mode};${g.isPlayoff?'yes':'no'};${g.course||''};${r.player};${r.strokes??''};${h};${b};${net};${fmtNum(r.points,2)};${fmtNum(r.money,2)}\n`;}));
+  csv+="\nCASH-INS\nDate;Category;Name;Payer;Amount\n";state.cashIns.forEach(c=>csv+=`${c.date};${c.type};${c.name};${c.payer};${fmtNum(c.amount,2)}\n`);
+  csv+="\nEXPENSES\nDate;Name;Amount\n";state.outflows.forEach(o=>csv+=`${o.date};${o.name};${fmtNum(o.amount,2)}\n`);
+  csv+=`\nTOTAL BUDGET;${fmtNum(budgetTotal(),2)}\n\nAPPOINTMENTS\nWhat;When\n`;state.appts.forEach(a=>csv+=`${a.what};${a.when}\n`);
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="SwingBros_"+state.year+".csv";a.click();toast("CSV exported ⬇️");}
+
+/* MODAL/FAB/THEME */
+function openModal(key){closeModal();$("#modal-"+key).classList.add("show");$("#fab").classList.remove("open");const today=new Date().toISOString().slice(0,10);
+  if(key==="game"&&!editingGameId){$("#gd_date").value=today;$("#gd_playoff").checked=false;updateScoringNote();updatePlayoffInfo();buildPlayersForm();}
+  if(key==="cash"){$("#ng_date").value=today;}if(key==="hdc"){$("#hdc_date").value=today;buildHdcForm();}}
+function closeModal(){$$(".modal-ov").forEach(m=>m.classList.remove("show"));}
+function setTheme(t){document.documentElement.setAttribute("data-theme",t);$("#themeBtn").textContent=t==="dark"?"☀️":"🌙";if(state){state.theme=t;}}
+
+/* =================================================================
+   INIT
+   ================================================================= */
+function wireUI(){
+  populateSelect($("#gd_mode"),GAME_MODES);populateSelect($("#ng_type"),NON_GOLF_TYPES);
+  populateSelect($("#ng_payer"),state.players.map(p=>p.name),true);
+  $$(".cur-sym").forEach(e=>e.textContent=CURRENCY);
+  $("#titleInput").value=state.title;$("#yearInput").value=state.year;
+  $("#titleInput").addEventListener("input",e=>{state.title=e.target.value;save();});
+  $("#yearInput").addEventListener("input",e=>{state.year=e.target.value;save();});
+  setTheme(state.theme||"light");
+  $("#gd_indivCounts").addEventListener("change",()=>{updateScoringNote();buildPlayersForm();});
+  $("#gd_playoff").addEventListener("change",()=>{updatePlayoffInfo();buildPlayersForm();});
+  $("#gd_date").addEventListener("change",()=>{updatePlayoffInfo();$$(".pf-player").forEach(s=>s.dispatchEvent(new Event("change")));});
+  $("#gd_mode").addEventListener("change",()=>{if($("#gd_mode").value.toLowerCase().includes("play-off")){$("#gd_playoff").checked=true;updatePlayoffInfo();buildPlayersForm();}});
+  $("#addGameBtn").addEventListener("click",addOrSaveGame);
+  $("#cancelEditBtn").addEventListener("click",()=>{exitEdit();resetGameFormValues();closeModal();});
+  $("#addNgBtn").addEventListener("click",addCashIn);$("#addApBtn").addEventListener("click",addAppt);$("#saveHdcBtn").addEventListener("click",saveHdc);
+  $("#exportBtn").addEventListener("click",exportCSV);
+  $("#reloadBtn").addEventListener("click",async()=>{try{await apiLoad();wireAfterData();renderAll();toast("Reloaded from Google Sheets ✔");}catch(e){toast("Reload failed.","err");}});
+  $("#themeBtn").addEventListener("click",()=>{const t=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";setTheme(t);save();});
+  $("#resetBtn").addEventListener("click",()=>{toast("To reset, clear the rows in the Google Sheet directly.","err");});
+  $("#fabMain").addEventListener("click",()=>$("#fab").classList.toggle("open"));
+  $$(".fab-item .btn-circ").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.open==="game")exitEdit();openModal(b.dataset.open);}));
+  $$("[data-close]").forEach(b=>b.addEventListener("click",closeModal));
+  $$(".modal-ov").forEach(ov=>ov.addEventListener("click",e=>{if(e.target===ov)closeModal();}));
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();$("#fab").classList.remove("open");}});
+}
+function wireAfterData(){$("#titleInput").value=state.title;$("#yearInput").value=state.year;populateSelect($("#ng_payer"),state.players.map(p=>p.name),true);$$(".cur-sym").forEach(e=>e.textContent=CURRENCY);}
+
+window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=deleteCashIn;window.deleteAppt=deleteAppt;
+
+(async function start(){
+  try{
+    await apiLoad();
+    wireUI();
+    renderAll();
+    $("#boot").style.display="none";
+  }catch(e){
+    $("#boot").innerHTML='<div class="ball" style="animation:none">⚠️</div><p style="max-width:460px;text-align:center">Could not load from Google Sheets.<br><br>Check that your Apps Script Web App is deployed with access set to <b>Anyone</b>, then reload this page.<br><br><small>'+e+'</small></p>';
+    setSync("err","Offline");
+  }
+})();
+</script>
+</body>
+</html>
