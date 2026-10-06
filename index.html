@@ -34,8 +34,8 @@ body{font-family:'Poppins',system-ui,sans-serif;color:var(--ink);line-height:1.5
 .header .right{display:flex;align-items:center;gap:16px}
 .season-badge{background:var(--gold);color:#3a2f05;padding:10px 20px;border-radius:14px;text-align:center;box-shadow:var(--shadow);font-weight:800}
 .season-badge .s{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;opacity:.75;font-weight:700}
-.season-badge .y{font-size:30px;line-height:1;display:flex;align-items:center;gap:4px}
-.season-badge .y input{background:transparent;border:none;color:#3a2f05;font:inherit;font-weight:800;width:76px;outline:none;text-align:center}
+.season-badge .y{font-size:30px;line-height:1;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.season-badge .y input{background:transparent;border:none;color:#3a2f05;font:inherit;font-weight:800;width:92px;min-width:92px;outline:none;text-align:center;letter-spacing:0}
 .theme-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer;transition:.2s}
 .theme-btn:hover{background:rgba(255,255,255,.3);transform:scale(1.08)}
 /* sync status chip */
@@ -148,7 +148,6 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
   .header h1 .edit-title{min-width:0;width:100%;font-size:18px}
   .header .sub{font-size:11.5px}
   .header .right{justify-content:space-between;width:100%}
-  .season-badge{padding:7px 14px}.season-badge .y{font-size:24px}.season-badge .y input{width:62px;font-size:24px}
   .theme-btn{width:40px;height:40px;font-size:18px}.sync{font-size:11px;padding:6px 11px}
   section{margin-top:20px;scroll-margin-top:12px}
   .section-title{font-size:17px}
@@ -156,7 +155,6 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
   .dash{grid-template-columns:1fr 1fr;gap:10px}
   .stat{padding:13px}.stat .value{font-size:18px}.stat .label{font-size:10.5px}
   .budget-big{padding:22px}.budget-big .amt{font-size:34px}
-  /* wide tables -> stacked cards */
   table.m-stack{min-width:0;width:100%;border-collapse:separate;border-spacing:0}
   table.m-stack thead{display:none}
   table.m-stack tbody,table.m-stack tr,table.m-stack td{display:block;width:100%}
@@ -185,7 +183,7 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
   .po-banner{font-size:12.5px;padding:10px 12px}.small-muted{font-size:11.5px}
   .fab{right:16px;bottom:74px}.fab-main{width:56px;height:56px;font-size:28px}
   .mnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:850;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -4px 20px rgba(0,0,0,.12);padding:6px 4px;justify-content:space-around;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
-  .mnav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--muted);font-size:10px;font-weight:600;padding:5px 2px;border-radius:10px;transition:.15s}
+  .mnav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--muted);font-size:10px;font-weight:600;padding:5px 2px;border-radius:10px}
   .mnav a .mi{font-size:20px;line-height:1}
   .mnav a:active{background:var(--green-100)}.mnav a.active{color:var(--green-600)}
 }
@@ -321,8 +319,8 @@ const GAME_MODES=["Stroke Play","Match Play","Stableford","Scramble","Rotating-S
 const NON_GOLF_TYPES=["Golf","PGA","FIFA","Others"];
 let CURRENCY="€";
 let PLAYOFF_SHOTS=[5,3,1,0];
-let BUDGET_BASELINE=null;      // number or null (read from Settings key "BudgetBaseline")
-let BUDGET_BASELINE_DATE="";   // YYYY-MM-DD (read from Settings key "BudgetBaselineDate")
+let BUDGET_BASELINE=null;
+let BUDGET_BASELINE_DATE="";
 
 /* =================================================================
    STATE (built from the Sheet). Internal shape:
@@ -344,24 +342,15 @@ function playerColor(name){const p=state.players.find(x=>x.name===name);return p
 function hdcOn(name,date){const h=state.hdcHistory[name]||[];let v=h.length?h[0].hdc:0;for(const e of h){if(e.date<=date)v=e.hdc;else break;}return Number(v);}
 function currentHdc(name){const h=state.hdcHistory[name]||[];return h.length?Number(h[h.length-1].hdc):0;}
 const B=v=>String(v).toUpperCase()==="TRUE"||v===true;
-/* Robust numeric parser: handles numbers, German comma-decimals ("0,875"),
-   thousands separators, and blank/garbage safely. */
 function num(v){
   if(v===null||v===undefined||v==="") return 0;
   if(typeof v==="number") return isNaN(v)?0:v;
-  let str=String(v).trim();
-  if(str==="") return 0;
-  str=str.replace(/[^0-9.,\-]/g,"");
-  if(str===""||str==="-") return 0;
-  const hasComma=str.indexOf(",")>-1, hasDot=str.indexOf(".")>-1;
-  if(hasComma&&hasDot){
-    if(str.lastIndexOf(",")>str.lastIndexOf(".")){ str=str.replace(/\./g,"").replace(",","."); }
-    else { str=str.replace(/,/g,""); }
-  } else if(hasComma){
-    str=str.replace(/\./g,"").replace(",",".");
-  }
-  const n=parseFloat(str);
-  return isNaN(n)?0:n;
+  let str=String(v).trim(); if(str==="") return 0;
+  str=str.replace(/[^0-9.,\-]/g,""); if(str===""||str==="-") return 0;
+  const hc=str.indexOf(",")>-1, hd=str.indexOf(".")>-1;
+  if(hc&&hd){ if(str.lastIndexOf(",")>str.lastIndexOf(".")){str=str.replace(/\./g,"").replace(",",".");} else {str=str.replace(/,/g,"");} }
+  else if(hc){ str=str.replace(/\./g,"").replace(",","."); }
+  const n=parseFloat(str); return isNaN(n)?0:n;
 }
 function dstr(v){ // normalise date values returned by Sheets (may be ISO string)
   if(!v) return "";
@@ -431,7 +420,7 @@ const CACHE_KEY="swingBrosCache_v1";
 async function apiLoad(){
   setSync("loading","Loading…");
   const ctrl=new AbortController();
-  const to=setTimeout(()=>ctrl.abort(),20000);           // 20s timeout
+  const to=setTimeout(()=>ctrl.abort(),20000);
   try{
     const res=await fetch(API_URL,{method:"GET",signal:ctrl.signal});
     clearTimeout(to);
@@ -631,12 +620,8 @@ function decorateMobileTables(){
     const tbl=document.getElementById(tid); if(!tbl) return;
     const labels=M_LABELS[tid];
     tbl.querySelectorAll("tbody tr").forEach(function(tr){
-      const tds=tr.querySelectorAll("td");
-      if(tds.length<2) return;                 // skip empty-state rows
-      tds.forEach(function(td,i){
-        td.setAttribute("data-label", labels[i]!==undefined?labels[i]:"");
-        td.classList.remove("m-title","m-actions","m-block");
-      });
+      const tds=tr.querySelectorAll("td"); if(tds.length<2) return;
+      tds.forEach(function(td,i){ td.setAttribute("data-label", labels[i]!==undefined?labels[i]:""); td.classList.remove("m-title","m-actions","m-block"); });
       tds[0].classList.add("m-title");
       if(tid==="history"){ if(tds[4])tds[4].classList.add("m-block"); if(tds[5])tds[5].classList.add("m-actions"); }
       if(tid==="ngHistory"){ if(tds[6])tds[6].classList.add("m-actions"); }
@@ -646,12 +631,8 @@ function decorateMobileTables(){
 function setupScrollSpy(){
   const ids=["sec-summary","sec-leaderboard","sec-history","sec-cash","sec-next"];
   const links=document.querySelectorAll(".mnav a");
-  function onScroll(){
-    let cur=ids[0];
-    ids.forEach(function(id){const el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<=120)cur=id;});
-    links.forEach(function(a){a.classList.toggle("active",a.getAttribute("href")==="#"+cur);});
-  }
-  window.addEventListener("scroll",onScroll,{passive:true});onScroll();
+  function onScroll(){ let cur=ids[0]; ids.forEach(function(id){const el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<=120)cur=id;}); links.forEach(function(a){a.classList.toggle("active",a.getAttribute("href")==="#"+cur);}); }
+  window.addEventListener("scroll",onScroll,{passive:true}); onScroll();
 }
 
 function renderAll(){const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();decorateMobileTables();}
@@ -708,27 +689,17 @@ function wireAfterData(){$("#titleInput").value=state.title;$("#yearInput").valu
 window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=deleteCashIn;window.deleteAppt=deleteAppt;
 
 (async function start(){
-  // 1) Instantly show cached data if we have it (feels fast), then refresh from the sheet.
   let shownCache=false;
   try{
     const cached=localStorage.getItem(CACHE_KEY);
-    if(cached){
-      state=fromSheet(JSON.parse(cached));
-      wireUI(); renderAll();
-      $("#boot").style.display="none";
-      setSync("loading","Updating…");
-      shownCache=true;
-    }
+    if(cached){ state=fromSheet(JSON.parse(cached)); wireUI(); renderAll(); $("#boot").style.display="none"; setSync("loading","Updating…"); shownCache=true; }
   }catch(e){}
-  // 2) Load fresh data from Google Sheets.
   try{
     await apiLoad();
-    if(shownCache){ wireAfterData(); renderAll(); }   // refresh UI with latest
-    else{ wireUI(); renderAll(); $("#boot").style.display="none"; }
+    if(shownCache){ wireAfterData(); renderAll(); } else { wireUI(); renderAll(); $("#boot").style.display="none"; }
   }catch(e){
-    if(shownCache){
-      setSync("err","Offline – showing last saved");
-    }else{
+    if(shownCache){ setSync("err","Offline – showing last saved"); }
+    else{
       $("#boot").innerHTML='<div class="ball" style="animation:none">⚠️</div><p style="max-width:460px;text-align:center">Could not load from Google Sheets.<br><br>Check that your Apps Script Web App is deployed with access set to <b>Anyone</b>, then reload this page.<br><br><small>'+e+'</small></p>';
       setSync("err","Offline");
     }
