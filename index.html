@@ -242,7 +242,7 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
   <section id="sec-next"><div class="section-title"><span class="ico">🗓️</span> What's Next — Swing Bros Appointments</div><div class="card" id="apptList"></div></section>
 
   <section id="sec-cashhist"><div class="section-title"><span class="ico">🪙</span> Cash-in &amp; expense history</div>
-    <div class="card"><div class="table-scroll"><table id="ngHistory" class="m-stack"><thead><tr><th>Date</th><th>Flow</th><th>Category</th><th>Name / details</th><th>Player</th><th>Amount</th><th></th></tr></thead><tbody></tbody></table></div></div></section>
+    <div class="card"><div class="table-scroll"><table id="ngHistory" class="m-stack"><thead><tr><th>Date</th><th>Flow</th><th>Category</th><th>Name / details</th><th>Player</th><th>Amount</th><th>Paid?</th><th></th></tr></thead><tbody></tbody></table></div></div></section>
 
   <section id="sec-actions"><div class="card"><div class="toolbar">
     <button class="btn-gold" id="exportBtn">⬇️ Export CSV</button>
@@ -319,7 +319,7 @@ const GAME_MODES=["Stroke Play","Match Play","Stableford","Scramble","Rotating-S
 const NON_GOLF_TYPES=["Golf","PGA","FIFA","Others"];
 let CURRENCY="€";
 let PLAYOFF_SHOTS=[5,3,1,0];
-let BUDGET_BASELINE=120;
+let BUDGET_BASELINE=null;
 let BUDGET_BASELINE_DATE="2026-10-06";
 
 /* =================================================================
@@ -434,17 +434,24 @@ async function apiLoad(){
   }catch(e){clearTimeout(to);throw e;}
 }
 async function apiSave(){
-  // debounced full-dataset save
+  // debounced full-dataset save to Google Sheets
   clearTimeout(saveTimer);
   setSync("saving","Saving…");
   saveTimer=setTimeout(async()=>{
     try{
       saving=true;
-      await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(toSheet())});
-      setSync("","Synced ✓");
-    }catch(e){setSync("err","Save failed – retry");toast("Could not save to Google Sheets. Check your connection.","err");}
-    finally{saving=false;}
-  },500);
+      const res=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(toSheet())});
+      // Apps Script returns {status:'ok'}; if we can read it, treat as confirmed.
+      let ok=res && res.ok;
+      try{const j=await res.json(); if(j && j.status) ok=true;}catch(_){/* opaque is fine */}
+      // refresh local cache with what we just saved
+      try{localStorage.setItem(CACHE_KEY,JSON.stringify(toSheet()));}catch(_){ }
+      setSync(ok?"":"err", ok?"Synced ✓":"Saved? verify");
+    }catch(e){
+      setSync("err","Save failed – tap 🔄 Reload");
+      toast("Could not save to Google Sheets. Check the Apps Script deployment (Anyone) and connection.","err");
+    }finally{saving=false;}
+  },400);
 }
 function save(){ if(!LOADED){ setSync('err','Not saved – data not loaded yet'); return; } apiSave(); }  // guarded alias
 
@@ -584,7 +591,7 @@ function renderDashboard(stats){const arr=Object.values(stats);const totalDays=s
   $("#dashboard").innerHTML=`
     <div class="stat"><div class="label">Game days played</div><div class="value">${totalDays}</div><div class="meta">${state.gameDays.filter(g=>g.rows.some(r=>r.strokes!==null)).length} rounds with score</div></div>
     <div class="stat gold"><div class="label">🏆 Current leader</div><div class="value">${winner&&winner.points>0?winner.name:'–'}</div><div class="meta">${winner?fmtNum(winner.points,2)+' pts · −'+(winner.projShots||0)+' shots final':''}</div></div>
-    <div class="stat"><div class="label">🎯 Lowest single round</div><div class="value">${lowest!==null?fmtPar(lowest):'–'}</div><div class="meta">${lowest!==null?lw+(lc?' · '+lc:''):''}</div></div>
+    <div class="stat"><div class="label">🎯 Lowest single round</div><div class="value">${lowest!==null?lw:'–'}</div><div class="meta">${lowest!==null?fmtPar(lowest)+(lc?' · '+lc:''):''}</div></div>
     <div class="stat gold"><div class="label">🪙 Top cash contributor</div><div class="value">${tp&&tp[1]>0?tp[0]:'–'}</div><div class="meta">${tp&&tp[1]>0?fmtMoney(tp[1]):''}</div></div>
     <div class="stat"><div class="label">💶 Our budget</div><div class="value">${fmtMoney(budgetTotal())}</div><div class="meta">paid in by all of us</div></div>`;}
 function renderLeaderboard(stats){const arr=Object.values(stats).sort((a,b)=>b.points-a.points||((a.avgNet??999)-(b.avgNet??999)));const tb=$("#leaderboard tbody");
@@ -599,6 +606,11 @@ function renderHistory(){const tb=$("#history tbody");const sorted=state.gameDay
   tb.innerHTML=sorted.length?sorted.map(g=>`<tr><td>${g.date}</td><td><span class="pill ${g.isPlayoff?'po':''}">${g.isPlayoff?'🏝️ '+g.mode:g.mode}</span></td><td>${g.course||'–'}</td><td>${g.indivCounts?'✔ yes':'–'}</td>
     <td>${g.rows.map(r=>{const b=g.isPlayoff?playoffShotsFor(r.player,g.date):0;return `<div style="font-size:12.5px"><span class="player-dot" style="background:${playerColor(r.player)}"></span> ${r.player}: ${r.strokes!==null?fmtPar(r.strokes)+(b?` (−${b})`:'')+' · ':''}${fmtNum(r.points,2)} pts${r.money?' · '+fmtMoney(r.money):''}</div>`;}).join("")}</td>
     <td style="white-space:nowrap"><button class="btn-outline btn-sm" onclick="editGame('${g.id}')">✏️</button> <button class="btn-red btn-sm" onclick="deleteGame('${g.id}')">🗑️</button></td></tr>`).join(""):`<tr><td colspan="6" style="color:var(--muted)">No game days yet.</td></tr>`;}
+function toggleCashPaid(cashId){
+  const c=state.cashIns.find(x=>x.id===cashId); if(!c) return;
+  c.paid=!c.paid; save(); renderCash(); renderSettlement();
+  toast(c.paid?"Marked as paid ✔":"Marked as unpaid");
+}
 function renderSettlement(){
   const tb=$("#settleTable tbody");
   // Collect outstanding items from BOTH sources:
@@ -653,7 +665,7 @@ function renderCash(){const map={};state.players.forEach(p=>map[p.name]={name:p.
   const arr=Object.values(map).sort((a,b)=>b.total-a.total);
   $("#cashTable tbody").innerHTML=arr.map((m,i)=>`<tr><td><span class="rankbadge ${i===0&&m.total>0?'r1':''}">${i+1}</span></td><td><span class="player-dot" style="background:${m.color}"></span> ${m.name}</td><td class="pts">${fmtMoney(m.total)}</td><td>${fmtMoney(m.Golf)}</td><td>${fmtMoney(m.PGA)}</td><td>${fmtMoney(m.FIFA)}</td><td>${fmtMoney(m.Others)}</td><td>${m.count}</td></tr>`).join("");
   const inR=state.cashIns.map(c=>({...c,flow:"In"}));const outR=state.outflows.map(o=>({...o,flow:"Out",type:"Expense",payer:""}));const all=inR.concat(outR).sort((a,b)=>b.date.localeCompare(a.date));
-  $("#ngHistory tbody").innerHTML=all.length?all.map(c=>`<tr><td>${c.date}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type||'–'}${c.gameId?' <span class=\'pill\'>⛳ from game</span>':''}</td><td>${c.name||'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${c.payer}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td>${c.gameId?'<span class="small-muted">via game</span>':`<button class="btn-red btn-sm" onclick="deleteCashIn('${c.id}')">🗑️</button>`}</td></tr>`).join(""):`<tr><td colspan="7" style="color:var(--muted)">No entries yet.</td></tr>`;}
+  $("#ngHistory tbody").innerHTML=all.length?all.map(c=>{const payable=(c.flow==="In") && c.payer && !c.gameId;const paidCell = c.gameId ? '<span class="small-muted">via game</span>' : (payable ? `<input type="checkbox" class="paid-chk" title="Mark as paid" style="width:20px;height:20px;cursor:pointer" ${c.paid?"checked":""} onclick="toggleCashPaid(\'${c.id}\')">` : '<span class="small-muted">—</span>');const actionCell = c.gameId ? '<span class="small-muted">⛳ from game</span>' : `<button class="btn-red btn-sm" onclick="deleteCashIn(\'${c.id}\')">🗑️</button>`;return `<tr><td>${c.date}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type||'–'}${c.gameId?' <span class=\'pill\'>⛳</span>':''}</td><td>${c.name||'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${c.payer}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td style="text-align:center">${paidCell}</td><td style="text-align:center">${actionCell}</td></tr>`;}).join(""):`<tr><td colspan="8" style="color:var(--muted)">No entries yet.</td></tr>`;}
 function renderAppts(){$("#apptList").innerHTML=state.appts.length?state.appts.map(a=>{const po=/island|play.?off|final/i.test(a.what);return `<div class="appt ${po?'playoff':''}"><div class="what">${a.what}</div><div style="display:flex;align-items:center;gap:8px"><span class="when">${a.when}</span><button onclick="deleteAppt('${a.id}')">✕</button></div></div>`;}).join(""):`<p style="color:var(--muted)">No upcoming appointments.</p>`;}
 
 const M_LABELS={
@@ -661,7 +673,7 @@ const M_LABELS={
   history:["Date","Mode","Course","Indiv?","Details","Actions"],
   settleTable:["Player","What","Amount to pay in","Paid?"],
   cashTable:["#","Name","Total","Golf","PGA","FIFA","Others","#"],
-  ngHistory:["Date","Flow","Category","Name / details","Player","Amount",""]
+  ngHistory:["Date","Flow","Category","Name / details","Player","Amount","Paid?",""]
 };
 function decorateMobileTables(){
   Object.keys(M_LABELS).forEach(function(tid){
@@ -672,7 +684,7 @@ function decorateMobileTables(){
       tds.forEach(function(td,i){ td.setAttribute("data-label", labels[i]!==undefined?labels[i]:""); td.classList.remove("m-title","m-actions","m-block"); });
       tds[0].classList.add("m-title");
       if(tid==="history"){ if(tds[4])tds[4].classList.add("m-block"); if(tds[5])tds[5].classList.add("m-actions"); }
-      if(tid==="ngHistory"){ if(tds[6])tds[6].classList.add("m-actions"); }
+      if(tid==="ngHistory"){ if(tds[6])tds[6].classList.add("m-actions"); if(tds[7])tds[7].classList.add("m-actions"); }
       if(tid==="settleTable"){ if(tds[3])tds[3].classList.add("m-actions"); }
     });
   });
@@ -735,7 +747,7 @@ function wireUI(){
 }
 function wireAfterData(){$("#titleInput").value=state.title;$("#yearInput").value=state.year;populateSelect($("#ng_payer"),state.players.map(p=>p.name),true);$$(".cur-sym").forEach(e=>e.textContent=CURRENCY);}
 
-window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=deleteCashIn;window.deleteAppt=deleteAppt;window.markGolfPaid=markGolfPaid;window.markCashPaid=markCashPaid;
+window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=deleteCashIn;window.deleteAppt=deleteAppt;window.markGolfPaid=markGolfPaid;window.markCashPaid=markCashPaid;window.toggleCashPaid=toggleCashPaid;
 
 (async function start(){
   try{
