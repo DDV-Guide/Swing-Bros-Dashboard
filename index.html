@@ -136,6 +136,130 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
 #boot .ball{font-size:54px;animation:spin 1.4s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #boot p{color:var(--muted);font-weight:600}
+
+/* =====================================================================
+   MOBILE OPTIMISATION  (phones ≤ 720px)
+   - stacked "card" tables with data-labels
+   - bigger tap targets, readable type
+   - sticky bottom navigation to jump between sections
+   ===================================================================== */
+.mnav{display:none}                     /* hidden on desktop */
+@media (max-width:720px){
+  body{padding:10px 10px 86px}          /* leave room for bottom nav */
+  .wrap{max-width:100%}
+
+  /* ---- Header ---- */
+  .header{padding:16px 16px;border-radius:14px;flex-direction:column;align-items:stretch;gap:12px}
+  .header .titlewrap{min-width:0}
+  .header h1{font-size:19px;gap:8px}
+  .header h1 .edit-title{min-width:0;width:100%;font-size:18px}
+  .header .sub{font-size:11.5px}
+  .header .right{justify-content:space-between;width:100%}
+  .season-badge{padding:7px 14px}
+  .season-badge .y{font-size:24px}
+  .season-badge .y input{width:62px;font-size:24px}
+  .theme-btn{width:40px;height:40px;font-size:18px}
+  .sync{font-size:11px;padding:6px 11px}
+
+  /* ---- Spacing / headings ---- */
+  section{margin-top:20px;scroll-margin-top:12px}
+  .section-title{font-size:17px}
+  .card{padding:15px;border-radius:14px}
+
+  /* ---- Summary stat cards: 2 per row ---- */
+  .dash{grid-template-columns:1fr 1fr;gap:10px}
+  .stat{padding:13px}
+  .stat .value{font-size:18px}
+  .stat .label{font-size:10.5px}
+
+  /* ---- Budget tile ---- */
+  .budget-big{padding:22px}
+  .budget-big .amt{font-size:34px}
+
+  /* ---- TURN WIDE TABLES INTO STACKED CARDS ---- */
+  table.m-stack{min-width:0;width:100%;border-collapse:separate;border-spacing:0}
+  table.m-stack thead{display:none}                     /* hide header row */
+  table.m-stack tbody,table.m-stack tr,table.m-stack td{display:block;width:100%}
+  table.m-stack tr{
+    background:var(--card);border:1px solid var(--border);border-radius:14px;
+    box-shadow:var(--shadow);padding:10px 12px;margin-bottom:12px;position:relative;
+  }
+  table.m-stack tr.leader{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-light),var(--shadow)}
+  table.m-stack td{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:7px 0;border:none;border-bottom:1px solid var(--border);font-size:14px;text-align:right;
+  }
+  table.m-stack td:last-child{border-bottom:none}
+  table.m-stack td::before{
+    content:attr(data-label);font-weight:600;color:var(--muted);font-size:12px;
+    text-align:left;flex:0 0 46%;text-transform:none;
+  }
+  /* first cell (rank/date) becomes a title bar */
+  table.m-stack td.m-title{
+    text-align:left;font-size:15.5px;font-weight:700;color:var(--ink);
+    border-bottom:2px solid var(--border);padding-bottom:9px;margin-bottom:3px;
+  }
+  table.m-stack td.m-title::before{content:""}
+  table.m-stack td.m-title .player-dot{width:14px;height:14px}
+  /* actions row full-width buttons */
+  table.m-stack td.m-actions{justify-content:flex-end;gap:8px;border-bottom:none}
+  table.m-stack td.m-actions::before{content:""}
+  table.m-stack td.m-actions button{padding:8px 16px;font-size:13px}
+  /* details cell (history) left aligned, no label */
+  table.m-stack td.m-block{flex-direction:column;align-items:stretch;text-align:left}
+  table.m-stack td.m-block::before{flex:none;margin-bottom:4px}
+
+  /* ---- Modals full-screen & scrollable ---- */
+  .modal-ov{padding:0}
+  .modal{max-width:100%;min-height:100%;border-radius:0;padding:20px 16px 90px}
+  .modal h3{font-size:18px}
+  .player-block{padding:12px}
+  .row-3,.row-2{grid-template-columns:1fr !important}
+  input,select{font-size:16px;padding:12px}      /* 16px avoids iOS zoom-on-focus */
+  .btn,.btn-outline,.btn-gold,.btn-red{padding:13px 18px;font-size:15px;width:100%}
+  .modal .toolbar .btn,.modal .toolbar .btn-outline{width:100%}
+  .checkbox-row{align-items:flex-start}
+  .checkbox-row input{width:22px;height:22px;margin-top:2px;flex:none}
+
+  /* ---- Global action buttons stack ---- */
+  #sec-actions .toolbar{flex-direction:column}
+  #sec-actions .toolbar button{width:100%}
+
+  /* ---- Appointments ---- */
+  .appt{flex-direction:column;align-items:flex-start;gap:4px}
+  .appt .when{align-self:flex-start}
+
+  /* ---- Play-off banner / notes smaller ---- */
+  .po-banner{font-size:12.5px;padding:10px 12px}
+  .small-muted{font-size:11.5px}
+
+  /* ---- FAB sits above bottom nav ---- */
+  .fab{right:16px;bottom:74px}
+  .fab-main{width:56px;height:56px;font-size:28px}
+
+  /* ---- STICKY BOTTOM NAV ---- */
+  .mnav{
+    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:850;
+    background:var(--card);border-top:1px solid var(--border);
+    box-shadow:0 -4px 20px rgba(0,0,0,.12);padding:6px 4px;
+    justify-content:space-around;align-items:stretch;
+    padding-bottom:calc(6px + env(safe-area-inset-bottom));
+  }
+  .mnav a{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+    text-decoration:none;color:var(--muted);font-size:10px;font-weight:600;
+    padding:5px 2px;border-radius:10px;transition:.15s;
+  }
+  .mnav a .mi{font-size:20px;line-height:1}
+  .mnav a:active{background:var(--green-100)}
+  .mnav a.active{color:var(--green-600)}
+}
+
+/* very small phones: summary 1 per row */
+@media (max-width:380px){
+  .dash{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
@@ -155,49 +279,58 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
     </div>
   </div>
 
-  <section><div class="section-title"><span class="ico">📊</span> Season Summary</div><div class="dash" id="dashboard"></div></section>
+  <section id="sec-summary"><div class="section-title"><span class="ico">📊</span> Season Summary</div><div class="dash" id="dashboard"></div></section>
 
-  <section>
+  <section id="sec-leaderboard">
     <div class="section-title"><span class="ico">🥇</span> Season Leaderboard <span class="pill po" style="font-size:12px">Play-off until Island Masters 2027</span></div>
     <div class="card">
       <div class="po-banner" id="poBanner">🏝️ <span></span></div>
-      <div class="table-scroll"><table id="leaderboard">
+      <div class="table-scroll"><table id="leaderboard" class="m-stack">
         <thead><tr><th>#</th><th>Player</th><th>Hdc</th><th>Points</th><th>Projected shots for final round</th><th>Total strokes</th><th>Avg gross</th><th>Avg net</th><th>Best round</th><th>Worst round</th></tr></thead>
         <tbody></tbody></table></div>
       <p class="small-muted">“Projected shots for final round” = stroke bonus the current standings would give on the Island Masters 2027 final: leader −5, 2nd −3, 3rd −1. Scores are shown relative to par (e.g. +2 or −2). Avg net uses the handicap valid on each round's date.</p>
     </div>
   </section>
 
-  <section><div class="section-title"><span class="ico">📅</span> Game Day History</div>
-    <div class="card"><div class="table-scroll"><table id="history"><thead><tr><th>Date</th><th>Mode</th><th>Course</th><th>Indiv?</th><th>Details (strokes · pts · €)</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div></section>
+  <section id="sec-history"><div class="section-title"><span class="ico">📅</span> Game Day History</div>
+    <div class="card"><div class="table-scroll"><table id="history" class="m-stack"><thead><tr><th>Date</th><th>Mode</th><th>Course</th><th>Indiv?</th><th>Details (strokes · pts · €)</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div></section>
 
-  <section><div class="section-title"><span class="ico">💶</span> Pay-in from last match day</div>
+  <section id="sec-payin"><div class="section-title"><span class="ico">💶</span> Pay-in from last match day</div>
     <div class="card"><p class="settle-note" id="settleHeader"></p>
-      <div class="table-scroll"><table id="settleTable"><thead><tr><th>Player</th><th>What</th><th>Amount to pay to our PayPal</th></tr></thead><tbody></tbody></table></div>
+      <div class="table-scroll"><table id="settleTable" class="m-stack"><thead><tr><th>Player</th><th>What</th><th>Amount to pay to our PayPal</th></tr></thead><tbody></tbody></table></div>
       <p class="small-muted">Amounts are the money entries recorded for the most recent game day. Forward this list so everyone knows what to transfer.</p></div></section>
 
-  <section><div class="section-title"><span class="ico">🪙</span> Cash Pool &amp; Competitions</div>
+  <section id="sec-cash"><div class="section-title"><span class="ico">🪙</span> Cash Pool &amp; Competitions</div>
     <div class="grid cols-2">
       <div class="card budget-big" style="display:flex;flex-direction:column;justify-content:center">
         <div class="lbl">Our budget (paid in by all of us)</div><div class="amt" id="totalBudget">0,00 €</div>
         <div class="small-muted" style="color:#cfe6da" id="budgetMeta"></div></div>
       <div class="card"><h3 style="color:var(--green-500);margin-bottom:12px;font-size:16px">Cash-in ranking (birthday payments excluded)</h3>
-        <div class="table-scroll"><table id="cashTable"><thead><tr><th>#</th><th>Name</th><th>Total</th><th>Golf</th><th>PGA</th><th>FIFA</th><th>Others</th><th>#</th></tr></thead><tbody></tbody></table></div></div>
+        <div class="table-scroll"><table id="cashTable" class="m-stack"><thead><tr><th>#</th><th>Name</th><th>Total</th><th>Golf</th><th>PGA</th><th>FIFA</th><th>Others</th><th>#</th></tr></thead><tbody></tbody></table></div></div>
     </div>
   </section>
 
-  <section><div class="section-title"><span class="ico">🗓️</span> What's Next — Swing Bros Appointments</div><div class="card" id="apptList"></div></section>
+  <section id="sec-next"><div class="section-title"><span class="ico">🗓️</span> What's Next — Swing Bros Appointments</div><div class="card" id="apptList"></div></section>
 
-  <section><div class="section-title"><span class="ico">🪙</span> Cash-in &amp; expense history</div>
-    <div class="card"><div class="table-scroll"><table id="ngHistory"><thead><tr><th>Date</th><th>Flow</th><th>Category</th><th>Name / details</th><th>Player</th><th>Amount</th><th></th></tr></thead><tbody></tbody></table></div></div></section>
+  <section id="sec-cashhist"><div class="section-title"><span class="ico">🪙</span> Cash-in &amp; expense history</div>
+    <div class="card"><div class="table-scroll"><table id="ngHistory" class="m-stack"><thead><tr><th>Date</th><th>Flow</th><th>Category</th><th>Name / details</th><th>Player</th><th>Amount</th><th></th></tr></thead><tbody></tbody></table></div></div></section>
 
-  <section><div class="card"><div class="toolbar">
+  <section id="sec-actions"><div class="card"><div class="toolbar">
     <button class="btn-gold" id="exportBtn">⬇️ Export CSV</button>
     <button class="btn-outline" id="reloadBtn">🔄 Reload from Sheet</button>
     <button class="btn-red" id="resetBtn">🗑️ Reset Season</button>
   </div></div></section>
   <p class="small-muted" style="text-align:center;margin:24px 0">Swing Bros · live-synced to Google Sheets.</p>
 </div>
+
+<!-- Mobile bottom navigation (hidden on desktop) -->
+<nav class="mnav" id="mnav">
+  <a href="#sec-summary"><span class="mi">📊</span>Summary</a>
+  <a href="#sec-leaderboard"><span class="mi">🥇</span>Table</a>
+  <a href="#sec-history"><span class="mi">📅</span>Games</a>
+  <a href="#sec-cash"><span class="mi">🪙</span>Budget</a>
+  <a href="#sec-next"><span class="mi">🗓️</span>Next</a>
+</nav>
 
 <div class="fab" id="fab"><div class="fab-items">
   <div class="fab-item"><span class="lbl">Adjust handicaps</span><button class="btn-circ" data-open="hdc">🎯</button></div>
@@ -517,7 +650,64 @@ function renderCash(){const map={};state.players.forEach(p=>map[p.name]={name:p.
   const inR=state.cashIns.map(c=>({...c,flow:"In"}));const outR=state.outflows.map(o=>({...o,flow:"Out",type:"Expense",payer:""}));const all=inR.concat(outR).sort((a,b)=>b.date.localeCompare(a.date));
   $("#ngHistory tbody").innerHTML=all.length?all.map(c=>`<tr><td>${c.date}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type||'–'}${c.gameId?' <span class=\'pill\'>⛳ from game</span>':''}</td><td>${c.name||'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${c.payer}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td>${c.gameId?'<span class="small-muted">via game</span>':`<button class="btn-red btn-sm" onclick="deleteCashIn('${c.id}')">🗑️</button>`}</td></tr>`).join(""):`<tr><td colspan="7" style="color:var(--muted)">No entries yet.</td></tr>`;}
 function renderAppts(){$("#apptList").innerHTML=state.appts.length?state.appts.map(a=>{const po=/island|play.?off|final/i.test(a.what);return `<div class="appt ${po?'playoff':''}"><div class="what">${a.what}</div><div style="display:flex;align-items:center;gap:8px"><span class="when">${a.when}</span><button onclick="deleteAppt('${a.id}')">✕</button></div></div>`;}).join(""):`<p style="color:var(--muted)">No upcoming appointments.</p>`;}
-function renderAll(){const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();}
+
+/* ---- MOBILE: decorate table cells with labels for stacked card view ---- */
+const M_LABELS={
+  leaderboard:["#","Player","Hdc","Points","Projected shots","Total strokes","Avg gross","Avg net","Best round","Worst round"],
+  history:["Date","Mode","Course","Indiv?","Details","Actions"],
+  settleTable:["Player","What","Amount to pay in"],
+  cashTable:["#","Name","Total","Golf","PGA","FIFA","Others","#"],
+  ngHistory:["Date","Flow","Category","Name / details","Player","Amount",""]
+};
+function decorateMobileTables(){
+  Object.keys(M_LABELS).forEach(function(tid){
+    const tbl=document.getElementById(tid); if(!tbl) return;
+    const labels=M_LABELS[tid];
+    tbl.querySelectorAll("tbody tr").forEach(function(tr){
+      const tds=tr.querySelectorAll("td");
+      tds.forEach(function(td,i){
+        td.setAttribute("data-label", labels[i]!==undefined?labels[i]:"");
+        td.classList.remove("m-title","m-actions","m-block");
+      });
+      if(!tds.length) return;
+      // first cell = title bar (skip single "empty state" rows that span columns)
+      if(tds.length>1){
+        tds[0].classList.add("m-title");
+        // if this table has a Player name right after rank, merge it into the title
+      }
+      // table-specific tweaks
+      if(tid==="leaderboard" && tds[1]){ tds[0].classList.add("m-title"); // keep rank as title
+        // move player name into title text visually: label the player row too
+      }
+      if(tid==="history"){
+        if(tds[4]) tds[4].classList.add("m-block");     // details block
+        if(tds[5]) tds[5].classList.add("m-actions");    // edit/delete
+      }
+      if(tid==="ngHistory"){
+        if(tds[6]) tds[6].classList.add("m-actions");
+      }
+    });
+  });
+}
+
+/* ---- MOBILE: scroll-spy for bottom nav highlight ---- */
+function setupScrollSpy(){
+  const map=[["sec-summary","Summary"],["sec-leaderboard","Table"],["sec-history","Games"],
+             ["sec-cash","Budget"],["sec-next","Next"]];
+  const links=document.querySelectorAll(".mnav a");
+  function onScroll(){
+    let current=map[0][0];
+    map.forEach(function(m){
+      const el=document.getElementById(m[0]);
+      if(el && el.getBoundingClientRect().top<=120) current=m[0];
+    });
+    links.forEach(function(a){a.classList.toggle("active",a.getAttribute("href")==="#"+current);});
+  }
+  window.addEventListener("scroll",onScroll,{passive:true});
+  onScroll();
+}
+
+function renderAll(){const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();decorateMobileTables();}
 
 /* EXPORT */
 function exportCSV(){const stats=computeStats();const arr=Object.values(stats).sort((a,b)=>b.points-a.points);
@@ -574,6 +764,8 @@ window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=delete
     await apiLoad();
     wireUI();
     renderAll();
+    setupScrollSpy();
+    document.documentElement.style.scrollBehavior="smooth";
     $("#boot").style.display="none";
   }catch(e){
     $("#boot").innerHTML='<div class="ball" style="animation:none">⚠️</div><p style="max-width:460px;text-align:center">Could not load from Google Sheets.<br><br>Check that your Apps Script Web App is deployed with access set to <b>Anyone</b>, then reload this page.<br><br><small>'+e+'</small></p>';
