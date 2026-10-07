@@ -337,7 +337,7 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:var(--ring);ba
   #leaderboard td:nth-child(2),#leaderboard th:nth-child(2){min-width:150px;white-space:nowrap}
   #cashTable td:nth-child(2),#cashTable th:nth-child(2){min-width:140px;white-space:nowrap}
   #settleTable td:nth-child(1),#settleTable th:nth-child(1){min-width:140px;white-space:nowrap}
-  #history td:nth-child(5) div{white-space:nowrap}
+  @media (min-width:641px){#history td:nth-child(5) div{white-space:nowrap}}
   .card-head{height:auto;margin-bottom:10px}
   .rotate-btn{position:static;padding:7px 12px;font-size:11px}
   .modal-ov{padding:0}
@@ -545,25 +545,32 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 
 /* ---- Mobile: Game Day History column rebalance + compact actions ---- */
 @media (max-width:640px){
-  /* Fixed layout so every column obeys its width and nothing can overlap */
-  #history{table-layout:fixed;min-width:520px;width:520px}
-  #history th,#history td{padding:9px 6px;vertical-align:top;overflow:hidden}
-  /* Date — unchanged size, keep on one line */
-  #history th:nth-child(1),#history td:nth-child(1){width:64px;white-space:nowrap;font-size:12px}
-  /* Mode — reduced ~30% */
-  #history th:nth-child(2),#history td:nth-child(2){width:60px;white-space:normal;word-break:break-word}
-  #history td:nth-child(2) .pill{white-space:normal;font-size:11px;padding:2px 7px;line-height:1.2;display:inline-block}
-  /* Course — reduced ~50% */
-  #history th:nth-child(3),#history td:nth-child(3){width:50px;white-space:normal;word-break:break-word;font-size:11.5px}
-  /* Indiv? — minimal, secondary */
-  #history th:nth-child(4),#history td:nth-child(4){width:34px;white-space:nowrap;text-align:center;font-size:11.5px}
-  /* Details — increased ~20%, wraps, contained */
-  #history th:nth-child(5),#history td:nth-child(5){width:220px;min-width:0;max-width:none;white-space:normal;word-break:break-word}
-  #history td:nth-child(5) > div{font-size:11.5px;line-height:1.4;white-space:normal;word-break:break-word}
-  /* Actions — increased ~20%, fully visible, buttons wrap with large touch area */
-  #history th:nth-child(6),#history td:nth-child(6){width:92px;white-space:normal}
-  #history td:nth-child(6) .hist-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start}
-  #history td:nth-child(6) .btn-sm{margin:0;padding:8px 10px;font-size:13px;border-radius:9px;min-width:40px;min-height:36px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+  /* Fixed layout so declared widths are honoured; generous widths sized to the
+     real content, and the table scrolls horizontally when it exceeds the screen. */
+  #history{table-layout:fixed;min-width:700px;width:700px}
+  #history th,#history td{padding:10px 9px;vertical-align:top;overflow:visible;
+    white-space:normal;word-break:normal;overflow-wrap:break-word;hyphens:none}
+  /* Date — one line */
+  #history th:nth-child(1),#history td:nth-child(1){width:70px;white-space:nowrap;font-size:12px}
+  /* Mode — fits "Stroke Play" on ≤2 clean lines, wraps between words only */
+  #history th:nth-child(2),#history td:nth-child(2){width:92px}
+  #history td:nth-child(2) .pill{white-space:normal;word-break:normal;overflow-wrap:normal;
+    font-size:11px;padding:3px 8px;line-height:1.25;display:inline-block}
+  /* Course — wide enough to wrap between whole words, never letter-by-letter */
+  #history th:nth-child(3),#history td:nth-child(3){width:120px;font-size:12px;word-break:normal;overflow-wrap:break-word}
+  /* Indiv? — compact */
+  #history th:nth-child(4),#history td:nth-child(4){width:48px;white-space:nowrap;text-align:center;font-size:11.5px}
+  /* Details — roomy, each player entry on its own line, readable */
+  #history th:nth-child(5),#history td:nth-child(5){width:240px;min-width:0;max-width:none}
+  #history td:nth-child(5) > div{font-size:12px;line-height:1.45;white-space:normal;word-break:normal;
+    overflow-wrap:break-word;margin:0 0 3px}
+  /* Actions — buttons intact, fully visible, large touch targets */
+  #history th:nth-child(6),#history td:nth-child(6){width:96px;white-space:normal}
+  #history td:nth-child(6) .hist-actions{display:flex;flex-wrap:wrap;gap:7px;align-items:flex-start}
+  #history td:nth-child(6) .btn-sm{margin:0;padding:9px 11px;font-size:14px;border-radius:9px;
+    min-width:42px;min-height:38px;line-height:1;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
+  /* Headers readable, top-aligned, not clipped */
+  #history thead th{white-space:normal;word-break:normal;overflow-wrap:break-word;vertical-align:bottom;font-size:11px}
   .cash-filterbar{gap:7px}
   .cash-filter-label{width:100%;margin-bottom:-2px}
 }
