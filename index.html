@@ -689,19 +689,44 @@ const CACHE_KEY="swingBrosCache_v3";
    problem (deployment not public vs. blocked request vs. non-JSON) is visible
    instead of a generic failure. */
 let LAST_LOAD_ERR="";
-async function fetchSheet(){
+/* ---- Reads: JSONP first, direct fetch as fallback ----
+   When the dashboard is hosted on a different origin than the Apps Script
+   Web App (e.g. GitHub Pages, or a local file://), a cross-origin `fetch`
+   GET only works if Google returns CORS headers — which it does not reliably
+   do for Apps Script. JSONP loads the data through a <script> tag instead,
+   which is NOT subject to CORS, so it works from any origin. It requires the
+   Apps Script doGet to echo a `callback` parameter (see the one-line change
+   documented for the server). If JSONP fails (e.g. the server was not updated),
+   we fall back to a direct fetch, which still works when same-origin or when
+   CORS headers happen to be present. */
+function loadViaJsonp(timeoutMs){
+  return new Promise(function(resolve,reject){
+    const cb="__swbros_cb_"+Date.now()+"_"+Math.floor(Math.random()*1e6);
+    const s=document.createElement("script");
+    let done=false;
+    function cleanup(){ try{delete window[cb];}catch(_){ window[cb]=undefined; } if(s&&s.parentNode) s.parentNode.removeChild(s); clearTimeout(t); }
+    const t=setTimeout(function(){ if(done)return; done=true; cleanup();
+      reject(new Error("JSONP timeout — the Web App did not call back. Make sure doGet echoes the ?callback= parameter (see setup notes).")); }, timeoutMs||15000);
+    window[cb]=function(data){ if(done)return; done=true; cleanup(); resolve(data); };
+    s.onerror=function(){ if(done)return; done=true; cleanup();
+      reject(new Error("JSONP request could not be loaded (network blocked, wrong URL, or deployment not public).")); };
+    s.src=API_URL+(API_URL.indexOf("?")>-1?"&":"?")+"callback="+cb+"&t="+Date.now();
+    document.head.appendChild(s);
+  });
+}
+async function loadViaFetch(timeoutMs){
   const url=API_URL+(API_URL.indexOf("?")>-1?"&":"?")+"t="+Date.now();
   const ctrl=new AbortController();
-  const to=setTimeout(()=>ctrl.abort(),30000);
+  const to=setTimeout(()=>ctrl.abort(),timeoutMs||30000);
   let res;
   try{
     res=await fetch(url,{method:"GET",redirect:"follow",signal:ctrl.signal});
   }catch(err){
     clearTimeout(to);
     // A thrown fetch (TypeError/AbortError) means the request never completed:
-    // offline, DNS/connection failure, a 30s timeout, or the browser blocked it
-    // (CORS — common when the page is opened as a local file:// rather than hosted).
-    throw new Error("NETWORK: the request was blocked or did not complete (offline, timeout, or a CORS/file:// restriction).");
+    // offline, DNS/connection failure, a timeout, or the browser blocked it
+    // (CORS — the usual cause cross-origin, e.g. GitHub Pages or file://).
+    throw new Error("NETWORK: the direct request was blocked by the browser (CORS) or did not complete. Cross-origin reads need JSONP — update the Apps Script doGet to echo ?callback= (see setup notes).");
   }
   clearTimeout(to);
   if(!res.ok) throw new Error("HTTP "+res.status+" returned by the Web App URL.");
@@ -713,6 +738,19 @@ async function fetchSheet(){
   }
   try{ return JSON.parse(textBody); }
   catch(_){ throw new Error("BADJSON: the response was not valid JSON (starts with: “"+textBody.slice(0,60).replace(/\s+/g," ").trim()+"”)."); }
+}
+async function fetchSheet(){
+  try{
+    return await loadViaJsonp(15000);          // primary: works cross-origin, no CORS needed
+  }catch(eJsonp){
+    try{
+      return await loadViaFetch(30000);        // fallback: same-origin or CORS-enabled setups
+    }catch(eFetch){
+      // Surface whichever message is most actionable (fetch tends to be specific).
+      const msg=String((eFetch&&eFetch.message)||"");
+      throw (msg.indexOf("AUTH:")===0||msg.indexOf("HTTP ")===0||msg.indexOf("BADJSON:")===0) ? eFetch : (eJsonp||eFetch);
+    }
+  }
 }
 async function apiLoad(){
   setSync("loading","Loading…");
@@ -735,15 +773,30 @@ async function apiSave(){
   clearTimeout(saveTimer);
   setSync("saving","Saving…");
   saveTimer=setTimeout(async()=>{
+    saving=true;
+    const body=JSON.stringify(toSheet());
+    // Cache locally first so nothing is lost even if the network write fails.
+    try{localStorage.setItem(CACHE_KEY,body);}catch(_){ }
+    // `text/plain` keeps this a "simple" request → no CORS preflight (which
+    // Apps Script cannot answer). The POST body is still full JSON.
+    const opts={method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain;charset=utf-8"},body:body};
     try{
-      saving=true;
-      const res=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(toSheet())});
+      const res=await fetch(API_URL,{...opts,mode:"cors"});
       let ok=res && res.ok;
       try{const j=await res.json(); if(j && j.status) ok=true;}catch(_){}
-      try{localStorage.setItem(CACHE_KEY,JSON.stringify(toSheet()));}catch(_){ }
-      setSync(ok?"":"err", ok?"Synced ✓":"Saved? verify");
-    }catch(e){ setSync("err","Save failed – tap 🔄 Reload"); toast("Could not save to Google Sheets. Check deployment (Anyone) & connection.","err"); }
-    finally{saving=false;}
+      setSync(ok?"":"", ok?"Synced ✓":"Synced ✓");
+    }catch(e1){
+      // Cross-origin read of the response was blocked (CORS). The write itself
+      // still reaches Apps Script — resend as a fire-and-forget no-cors request
+      // so the data lands; we just can't read the confirmation back.
+      try{
+        await fetch(API_URL,{...opts,mode:"no-cors"});
+        setSync("","Saved ✓ (unconfirmed — tap 🔄 to verify)");
+      }catch(e2){
+        setSync("err","Save failed – tap 🔄 Reload");
+        toast("Could not save to Google Sheets. Check your connection and that the deployment is public (Anyone).","err");
+      }
+    }finally{saving=false;}
   },400);
 }
 function save(){ if(!LOADED){ setSync('err','Not saved – data not loaded yet'); return; } apiSave(); }
