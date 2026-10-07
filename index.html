@@ -113,7 +113,8 @@ section{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
 /* ---------------- Tables ---------------- */
 .card-head{display:flex;justify-content:flex-end;align-items:center;position:relative;height:0}
 .tablebox{position:relative}
-.tablebox .table-scroll{overflow-x:auto;overflow-y:hidden;border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pinch-zoom;cursor:grab;background:var(--card)}
+.tablebox .table-scroll{overflow-x:auto;overflow-y:hidden;border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-y;cursor:grab;background:var(--card);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.table-scroll img,.table-scroll a{-webkit-user-drag:none;user-drag:none}
 .tablebox::after{content:"";position:absolute;top:0;right:0;bottom:0;width:52px;pointer-events:none;
   background:linear-gradient(90deg,transparent,var(--card));border-radius:0 var(--radius-sm) var(--radius-sm) 0;opacity:.92}
 .table-scroll{overflow-x:auto;overflow-y:hidden;border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x;background:var(--card)}
@@ -184,6 +185,7 @@ button{font-family:inherit;cursor:pointer;border:none;border-radius:12px;font-we
 .btn-red{background:linear-gradient(135deg,#e5484d,#ff6b70);color:#fff;padding:12px 22px;font-size:14px;box-shadow:0 8px 20px rgba(229,72,77,.3)}
 .btn-red:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(229,72,77,.4)}
 .btn-sm{padding:7px 13px;font-size:12px;border-radius:10px}
+.hist-actions{display:inline-flex;gap:8px;flex-wrap:wrap}
 .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 
 /* ---------------- Forms ---------------- */
@@ -543,19 +545,25 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 
 /* ---- Mobile: Game Day History column rebalance + compact actions ---- */
 @media (max-width:640px){
-  #history th,#history td{padding:9px 7px}
-  /* Date clear on one line */
-  #history th:nth-child(1),#history td:nth-child(1){white-space:nowrap;width:1%;font-size:12px}
-  #history th:nth-child(2),#history td:nth-child(2),
-  #history th:nth-child(3),#history td:nth-child(3),
-  #history th:nth-child(4),#history td:nth-child(4){white-space:nowrap}
-  /* Details column: cap width (override desktop min-width:260px) */
-  #history td:nth-child(5){min-width:0}
-  #history th:nth-child(5),#history td:nth-child(5){max-width:150px;white-space:normal;word-break:break-word}
-  #history td:nth-child(5) > div{font-size:11.5px;line-height:1.35}
-  /* Actions: compact */
-  #history th:nth-child(6),#history td:nth-child(6){white-space:nowrap;width:1%}
-  #history td:nth-child(6) .btn-sm{padding:5px 7px;font-size:12px;border-radius:8px}
+  /* Fixed layout so every column obeys its width and nothing can overlap */
+  #history{table-layout:fixed;min-width:520px;width:520px}
+  #history th,#history td{padding:9px 6px;vertical-align:top;overflow:hidden}
+  /* Date — unchanged size, keep on one line */
+  #history th:nth-child(1),#history td:nth-child(1){width:64px;white-space:nowrap;font-size:12px}
+  /* Mode — reduced ~30% */
+  #history th:nth-child(2),#history td:nth-child(2){width:60px;white-space:normal;word-break:break-word}
+  #history td:nth-child(2) .pill{white-space:normal;font-size:11px;padding:2px 7px;line-height:1.2;display:inline-block}
+  /* Course — reduced ~50% */
+  #history th:nth-child(3),#history td:nth-child(3){width:50px;white-space:normal;word-break:break-word;font-size:11.5px}
+  /* Indiv? — minimal, secondary */
+  #history th:nth-child(4),#history td:nth-child(4){width:34px;white-space:nowrap;text-align:center;font-size:11.5px}
+  /* Details — increased ~20%, wraps, contained */
+  #history th:nth-child(5),#history td:nth-child(5){width:220px;min-width:0;max-width:none;white-space:normal;word-break:break-word}
+  #history td:nth-child(5) > div{font-size:11.5px;line-height:1.4;white-space:normal;word-break:break-word}
+  /* Actions — increased ~20%, fully visible, buttons wrap with large touch area */
+  #history th:nth-child(6),#history td:nth-child(6){width:92px;white-space:normal}
+  #history td:nth-child(6) .hist-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start}
+  #history td:nth-child(6) .btn-sm{margin:0;padding:8px 10px;font-size:13px;border-radius:9px;min-width:40px;min-height:36px;line-height:1;display:inline-flex;align-items:center;justify-content:center}
   .cash-filterbar{gap:7px}
   .cash-filter-label{width:100%;margin-bottom:-2px}
 }
@@ -1109,7 +1117,7 @@ function renderLeaderboard(stats){const arr=Object.values(stats).sort((a,b)=>b.p
 function renderHistory(){const tb=$("#history tbody");const sorted=state.gameDays.slice().sort((a,b)=>b.date.localeCompare(a.date));
   tb.innerHTML=sorted.length?sorted.map(g=>`<tr><td>${fmtDate(g.date)}</td><td><span class="pill ${g.isPlayoff?'po':''}">${g.isPlayoff?'🏝️ '+g.mode:g.mode}</span></td><td>${g.course||'–'}</td><td>${g.indivCounts?'✔ yes':'–'}</td>
     <td>${g.rows.map(r=>{const b=g.isPlayoff?playoffShotsFor(r.player,g.date):0;return `<div style="font-size:12.5px"><span class="player-dot" style="background:${playerColor(r.player)}"></span> ${r.player}: ${r.strokes!==null?fmtPar(r.strokes)+(b?` (−${b})`:'')+' · ':''}${fmtNum(r.points,2)} pts${r.money?' · '+fmtMoney(r.money):''}</div>`;}).join("")}</td>
-    <td style="white-space:nowrap"><button class="btn-outline btn-sm" onclick="editGame('${g.id}')">✏️</button> <button class="btn-red btn-sm" onclick="deleteGame('${g.id}')">🗑️</button></td></tr>`).join(""):`<tr><td colspan="6" style="color:var(--muted)">No game days yet.</td></tr>`;}
+    <td class="hist-actions-cell"><div class="hist-actions"><button class="btn-outline btn-sm" onclick="editGame('${g.id}')">✏️</button><button class="btn-red btn-sm" onclick="deleteGame('${g.id}')">🗑️</button></div></td></tr>`).join(""):`<tr><td colspan="6" style="color:var(--muted)">No game days yet.</td></tr>`;}
 /* ---- Single source of truth for "outstanding payment" ----
    A cash-in is an OPEN (outstanding) payment when it is money coming IN,
    is attributable to a payer, was NOT auto-generated from a game day
@@ -1351,22 +1359,40 @@ window.openTableFs=openTableFs; window.closeTableFs=closeTableFs;
 function enableDragScroll(){
   document.querySelectorAll(".table-scroll").forEach(function(el){
     if(el.__dragBound) return; el.__dragBound=true;
-    var CTRL="button,a,input,select,textarea,label,[],[onclick]";
-    var tDown=false,tx=0,ty=0,tLeft=0,tAxis=null;
+    var CTRL="button,a,input,select,textarea,label,[onclick]";
+
+    /* ---------- Touch: horizontal swipe from ANYWHERE in the table ----------
+       Works over header, text, cells and even buttons. We only hijack the
+       gesture once it is clearly horizontal; a tap (no movement) still fires
+       the button's click, and a vertical drag lets the page scroll. */
+    var tDown=false,tx=0,ty=0,tLeft=0,tAxis=null,tMoved=false,tCtrl=false;
     el.addEventListener("touchstart",function(e){
       if(e.touches.length!==1){ tDown=false; return; }
       var t=e.touches[0];
-      if(t.target&&t.target.closest&&t.target.closest(CTRL)){ tDown=false; return; }
-      tDown=true; tAxis=null; tx=t.clientX; ty=t.clientY; tLeft=el.scrollLeft;
+      tDown=true; tAxis=null; tMoved=false;
+      tx=t.clientX; ty=t.clientY; tLeft=el.scrollLeft;
+      tCtrl=!!(t.target&&t.target.closest&&t.target.closest(CTRL));
     },{passive:true});
     el.addEventListener("touchmove",function(e){
       if(!tDown||e.touches.length!==1) return;
       var t=e.touches[0], dx=t.clientX-tx, dy=t.clientY-ty;
-      if(tAxis===null && (Math.abs(dx)>6||Math.abs(dy)>6)) tAxis=Math.abs(dx)>Math.abs(dy)?"x":"y";
-      if(tAxis==="x"){ el.scrollLeft=tLeft-dx; if(e.cancelable) e.preventDefault(); }
+      if(tAxis===null && (Math.abs(dx)>6||Math.abs(dy)>6)){
+        tAxis=Math.abs(dx)>Math.abs(dy)?"x":"y";
+      }
+      if(tAxis==="x"){
+        tMoved=true;
+        el.scrollLeft=tLeft-dx;
+        if(e.cancelable) e.preventDefault();   /* stop vertical hijack + text selection */
+      }
     },{passive:false});
     function tEnd(){ tDown=false; tAxis=null; }
-    el.addEventListener("touchend",tEnd); el.addEventListener("touchcancel",tEnd);
+    el.addEventListener("touchend",tEnd,{passive:true});
+    el.addEventListener("touchcancel",tEnd,{passive:true});
+    /* If the finger moved horizontally, swallow the click so a swipe that ends
+       on a button does not accidentally trigger it. */
+    el.addEventListener("click",function(e){ if(tMoved){ e.stopPropagation(); e.preventDefault(); tMoved=false; } },true);
+
+    /* ---------- Mouse drag-to-scroll (desktop) ---------- */
     var mDown=false,mx=0,my=0,mLeft=0,mAxis=null,moved=false,pid=null;
     el.addEventListener("pointerdown",function(e){
       if(e.pointerType==="touch") return;
