@@ -518,6 +518,8 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
   .h-controls{gap:10px}
 }
 
+.h-main .edit-title{cursor:default;-webkit-user-select:none;user-select:none}
+.h-main .edit-title:focus{background:transparent}
 </style>
 </head>
 <body>
@@ -527,7 +529,7 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 <div class="wrap">
   <div class="header">
     <div class="h-main">
-      <h1><span class="edit-title" id="titleInput" contenteditable="true" spellcheck="false">Swing Bros</span></h1>
+      <h1><span class="edit-title" id="titleInput">Swing Bros</span></h1>
       <div class="subtitle">Championship and Budget Dashboard</div>
       <div class="sub">Live-synced to Google Sheets · use the <b>＋</b> button (bottom-right) to add data</div>
     </div>
@@ -1192,8 +1194,7 @@ function wireUI(){
   populateSelect($("#gd_mode"),GAME_MODES);populateSelect($("#ng_type"),NON_GOLF_TYPES);
   populateSelect($("#ng_payer"),state.players.map(p=>p.name),true);
   $$(".cur-sym").forEach(e=>e.textContent=CURRENCY);
-  $("#titleInput").textContent=keyTitle(state.title);{var _y=document.getElementById("yearInput"); if(_y) _y.textContent=state.year;}
-  $("#titleInput").addEventListener("input",e=>{state.title=e.target.textContent.trim();save();});
+  $("#titleInput").textContent=keyTitle(state.title);{var _y=document.getElementById("yearInput"); if(_y) _y.textContent=state.year;}save();});
   setTheme(state.theme||"light");
   $("#gd_indivCounts").addEventListener("change",()=>{updateScoringNote();buildPlayersForm();});
   $("#gd_playoff").addEventListener("change",()=>{updatePlayoffInfo();buildPlayersForm();});
