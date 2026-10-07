@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data: https://azure.assets.harvey.ai; connect-src 'none'; webrtc 'block'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';" />
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Swing Bros Championship & Budget Dashboard</title>
@@ -128,10 +129,10 @@ section{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
 /* ---------------- Tables ---------------- */
 .card-head{display:flex;justify-content:flex-end;align-items:center;position:relative;height:0}
 .tablebox{position:relative}
-.tablebox .table-scroll{overflow:hidden;border-radius:var(--radius-sm)}
+.tablebox .table-scroll{overflow-x:auto;overflow-y:hidden;border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x}
 .tablebox::after{content:"";position:absolute;top:0;right:0;bottom:0;width:52px;pointer-events:none;
   background:linear-gradient(90deg,transparent,var(--card));border-radius:0 var(--radius-sm) var(--radius-sm) 0;opacity:.92}
-.table-scroll{overflow-x:auto;overflow-y:hidden;border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pan-y;background:var(--card)}
+.table-scroll{overflow-x:auto;overflow-y:hidden;border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x;background:var(--card)}
 table{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px;min-width:620px;background:var(--card)}
 thead th{background:transparent;color:var(--muted);padding:12px 14px;text-align:left;font-weight:700;
   font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;
@@ -280,11 +281,18 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:var(--ring);ba
 .editing{outline:3px solid var(--gold);border-radius:24px}
 
 /* ---------------- Boot / loading ---------------- */
-#boot{position:fixed;inset:0;z-index:4000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:#ffffff}
-#boot .ball{font-size:60px;animation:spin 1.4s linear infinite}
-#boot .bootlogo{font-size:48px;line-height:1;width:auto;height:auto;border-radius:0;box-shadow:none;background:none}
-@keyframes spin{to{transform:rotate(360deg)}}
-#boot p{color:var(--muted);font-weight:600}
+/* Clean white full-screen loader. Fades out AND is removed from the DOM after
+   init (see removeBoot()), so it can never leave an invisible overlay that
+   blocks the theme toggle or any other control. pointer-events is dropped the
+   instant the fade begins. */
+#boot{position:fixed;inset:0;z-index:4000;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:26px;background:#ffffff;opacity:1;transition:opacity .5s ease}
+#boot.boot-hide{opacity:0;pointer-events:none}
+#boot .ball{font-size:86px;line-height:1;width:auto;height:auto;border-radius:0;box-shadow:none;background:none;
+  will-change:transform;animation:spin 1.1s linear infinite;transform-origin:50% 50%}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+#boot p{color:#6b7d74;font-weight:600;letter-spacing:.01em}
+@media (prefers-reduced-motion:reduce){#boot .ball{animation-duration:2.2s}}
 
 /* ---------------- Scroll hint ---------------- */
 .scrollhint{display:none}
@@ -330,9 +338,9 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:var(--ring);ba
   .dash{grid-template-columns:1fr 1fr;gap:12px}
   .stat{padding:16px}.stat .value{font-size:20px}
   .budget-big{padding:16px}
-  .table-scroll{-webkit-overflow-scrolling:touch;overflow-x:auto;overscroll-behavior-x:contain;touch-action:pan-x pan-y}
+  .table-scroll{-webkit-overflow-scrolling:touch;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;touch-action:pan-x}
   .tablebox::after{display:none}
-  .tablebox .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pan-y}
+  .tablebox .table-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x}
   table{font-size:13.5px;min-width:600px}
   thead th{padding:10px 10px;font-size:11px}
   tbody td{padding:11px 10px}
@@ -408,9 +416,12 @@ section>.card,section>div>.card{width:100%}
 .budget-big{width:100%}
 
 
-/* Swipe anywhere in all tables (every row), scroll container owns the gesture */
+/* Swipe anywhere in all tables (every row). The scroll container owns the
+   horizontal gesture (touch-action:pan-x => native left/right panning from any
+   point inside it); vertical swipes fall through to the page. Children inherit
+   the same touch-action so there are no dead zones on any row, cell or column. */
 .tablebox::after{pointer-events:none}
-.table-scroll{touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.table-scroll{overflow-x:auto;overflow-y:hidden;touch-action:pan-x;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
 table,tbody,thead,tr,td,th{touch-action:inherit}
 tbody tr{background:transparent}
 .table-scroll{cursor:grab;user-select:none;-webkit-user-select:none}
@@ -420,7 +431,7 @@ tbody tr{background:transparent}
 </head>
 <body>
 
-<div id="boot"><div class="ball bootlogo">🐯</div><p>Loading Swing Bros data from Google Sheets…</p></div>
+<div id="boot" role="status" aria-live="polite"><div class="ball" aria-hidden="true">🐯</div><p>Loading Swing Bros data from Google Sheets…</p></div>
 
 <div class="wrap">
   <div class="header">
@@ -876,6 +887,17 @@ function renderHistory(){const tb=$("#history tbody");const sorted=state.gameDay
   tb.innerHTML=sorted.length?sorted.map(g=>`<tr><td>${g.date}</td><td><span class="pill ${g.isPlayoff?'po':''}">${g.isPlayoff?'🏝️ '+g.mode:g.mode}</span></td><td>${g.course||'–'}</td><td>${g.indivCounts?'✔ yes':'–'}</td>
     <td>${g.rows.map(r=>{const b=g.isPlayoff?playoffShotsFor(r.player,g.date):0;return `<div style="font-size:12.5px"><span class="player-dot" style="background:${playerColor(r.player)}"></span> ${r.player}: ${r.strokes!==null?fmtPar(r.strokes)+(b?` (−${b})`:'')+' · ':''}${fmtNum(r.points,2)} pts${r.money?' · '+fmtMoney(r.money):''}</div>`;}).join("")}</td>
     <td style="white-space:nowrap"><button class="btn-outline btn-sm" onclick="editGame('${g.id}')">✏️</button> <button class="btn-red btn-sm" onclick="deleteGame('${g.id}')">🗑️</button></td></tr>`).join(""):`<tr><td colspan="6" style="color:var(--muted)">No game days yet.</td></tr>`;}
+/* ---- Single source of truth for "outstanding payment" ----
+   A cash-in is an OPEN (outstanding) payment when it is money coming IN,
+   is attributable to a payer, was NOT auto-generated from a game day
+   (those are tracked via the game-day rows instead), and has a positive
+   amount. Both the Outstanding Payments table and the Cash-In History
+   confirm checkbox use THIS predicate, so the two can never diverge.
+   Category (Golf/PGA/FIFA/Others) is irrelevant here — a manual cash-in
+   is outstanding regardless of its category until it is confirmed. */
+function isOpenPayment(c){
+  return !!c && c.flow!=="Out" && !!c.payer && !c.gameId && num(c.amount)>0;
+}
 function renderSettlement(){
   const tb=$("#settleTable tbody");
   const items=[];
@@ -888,7 +910,8 @@ function renderSettlement(){
         what:`⛳ Golf · ${last.date}${last.course?' · '+last.course:''}`,amount:num(r.money)});
     });
   }
-  state.cashIns.filter(c=>c.payer && !c.gameId && c.type!=="Golf" && num(c.amount)>0 && !c.paid).forEach(c=>{
+  // Every unconfirmed cash-in (any category) is an outstanding payment.
+  state.cashIns.filter(c=>isOpenPayment(c) && !c.paid).forEach(c=>{
     items.push({kind:"cash",cashId:c.id,player:c.payer,
       what:`${c.type?c.type+" · ":""}${c.name||""} (${c.date})`,amount:num(c.amount)});
   });
@@ -928,7 +951,7 @@ function renderCash(){const map={};state.players.forEach(p=>map[p.name]={name:p.
   const arr=Object.values(map).sort((a,b)=>b.total-a.total);
   $("#cashTable tbody").innerHTML=arr.map((m,i)=>`<tr><td><span class="rankbadge ${i===0&&m.total>0?'r1':''}">${i+1}</span></td><td><span class="player-dot" style="background:${m.color}"></span> ${m.name}</td><td class="pts">${fmtMoney(m.total)}</td><td>${fmtMoney(m.Golf)}</td><td>${fmtMoney(m.PGA)}</td><td>${fmtMoney(m.FIFA)}</td><td>${fmtMoney(m.Others)}</td><td>${m.count}</td></tr>`).join("");
   const inR=state.cashIns.map(c=>({...c,flow:"In"}));const outR=state.outflows.map(o=>({...o,flow:"Out",type:"Expense",payer:""}));const all=inR.concat(outR).sort((a,b)=>b.date.localeCompare(a.date));
-  $("#ngHistory tbody").innerHTML=all.length?all.map(c=>{const payable=(c.flow==="In") && c.payer && !c.gameId;const paidCell = c.gameId ? '<span class="small-muted">via game</span>' : (payable ? `<input type="checkbox" class="paid-chk" title="Mark as paid" style="width:20px;height:20px;cursor:pointer" ${c.paid?"checked":""} onclick="toggleCashPaid(\'${c.id}\')">` : '<span class="small-muted">—</span>');const actionCell = c.gameId ? '<span class="small-muted">⛳ from game</span>' : `<button class="btn-red btn-sm" onclick="deleteCashIn(\'${c.id}\')">🗑️</button>`;return `<tr><td>${c.date}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type||'–'}${c.gameId?' <span class=\'pill\'>⛳</span>':''}</td><td>${c.name||'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${c.payer}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td style="text-align:center">${paidCell}</td><td style="text-align:center">${actionCell}</td></tr>`;}).join(""):`<tr><td colspan="8" style="color:var(--muted)">No entries yet.</td></tr>`;}
+  $("#ngHistory tbody").innerHTML=all.length?all.map(c=>{const payable=isOpenPayment(c);const paidCell = c.gameId ? '<span class="small-muted">via game</span>' : (payable ? `<input type="checkbox" class="paid-chk" title="Mark as received / confirm payment" style="width:20px;height:20px;cursor:pointer" ${c.paid?"checked":""} onclick="toggleCashPaid(\'${c.id}\')">` : '<span class="small-muted">—</span>');const actionCell = c.gameId ? '<span class="small-muted">⛳ from game</span>' : `<button class="btn-red btn-sm" onclick="deleteCashIn(\'${c.id}\')">🗑️</button>`;return `<tr><td>${c.date}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type||'–'}${c.gameId?' <span class=\'pill\'>⛳</span>':''}</td><td>${c.name||'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${c.payer}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td style="text-align:center">${paidCell}</td><td style="text-align:center">${actionCell}</td></tr>`;}).join(""):`<tr><td colspan="8" style="color:var(--muted)">No entries yet.</td></tr>`;}
 function renderAppts(){$("#apptList").innerHTML=state.appts.length?state.appts.map(a=>{const po=/island|play.?off|final/i.test(a.what);const w=String(a.when||"").trim();const hasDate=/\d/.test(w) && !/^tbd$/i.test(w) && !/^n\/?a$/i.test(w);const cls=po?"playoff":(hasDate?"dated":"tbd");return `<div class="appt ${cls}"><div class="what">${a.what}</div><div style="display:flex;align-items:center;gap:8px"><span class="when">${w||"tbd"}</span><button onclick="deleteAppt('${a.id}')">✕</button></div></div>`;}).join(""):`<p style="color:var(--muted)">No upcoming appointments.</p>`;}
 
 const M_LABELS={
@@ -1002,12 +1025,21 @@ function wireUI(){
   $("#exportBtn").addEventListener("click",exportCSV);
   $("#reloadBtn").addEventListener("click",async()=>{try{await apiLoad();LOADED=true;wireAfterData();renderAll();toast("Reloaded from Google Sheets ✔");}catch(e){toast("Reload failed – check Apps Script deployment (Anyone).","err");}});
   (function(){
-    function __toggleTheme(ev){ if(ev){ ev.preventDefault(); ev.stopPropagation(); }
-      const t=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark"; setTheme(t); save(); }
+    // A single click handler covers mouse, touch (tap -> synthetic click) and
+    // keyboard activation (Enter/Space on a <button>). It does NOT depend on a
+    // scroll event, touchend hacks, or capture-phase delegation — those caused
+    // the earlier "only works after scrolling" flakiness. The loader is removed
+    // from the DOM (removeBoot) so nothing can sit above the toggle at the top.
+    function __toggleTheme(){
+      const t=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";
+      setTheme(t); save();
+    }
     const tb=document.getElementById("themeBtn");
-    if(tb){ tb.addEventListener("click",__toggleTheme); tb.addEventListener("touchend",__toggleTheme,{passive:false}); }
-    // fail-safe: delegated capture handler so the toggle works even if an overlay sits above it at the top
-    document.addEventListener("click",function(e){ if(e.target && e.target.closest && e.target.closest("#themeBtn")) __toggleTheme(e); }, true);
+    if(tb){
+      tb.setAttribute("type","button");
+      tb.addEventListener("click",__toggleTheme);
+      tb.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "||e.key==="Spacebar"){ e.preventDefault(); __toggleTheme(); } });
+    }
   })();
   $("#resetBtn").addEventListener("click",()=>{
     if(!confirm("Do you really want to reset the season? This clears all game days, cash-ins, expenses and appointments (players, handicaps and settings are kept).")) return;
@@ -1064,32 +1096,28 @@ function closeTableFs(){
 }
 window.openTableFs=openTableFs; window.closeTableFs=closeTableFs;
 
-/* ---- Universal drag-to-scroll for tables (mouse + touch, from anywhere) ---- */
+/* ---- Mouse drag-to-scroll for tables (desktop only, from anywhere) ----
+   Touch and trackpad are handled natively by `overflow-x:auto` +
+   `touch-action:pan-x`, so this handler is scoped to the MOUSE pointer only.
+   Hijacking touch here (preventDefault + pointer capture) is exactly what used
+   to fight native panning and create dead zones, so we never touch it now. */
 function enableDragScroll(){
   document.querySelectorAll(".table-scroll").forEach(function(el){
     if(el.__dragBound) return; el.__dragBound=true;
-    let down=false, startX=0, startLeft=0, moved=false, decideAxis=null, startY=0;
+    let down=false, startX=0, startLeft=0, moved=false;
     el.style.cursor="grab";
     el.addEventListener("pointerdown",function(e){
-      // left mouse button or touch/pen
-      if(e.pointerType==="mouse" && e.button!==0) return;
-      down=true; moved=false; decideAxis=null;
-      startX=e.clientX; startY=e.clientY; startLeft=el.scrollLeft;
+      if(e.pointerType!=="mouse") return;   // touch/pen -> native scrolling
+      if(e.button!==0) return;              // left button only
+      down=true; moved=false;
+      startX=e.clientX; startLeft=el.scrollLeft;
       el.style.cursor="grabbing";
     });
     el.addEventListener("pointermove",function(e){
       if(!down) return;
-      const dx=e.clientX-startX, dy=e.clientY-startY;
-      if(decideAxis===null && (Math.abs(dx)>4 || Math.abs(dy)>4)){
-        decideAxis = Math.abs(dx) >= Math.abs(dy) ? "x" : "y";
-        if(decideAxis==="x"){ try{el.setPointerCapture(e.pointerId);}catch(_){} }
-      }
-      if(decideAxis==="x"){
-        el.scrollLeft = startLeft - dx;
-        moved=true;
-        e.preventDefault();           // keep the horizontal drag inside the table
-      }
-      // if axis==="y" -> let the page scroll vertically (do nothing)
+      const dx=e.clientX-startX;
+      if(Math.abs(dx)>3){ moved=true; try{el.setPointerCapture(e.pointerId);}catch(_){} }
+      if(moved){ el.scrollLeft=startLeft-dx; e.preventDefault(); }
     },{passive:false});
     function end(e){
       if(!down) return; down=false; el.style.cursor="grab";
@@ -1098,23 +1126,39 @@ function enableDragScroll(){
     el.addEventListener("pointerup",end);
     el.addEventListener("pointercancel",end);
     el.addEventListener("pointerleave",end);
-    // prevent accidental click (e.g., on edit/delete buttons) right after a horizontal drag
+    // prevent an accidental click (e.g., on edit/delete buttons) right after a drag
     el.addEventListener("click",function(e){ if(moved){ e.stopPropagation(); e.preventDefault(); moved=false; } },true);
   });
 }
 
 window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=deleteCashIn;window.deleteAppt=deleteAppt;window.markGolfPaid=markGolfPaid;window.markCashPaid=markCashPaid;window.toggleCashPaid=toggleCashPaid;
 
+/* ---- Loading screen teardown ----
+   Fade the loader out and then REMOVE it from the DOM entirely. The fade class
+   drops pointer-events immediately, and the node is deleted on transitionend
+   (with a timeout fallback), so no invisible overlay can ever remain to block
+   the theme toggle or any other control. This is driven purely by init
+   completion — never by a scroll event. */
+function removeBoot(){
+  const b=document.getElementById("boot");
+  if(!b || b.__removing) return;
+  b.__removing=true;
+  b.classList.add("boot-hide");
+  const done=function(){ if(b && b.parentNode) b.parentNode.removeChild(b); };
+  b.addEventListener("transitionend",done,{once:true});
+  setTimeout(done,650);
+}
+
 (async function start(){
   let shownCache=false;
   try{
     const cached=localStorage.getItem(CACHE_KEY);
-    if(cached){ state=fromSheet(JSON.parse(cached)); wireUI(); renderAll(); $("#boot").style.display="none"; shownCache=true; setSync("loading","Updating…"); }
+    if(cached){ state=fromSheet(JSON.parse(cached)); wireUI(); renderAll(); removeBoot(); shownCache=true; setSync("loading","Updating…"); }
   }catch(e){}
   try{
     await apiLoad();
     LOADED=true;
-    if(shownCache){ wireAfterData(); renderAll(); } else { wireUI(); renderAll(); $("#boot").style.display="none"; }
+    if(shownCache){ wireAfterData(); renderAll(); } else { wireUI(); renderAll(); removeBoot(); }
   }catch(e){
     if(shownCache){ setSync("err","Offline – showing last saved"); }
     else{
