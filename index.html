@@ -471,7 +471,6 @@ html[data-theme="dark"]
 
 .h-main h1{font-size:clamp(30px,4vw,46px);font-weight:800;letter-spacing:-.03em;line-height:1.02;margin:0}
 .h-main .edit-title{background:transparent;border:none;color:#fff;font:inherit;font-weight:800;outline:none;border-radius:8px;padding:0 2px;max-width:100%}
-.h-main 
 .h-main .subtitle{font-size:clamp(14px,1.5vw,18px);font-weight:600;color:rgba(255,255,255,.92)}
 .h-main .sub{font-size:12.5px;color:rgba(255,255,255,.68);margin-top:8px}
 
@@ -519,7 +518,6 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 }
 
 
-.h-main 
 /* header text is read-only (display only) but selectable for copy */
 .h-main .edit-title,.h-main h1 .edit-title{cursor:text;-webkit-user-select:text;user-select:text;outline:none;caret-color:transparent;background:transparent}
 .h-main .edit-title:focus,.h-main h1 .edit-title:focus{background:transparent;outline:none}
@@ -1198,7 +1196,7 @@ function wireUI(){
   populateSelect($("#gd_mode"),GAME_MODES);populateSelect($("#ng_type"),NON_GOLF_TYPES);
   populateSelect($("#ng_payer"),state.players.map(p=>p.name),true);
   $$(".cur-sym").forEach(e=>e.textContent=CURRENCY);
-  $("#titleInput").textContent=keyTitle(state.title);{var _y=document.getElementById("yearInput"); if(_y) _y.textContent=state.year;}save();});
+  $("#titleInput").textContent=keyTitle(state.title);{var _y=document.getElementById("yearInput"); if(_y) _y.textContent=state.year;}
   setTheme(state.theme||"light");
   $("#gd_indivCounts").addEventListener("change",()=>{updateScoringNote();buildPlayersForm();});
   $("#gd_playoff").addEventListener("change",()=>{updatePlayoffInfo();buildPlayersForm();});
