@@ -2,151 +2,537 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Swing Bros Championship & Budget Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --green-900:#0f3d2e;--green-800:#14503b;--green-700:#1b6b4f;--green-600:#22855f;
-  --green-500:#2fa373;--green-100:#e6f4ec;--gold:#c9a227;--gold-light:#f3e4a6;
-  --ink:#1d2721;--muted:#6b7a72;--bg:#f4f7f4;--card:#ffffff;
-  --red:#d1495b;--red-bg:#fdecef;--green-pos:#1b9c6b;--green-pos-bg:#e6f6ef;
-  --shadow:0 6px 22px rgba(16,54,39,.08);--shadow-lg:0 12px 40px rgba(16,54,39,.14);
-  --radius:16px;--border:#d9e4dd;--table-head:#0f3d2e;--input-bg:#fff;--dash-tile:#13251d;
+  /* ---------- Premium design tokens ---------- */
+  --green-900:#0b3b2a;--green-800:#0f4a35;--green-700:#166a4b;--green-600:#1f8a5f;
+  --green-500:#2fb37c;--green-400:#4fd49a;--green-100:#e8f6ef;--green-50:#f3fbf7;
+  --gold:#caa43a;--gold-2:#e3c766;--gold-light:#f6ecc5;
+  --ink:#0f1a16;--ink-soft:#33433c;--muted:#6b7d74;--line:#e7eeea;
+  --bg:#f4f7f5;--bg-2:#eef3f0;--card:#ffffff;--card-2:#fbfdfc;
+  --red:#e5484d;--red-bg:#fdecef;--amber:#d9a300;--amber-bg:#fff7e0;
+  --pos:#15936b;--pos-bg:#e6f6ef;
+  --radius:20px;--radius-sm:14px;--radius-xs:10px;
+  --shadow-xs:0 1px 2px rgba(16,40,30,.06);
+  --shadow:0 4px 16px rgba(16,40,30,.07), 0 1px 3px rgba(16,40,30,.05);
+  --shadow-lg:0 18px 48px rgba(16,40,30,.14);
+  --shadow-glow:0 8px 30px rgba(47,179,124,.25);
+  --ring:0 0 0 4px rgba(47,179,124,.16);
+  --grad-head:linear-gradient(135deg,#0b3b2a 0%,#166a4b 55%,#1f8a5f 100%);
+  --grad-gold:linear-gradient(135deg,var(--gold),var(--gold-2));
+  --glass:rgba(255,255,255,.72);
+  --space:8px;
+  --t:200ms cubic-bezier(.4,0,.2,1);
+  --font:'Inter','Poppins',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
 }
 html[data-theme="dark"]{
-  --ink:#e8f0ea;--muted:#8fa399;--bg:#0d1613;--card:#152420;--green-100:#1c3328;--border:#2a4034;
-  --table-head:#0a2419;--red-bg:#3a1c22;--green-pos-bg:#13332a;--input-bg:#1a2b24;--dash-tile:#0b1813;
-  --shadow:0 6px 22px rgba(0,0,0,.4);--shadow-lg:0 12px 40px rgba(0,0,0,.5);--gold-light:#d9c27a;
+  --green-100:#13302440;--green-50:#102a1f;
+  --ink:#eaf2ed;--ink-soft:#c3d2ca;--muted:#8aa096;--line:#223029;
+  --bg:#0a110e;--bg-2:#0d1713;--card:#121d18;--card-2:#15221c;
+  --red-bg:#3a1c22;--pos-bg:#113128;--amber-bg:#2e2608;--gold-light:#d9c27a;
+  --glass:rgba(20,32,26,.6);
+  --shadow:0 4px 18px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.5);
+  --shadow-lg:0 20px 54px rgba(0,0,0,.55);
+  --shadow-glow:0 8px 30px rgba(47,179,124,.22);
 }
+
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Poppins',system-ui,sans-serif;color:var(--ink);line-height:1.5;padding:18px;
-  background:radial-gradient(1200px 500px at 90% -10%, var(--green-100) 0%, transparent 60%),var(--bg);transition:background .3s,color .3s}
-.wrap{max-width:1320px;margin:0 auto}
-.header{background:linear-gradient(120deg,var(--green-900),var(--green-700));color:#fff;border-radius:var(--radius);
-  padding:22px 28px;box-shadow:var(--shadow-lg);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;position:relative;overflow:hidden}
-.header::after{content:"🏌️";position:absolute;right:-10px;bottom:-20px;font-size:120px;opacity:.08}
-.header .titlewrap{flex:1;min-width:260px}
-.header h1{font-size:clamp(18px,2.6vw,27px);font-weight:800;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.header h1 .edit-title{background:transparent;border:none;color:#fff;font:inherit;font-weight:800;border-bottom:2px dashed rgba(255,255,255,.3);outline:none;min-width:360px;max-width:100%}
-.header .sub{opacity:.85;font-size:13px;margin-top:4px}
-.header .right{display:flex;align-items:center;gap:16px}
-.season-badge{background:var(--gold);color:#3a2f05;padding:10px 20px;border-radius:14px;text-align:center;box-shadow:var(--shadow);font-weight:800}
-.season-badge .s{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;opacity:.75;font-weight:700}
-.season-badge .y{font-size:30px;line-height:1;display:flex;align-items:center;gap:4px}
-.season-badge .y input{background:transparent;border:none;color:#3a2f05;font:inherit;font-weight:800;width:76px;outline:none;text-align:center}
-.theme-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer;transition:.2s}
-.theme-btn:hover{background:rgba(255,255,255,.3);transform:scale(1.08)}
-/* sync status chip */
-.sync{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.14);color:#fff;padding:7px 14px;border-radius:20px;font-size:12.5px;font-weight:600}
-.sync .dot{width:9px;height:9px;border-radius:50%;background:#9fe0bf;box-shadow:0 0 0 0 rgba(159,224,191,.6)}
-.sync.saving .dot{background:#f3e4a6;animation:pulse 1s infinite}
-.sync.err .dot{background:#ff7a86}
-.sync.loading .dot{background:#f3e4a6;animation:pulse 1s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(243,228,166,.6)}70%{box-shadow:0 0 0 8px rgba(243,228,166,0)}100%{box-shadow:0 0 0 0 rgba(243,228,166,0)}}
-section{margin-top:26px;animation:fade .5s ease}
-.section-title{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;color:var(--green-500);margin-bottom:14px;flex-wrap:wrap}
-.section-title .ico{font-size:22px}
-.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
-.grid{display:grid;gap:18px}.cols-2{grid-template-columns:1fr 1fr}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font);color:var(--ink);line-height:1.55;letter-spacing:-.01em;
+  padding:28px 24px 40px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  background:
+    radial-gradient(900px 480px at 100% -5%, rgba(47,179,124,.10), transparent 60%),
+    radial-gradient(760px 420px at -10% 8%, rgba(202,164,58,.08), transparent 55%),
+    var(--bg);
+  transition:background .4s ease,color .3s ease;min-height:100vh;
+}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+
+/* ---------------- Header ---------------- */
+
+
+
+
+
+
+
+.header h1 
+
+
+
+
+
+/* sync chip (glass) */
+
+
+
+
+70%{box-shadow:0 0 0 9px rgba(243,228,166,0)}100%{box-shadow:0 0 0 0 rgba(243,228,166,0)}}
+
+
+
+
+
+
+
+
+
+/* ---------------- Sections & cards ---------------- */
+section{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.section-title{display:flex;align-items:center;gap:12px;font-size:19px;font-weight:700;letter-spacing:-.02em;
+  color:var(--ink);margin-bottom:16px;flex-wrap:wrap}
+.section-title .ico{font-size:20px;width:40px;height:40px;display:grid;place-items:center;border-radius:12px;
+  background:var(--green-100);box-shadow:var(--shadow-xs)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:26px;transition:box-shadow var(--t),transform var(--t),border-color var(--t)}
+.card:hover{box-shadow:var(--shadow-lg)}
+.grid{display:grid;gap:20px}.cols-2{grid-template-columns:1fr 1fr}
 @media(max-width:900px){.cols-2{grid-template-columns:1fr}}
-.dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
-.stat{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border-left:5px solid var(--green-500);transition:.2s}
-.stat:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
-.stat .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
-.stat .value{font-size:22px;font-weight:800;color:var(--green-500);margin-top:4px}
-.stat .meta{font-size:12px;color:var(--muted)}
-.stat.gold{border-left-color:var(--gold)}.stat.red{border-left-color:var(--red)}
-.table-scroll{overflow-x:auto;border-radius:12px}
-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:620px}
-thead th{background:var(--table-head);color:#fff;padding:11px 10px;text-align:left;font-weight:600;white-space:nowrap}
-thead th:first-child{border-top-left-radius:10px}thead th:last-child{border-top-right-radius:10px}
-tbody td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--ink)}
-tbody tr{transition:.15s}tbody tr:hover{background:var(--green-100)}
-tbody tr.leader{background:linear-gradient(90deg,var(--gold-light),transparent);font-weight:600}
-.rankbadge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--green-700);color:#fff;font-weight:700;font-size:12px}
-.rankbadge.r1{background:var(--gold);color:#3a2f05}
-.money-pos{color:var(--green-pos);font-weight:700;background:var(--green-pos-bg);padding:3px 8px;border-radius:8px}
-.money-neg{color:var(--red);font-weight:700;background:var(--red-bg);padding:3px 8px;border-radius:8px}
-.pts{font-weight:800;color:var(--green-500)}
-.shotbadge{background:var(--gold-light);color:#6a5410;font-weight:700;padding:3px 9px;border-radius:20px;font-size:12px}
-.player-dot{width:12px;height:12px;border-radius:50%;display:inline-block}
-.budget-big{background:linear-gradient(135deg,var(--dash-tile),var(--green-800));color:#fff;border-radius:var(--radius);padding:30px;text-align:center;box-shadow:var(--shadow)}
-.budget-big .lbl{font-size:13px;letter-spacing:1px;text-transform:uppercase;opacity:.7}
-.budget-big .amt{font-size:46px;font-weight:800;color:#fff;margin-top:6px}
-.appt{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--red-bg);border-left:5px solid var(--red);padding:10px 14px;border-radius:10px;margin-bottom:8px}
-.appt.playoff{background:var(--gold-light);border-left-color:var(--gold)}
+
+/* ---------------- Dashboard stat tiles ---------------- */
+.dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
+.stat{position:relative;background:linear-gradient(180deg,var(--card),var(--card-2));
+  border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);
+  transition:transform var(--t),box-shadow var(--t);overflow:hidden}
+.stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px;
+  background:linear-gradient(var(--green-500),var(--green-400))}
+.stat:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.stat .label{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.stat .value{font-size:25px;font-weight:800;letter-spacing:-.03em;color:var(--ink);margin-top:6px;line-height:1.1}
+.stat .meta{font-size:12.5px;color:var(--muted);margin-top:4px}
+.stat.gold::before{background:var(--grad-gold)}
+.stat.red::before{background:linear-gradient(var(--red),#ff7a86)}
+
+/* ---------------- Tables ---------------- */
+.card-head{display:flex;justify-content:flex-end;align-items:center;position:relative;height:0}
+.tablebox{position:relative}
+.tablebox .table-scroll{overflow-x:auto;overflow-y:hidden;border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pinch-zoom;cursor:grab;background:var(--card)}
+.tablebox::after{content:"";position:absolute;top:0;right:0;bottom:0;width:52px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--card));border-radius:0 var(--radius-sm) var(--radius-sm) 0;opacity:.92}
+.table-scroll{overflow-x:auto;overflow-y:hidden;border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x;background:var(--card)}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px;min-width:620px;background:var(--card)}
+thead th{background:transparent;color:var(--muted);padding:12px 14px;text-align:left;font-weight:700;
+  font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;
+  border-bottom:1px solid var(--line)}
+tbody td{padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:middle;color:var(--ink-soft)}
+tbody tr{transition:background var(--t)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--green-50)}
+tbody tr.leader{background:linear-gradient(90deg,var(--gold-light),transparent)}
+tbody tr.leader td{color:var(--ink);font-weight:600}
+.rankbadge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9px;
+  background:var(--green-100);color:var(--green-700);font-weight:800;font-size:12px}
+.rankbadge.r1{background:var(--grad-gold);color:#3a2f05;box-shadow:0 4px 12px rgba(202,164,58,.4)}
+.money-pos{color:var(--pos);font-weight:700;background:var(--pos-bg);padding:3px 10px;border-radius:999px;font-size:12.5px}
+.money-neg{color:var(--red);font-weight:700;background:var(--red-bg);padding:3px 10px;border-radius:999px;font-size:12.5px}
+.pts{font-weight:800;color:var(--ink)}
+.shotbadge{background:var(--gold-light);color:#6a5410;font-weight:700;padding:3px 10px;border-radius:999px;font-size:12px}
+.player-dot{width:11px;height:11px;border-radius:50%;display:inline-block;box-shadow:0 0 0 2px rgba(255,255,255,.6)}
+
+/* rotate / full table button */
+.rotate-btn{position:absolute;top:-8px;right:0;z-index:5;display:inline-flex;align-items:center;gap:7px;
+  background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:var(--green-700);border:1px solid var(--line);cursor:pointer;padding:8px 14px;border-radius:999px;
+  font-size:12px;font-weight:700;box-shadow:var(--shadow);transition:var(--t)}
+.rotate-btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-glow);color:var(--green-600)}
+.rotate-btn .ph{display:inline-block;animation:tilt 1.8s ease-in-out infinite;font-size:15px}
+@keyframes tilt{0%,100%{transform:rotate(0)}45%,55%{transform:rotate(-78deg)}}
+
+/* ---------------- Budget tile ---------------- */
+.budget-big{background:
+   radial-gradient(500px 240px at 90% -20%, rgba(79,212,154,.22), transparent 60%),
+   linear-gradient(135deg,#0b3b2a,#166a4b);
+  color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);padding:34px;
+  text-align:center;box-shadow:var(--shadow-lg)}
+.budget-big .lbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.78;font-weight:600}
+.budget-big .amt{font-size:clamp(40px,6vw,56px);font-weight:800;letter-spacing:-.03em;color:#fff;margin-top:8px}
+
+/* ---------------- Appointments ---------------- */
+.appt{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--card-2);
+  border:1px solid var(--line);border-left:4px solid var(--muted);padding:13px 16px;border-radius:var(--radius-sm);
+  margin-bottom:10px;transition:transform var(--t),box-shadow var(--t)}
+.appt:hover{transform:translateX(2px);box-shadow:var(--shadow)}
 .appt .what{font-weight:600;color:var(--ink)}
-.appt .when{font-style:italic;color:var(--red);font-weight:600;white-space:nowrap}
-.appt.playoff .when{color:#6a5410}
-.appt button{background:transparent;border:none;color:var(--red);font-size:16px;padding:2px 6px;cursor:pointer}
-button{font-family:inherit;cursor:pointer;border:none;border-radius:10px;font-weight:600;transition:.15s}
-.btn{background:var(--green-600);color:#fff;padding:11px 20px;font-size:14px}.btn:hover{background:var(--green-700);transform:translateY(-1px)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-gold{background:var(--gold);color:#3a2f05}.btn-gold:hover{background:#b8921f}
-.btn-outline{background:var(--card);color:var(--green-500);border:1.5px solid var(--green-500)}.btn-outline:hover{background:var(--green-100)}
-.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#b53a4a}
-.btn-sm{padding:6px 12px;font-size:12px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
-.field label{font-size:13px;font-weight:600;color:var(--green-500)}
-input,select{font-family:inherit;font-size:14px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--input-bg);color:var(--ink);outline:none;transition:.15s;width:100%}
-input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba(47,163,115,.15)}
-.row{display:grid;gap:12px}.row-3{grid-template-columns:1fr 1fr 1fr}.row-2{grid-template-columns:1fr 1fr}
+.appt .when{font-style:normal;font-weight:700;white-space:nowrap;font-size:13px;padding:4px 10px;border-radius:999px}
+.appt button{background:transparent;border:none;color:var(--muted);font-size:17px;padding:2px 6px;cursor:pointer;
+  border-radius:8px;transition:var(--t)}
+.appt button:hover{background:var(--red-bg);color:var(--red)}
+.appt.dated{border-left-color:var(--pos)}
+.appt.dated .when{background:var(--pos-bg);color:var(--pos)}
+.appt.tbd{border-left-color:var(--amber)}
+.appt.tbd .when{background:var(--amber-bg);color:#8a6d1b}
+.appt.playoff{border-left-color:var(--gold);background:linear-gradient(90deg,var(--gold-light),var(--card-2))}
+.appt.playoff .when{background:var(--grad-gold);color:#3a2f05}
+
+/* ---------------- Buttons ---------------- */
+button{font-family:inherit;cursor:pointer;border:none;border-radius:12px;font-weight:600;transition:var(--t)}
+.btn{background:linear-gradient(135deg,var(--green-600),var(--green-500));color:#fff;padding:12px 22px;
+  font-size:14px;box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.2)}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-glow)}
+.btn:active{transform:translateY(0)}
+.btn-gold{background:var(--grad-gold);color:#3a2f05;padding:12px 22px;font-size:14px;box-shadow:0 8px 22px rgba(202,164,58,.35)}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(202,164,58,.45)}
+.btn-outline{background:var(--card);color:var(--green-700);border:1.5px solid var(--line);padding:11px 20px;font-size:14px}
+.btn-outline:hover{border-color:var(--green-500);background:var(--green-50);transform:translateY(-1px)}
+.btn-red{background:linear-gradient(135deg,#e5484d,#ff6b70);color:#fff;padding:12px 22px;font-size:14px;box-shadow:0 8px 20px rgba(229,72,77,.3)}
+.btn-red:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(229,72,77,.4)}
+.btn-sm{padding:7px 13px;font-size:12px;border-radius:10px}
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+
+/* ---------------- Forms ---------------- */
+.field{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+.field label{font-size:12.5px;font-weight:600;color:var(--ink-soft)}
+input,select{font-family:inherit;font-size:14px;padding:12px 14px;border:1.5px solid var(--line);
+  border-radius:12px;background:var(--card-2);color:var(--ink);outline:none;transition:var(--t);width:100%}
+input::placeholder{color:var(--muted);opacity:.7}
+input:focus,select:focus{border-color:var(--green-500);box-shadow:var(--ring);background:var(--card)}
+.row{display:grid;gap:16px}.row-3{grid-template-columns:1fr 1fr 1fr}.row-2{grid-template-columns:1fr 1fr}
 @media(max-width:700px){.row-3,.row-2{grid-template-columns:1fr}}
-.currency-wrap{position:relative}.currency-wrap .sym{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:600}.currency-wrap input{padding-left:26px}
-.player-block{border:1.5px dashed var(--border);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--green-100)}
-.player-block h4{font-size:14px;color:var(--green-500);margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.checkbox-row{display:flex;align-items:center;gap:10px;background:var(--green-100);padding:10px 14px;border-radius:10px;margin-bottom:12px}
-.checkbox-row input{width:auto}.hidden{display:none !important}
-.small-muted{font-size:12px;color:var(--muted);margin-top:6px}
-.pill{display:inline-block;background:var(--green-100);color:var(--green-500);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.currency-wrap{position:relative}
+.currency-wrap .sym{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:600}
+.currency-wrap input{padding-left:28px}
+.player-block{border:1px solid var(--line);border-radius:var(--radius-sm);padding:18px;margin-bottom:14px;
+  background:var(--card-2)}
+.player-block h4{font-size:13.5px;color:var(--green-700);margin-bottom:12px;display:flex;align-items:center;gap:9px;font-weight:700}
+.checkbox-row{display:flex;align-items:center;gap:12px;background:var(--green-50);border:1px solid var(--line);
+  padding:13px 16px;border-radius:12px;margin-bottom:14px}
+.checkbox-row input{width:auto;accent-color:var(--green-600)}
+.hidden{display:none !important}
+.small-muted{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+.settle-note{font-size:12.5px;color:var(--muted);margin-bottom:12px}
+.info-box{background:var(--green-50);border:1px solid var(--line);border-left:4px solid var(--green-500);
+  padding:14px 16px;border-radius:12px;font-size:13px;margin-bottom:16px;color:var(--ink-soft)}
+.pill{display:inline-block;background:var(--green-100);color:var(--green-700);padding:3px 11px;border-radius:999px;
+  font-size:11px;font-weight:700;letter-spacing:.02em}
 .pill.po{background:var(--gold-light);color:#6a5410}
-.fab{position:fixed;right:26px;bottom:26px;z-index:800}
-.fab-main{width:62px;height:62px;border-radius:50%;background:var(--gold);color:#3a2f05;font-size:30px;font-weight:700;box-shadow:var(--shadow-lg);display:flex;align-items:center;justify-content:center;transition:.25s}
-.fab-main:hover{transform:scale(1.07)}.fab.open .fab-main{transform:rotate(135deg);background:var(--red);color:#fff}
-.fab-items{position:absolute;bottom:76px;right:4px;display:flex;flex-direction:column;gap:12px;align-items:flex-end}
-.fab-item{display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(12px) scale(.9);pointer-events:none;transition:.2s}
-.fab.open .fab-item{opacity:1;transform:none;pointer-events:auto}
-.fab.open .fab-item:nth-child(1){transition-delay:.03s}.fab.open .fab-item:nth-child(2){transition-delay:.06s}
-.fab.open .fab-item:nth-child(3){transition-delay:.09s}.fab.open .fab-item:nth-child(4){transition-delay:.12s}.fab.open .fab-item:nth-child(5){transition-delay:.15s}
-.fab-item .lbl{background:var(--card);color:var(--ink);padding:6px 12px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:var(--shadow);white-space:nowrap}
-.fab-item .btn-circ{width:46px;height:46px;border-radius:50%;background:var(--green-600);color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
-.fab-item .btn-circ:hover{background:var(--green-700)}
-.modal-ov{position:fixed;inset:0;background:rgba(10,20,15,.55);backdrop-filter:blur(3px);z-index:900;display:none;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto}
-.modal-ov.show{display:flex;animation:fade .25s}
-.modal{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:720px;padding:26px;animation:pop .3s}
-.modal h3{color:var(--green-500);font-size:20px;margin-bottom:4px;display:flex;align-items:center;gap:10px}
-.modal .close-x{position:absolute;top:16px;right:20px;background:transparent;border:none;font-size:26px;color:var(--muted);cursor:pointer}
-.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;position:relative}
-@keyframes pop{from{transform:scale(.95);opacity:0}to{transform:none;opacity:1}}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--ink);color:var(--bg);padding:12px 22px;border-radius:12px;box-shadow:var(--shadow-lg);z-index:999;transition:.35s;font-size:14px;max-width:90%}
-.toast.show{transform:translateX(-50%) translateY(0)}.toast.err{background:var(--red);color:#fff}.toast.ok{background:var(--green-600);color:#fff}
-@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.flash{animation:flash .6s ease}@keyframes flash{0%{background:var(--gold-light)}100%{background:transparent}}
-.editing{outline:3px solid var(--gold);border-radius:var(--radius)}
-.hdc-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
-.hdc-row .nm{flex:1;font-weight:600;display:flex;align-items:center;gap:8px}.hdc-row input{width:90px}
+.hdc-row{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+.hdc-row .nm{flex:1;font-weight:600;display:flex;align-items:center;gap:10px;color:var(--ink)}
+.hdc-row input{width:96px}
 .hdc-hist{font-size:11px;color:var(--muted);margin-top:3px}
-.info-box{background:var(--green-100);border-left:4px solid var(--green-500);padding:12px 14px;border-radius:10px;font-size:13px;margin-bottom:14px}
-.settle-note{font-size:12.5px;color:var(--muted);margin-bottom:10px}
-.po-banner{background:linear-gradient(90deg,var(--gold),#e5c766);color:#3a2f05;padding:12px 18px;border-radius:12px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:10px}
-/* loading overlay */
-#boot{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
-#boot .ball{font-size:54px;animation:spin 1.4s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-#boot p{color:var(--muted);font-weight:600}
+.po-banner{background:linear-gradient(120deg,var(--gold-light),var(--card-2));color:#6a5410;
+  padding:14px 18px;border-radius:var(--radius-sm);font-weight:600;font-size:13px;margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;border:1px solid var(--line)}
+
+/* ---------------- FAB ---------------- */
+.fab{position:fixed;right:30px;bottom:30px;z-index:800}
+.fab-main{width:64px;height:64px;border-radius:50%;background:var(--grad-gold);color:#3a2f05;font-size:30px;
+  font-weight:700;box-shadow:0 14px 34px rgba(202,164,58,.5);display:flex;align-items:center;justify-content:center;
+  transition:var(--t);border:1px solid rgba(255,255,255,.4)}
+.fab-main:hover{transform:scale(1.08) rotate(5deg)}
+.fab.open .fab-main{transform:rotate(135deg);background:linear-gradient(135deg,#e5484d,#ff6b70);color:#fff}
+.fab-items{position:absolute;bottom:80px;right:6px;display:flex;flex-direction:column;gap:14px;align-items:flex-end}
+.fab-item{display:flex;align-items:center;gap:12px;opacity:0;transform:translateY(14px) scale(.9);pointer-events:none;transition:var(--t)}
+.fab.open .fab-item{opacity:1;transform:none;pointer-events:auto}
+.fab.open .fab-item:nth-child(1){transition-delay:.03s}.fab.open .fab-item:nth-child(2){transition-delay:.07s}
+.fab.open .fab-item:nth-child(3){transition-delay:.11s}.fab.open .fab-item:nth-child(4){transition-delay:.15s}
+.fab.open .fab-item:nth-child(5){transition-delay:.19s}
+.fab-item .lbl{background:var(--card);color:var(--ink);padding:8px 14px;border-radius:12px;font-size:13px;
+  font-weight:600;box-shadow:var(--shadow);white-space:nowrap;border:1px solid var(--line)}
+.fab-item .btn-circ{width:50px;height:50px;border-radius:50%;background:var(--card);color:var(--green-700);
+  font-size:21px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);border:1px solid var(--line)}
+.fab-item .btn-circ:hover{background:var(--green-50);transform:scale(1.08);box-shadow:var(--shadow-glow)}
+
+/* ---------------- Modals (glass) ---------------- */
+.modal-ov{position:fixed;inset:0;background:rgba(10,20,15,.4);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  z-index:900;display:none;align-items:flex-start;justify-content:center;padding:40px 18px;overflow-y:auto}
+.modal-ov.show{display:flex;animation:fade .25s}
+.modal{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow-lg);
+  width:100%;max-width:720px;padding:30px;animation:pop .3s cubic-bezier(.2,.8,.2,1)}
+.modal h3{color:var(--ink);font-size:21px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.modal .close-x{position:absolute;top:20px;right:22px;background:var(--card-2);border:1px solid var(--line);
+  font-size:20px;color:var(--muted);cursor:pointer;width:38px;height:38px;border-radius:50%;transition:var(--t)}
+.modal .close-x:hover{background:var(--red-bg);color:var(--red);border-color:transparent}
+.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;position:relative}
+@keyframes pop{from{transform:scale(.96) translateY(8px);opacity:0}to{transform:none;opacity:1}}
+
+/* ---------------- Toast ---------------- */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(140px);
+  background:var(--ink);color:var(--bg);padding:14px 24px;border-radius:14px;box-shadow:var(--shadow-lg);
+  z-index:999;transition:transform .4s cubic-bezier(.2,.9,.2,1);font-size:14px;font-weight:500;max-width:90%}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.err{background:linear-gradient(135deg,#e5484d,#ff6b70);color:#fff}
+.toast.ok{background:linear-gradient(135deg,var(--green-700),var(--green-500));color:#fff}
+
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.flash{animation:flash .7s ease}@keyframes flash{0%{background:var(--gold-light)}100%{background:transparent}}
+.editing{outline:3px solid var(--gold);border-radius:24px}
+
+/* ---------------- Boot / loading ---------------- */
+/* Clean white full-screen loader. Fades out AND is removed from the DOM after
+   init (see removeBoot()), so it can never leave an invisible overlay that
+   blocks the theme toggle or any other control. pointer-events is dropped the
+   instant the fade begins. */
+#boot{position:fixed;inset:0;z-index:4000;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:26px;background:#ffffff;opacity:1;transition:opacity .5s ease}
+#boot.boot-hide{opacity:0;pointer-events:none}
+#boot .ball{font-size:86px;line-height:1;width:auto;height:auto;border-radius:0;box-shadow:none;background:none;
+  will-change:transform;animation:spin 1.1s linear infinite;transform-origin:50% 50%}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+#boot p{color:#6b7d74;font-weight:600;letter-spacing:.01em}
+@media (prefers-reduced-motion:reduce){#boot .ball{animation-duration:2.2s}}
+
+/* ---------------- Scroll hint ---------------- */
+.scrollhint{display:none}
+
+/* ---------------- Full-screen table reader ---------------- */
+#history td:nth-child(5){min-width:260px}
+#tableFs{position:fixed;inset:0;z-index:1200;background:var(--bg);display:none;flex-direction:column}
+#tableFs.show{display:flex;animation:fade .25s}
+#tableFs .fs-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;
+  background:var(--grad-head);color:#fff;flex:0 0 auto}
+#tableFs .fs-bar h4{font-size:15px;font-weight:700;margin:0}
+#tableFs .fs-close{background:rgba(255,255,255,.18);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer}
+#tableFs .fs-body{flex:1 1 auto;overflow:auto;padding:10px 14px}
+#tableFs .fs-hint{font-size:12px;color:var(--muted);padding:6px 18px 0}
+#tableFs table{width:100%;min-width:100%;font-size:15px}
+#tableFs thead th{position:sticky;top:0;background:var(--card);z-index:1}
+/* Landscape full-table: use the entire screen */
+@media (orientation:landscape) and (max-height:600px){
+  #tableFs .fs-body{padding:6px 10px}
+  #tableFs table{font-size:14px}
+  #tableFs .fs-rotate{transform:none;width:100%;height:auto}
+}
+
+
+/* ---------------- Mobile ---------------- */
+@media (max-width:720px){
+  body{padding:14px 12px 92px}
+  .wrap{max-width:100%;gap:20px}
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  .section-title{font-size:17px}
+  .card{padding:16px;border-radius:18px}
+  .cols-2{grid-template-columns:1fr !important}
+  .dash{grid-template-columns:1fr 1fr;gap:12px}
+  .stat{padding:16px}.stat .value{font-size:20px}
+  .budget-big{padding:16px}
+  .table-scroll{-webkit-overflow-scrolling:touch;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;touch-action:pan-x}
+  .tablebox::after{display:none}
+  .tablebox .table-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x}
+  table{font-size:13.5px;min-width:600px}
+  thead th{padding:10px 10px;font-size:11px}
+  tbody td{padding:11px 10px}
+  #history{min-width:780px}
+  #history td:nth-child(5){min-width:360px}
+  .lbl-full{display:none}
+  .lbl-short{display:inline}
+  #leaderboard td:nth-child(2),#leaderboard th:nth-child(2){min-width:150px;white-space:nowrap}
+  #cashTable td:nth-child(2),#cashTable th:nth-child(2){min-width:140px;white-space:nowrap}
+  #settleTable td:nth-child(1),#settleTable th:nth-child(1){min-width:140px;white-space:nowrap}
+  #history td:nth-child(5) div{white-space:nowrap}
+  .card-head{height:auto;margin-bottom:10px}
+  .rotate-btn{position:static;padding:7px 12px;font-size:11px}
+  .modal-ov{padding:0}
+  .modal{max-width:100%;min-height:100%;border-radius:0;padding:24px 18px 96px}
+  .row-3,.row-2{grid-template-columns:1fr !important}
+  input,select{font-size:16px;padding:13px}
+  .btn,.btn-outline,.btn-gold,.btn-red{padding:14px 18px;font-size:15px;width:100%}
+  .checkbox-row{align-items:flex-start}.checkbox-row input{width:22px;height:22px;margin-top:2px;flex:none}
+  #sec-actions .toolbar{flex-direction:column}#sec-actions .toolbar button{width:100%}
+  .appt{flex-direction:column;align-items:flex-start;gap:6px}.appt .when{align-self:flex-start}
+  .fab{right:18px;bottom:84px}.fab-main{width:58px;height:58px;font-size:28px}
+  .scrollhint{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);margin:4px 0 16px;line-height:1.5;flex-wrap:wrap}
+  .mnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:850;background:var(--glass);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);
+    box-shadow:0 -6px 24px rgba(0,0,0,.1);padding:8px 6px;justify-content:space-around;
+    padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+  .mnav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;
+    color:var(--muted);font-size:10px;font-weight:600;padding:6px 2px;border-radius:12px;transition:var(--t)}
+  .mnav a .mi{font-size:21px;line-height:1}
+  .mnav a:active,.mnav a.active{color:var(--green-600);background:var(--green-50)}
+  @media (orientation:portrait){
+    #tableFs .fs-body{padding:0;overflow:hidden;position:relative}
+    /* rotate the content so the wide table spans the long side of the screen, filling it fully */
+    #tableFs .fs-rotate{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(90deg);
+      transform-origin:center;width:calc(100vh - 92px);height:100vw;overflow:auto;padding:14px;
+      display:flex;flex-direction:column;justify-content:flex-start}
+    #tableFs .fs-rotate table{width:100%;font-size:15px}
+  }
+}
+.mnav{display:none}
+
+
+/* currency symbol inside modal inputs (set by JS .cur-sym) */
+.currency-wrap .sym.cur-sym,.cur-sym{color:var(--muted);font-weight:600}
+/* legacy marker: tables tagged m-stack render as normal premium tables */
+table.m-stack{border-collapse:separate}
+
+
+/* Player/name columns: keep on one line, wider */
+#leaderboard td:nth-child(2),#leaderboard th:nth-child(2){min-width:170px;white-space:nowrap}
+#cashTable td:nth-child(2),#cashTable th:nth-child(2){min-width:150px;white-space:nowrap}
+#settleTable td:nth-child(1),#settleTable th:nth-child(1){min-width:150px;white-space:nowrap}
+#ngHistory td:nth-child(5){white-space:nowrap}
+.player-dot{flex:none}
+
+.lbl-short{display:none}
+
+/* Amount values stay on one line ("123,00 €"); widen amount columns */
+.money-pos,.money-neg{white-space:nowrap;display:inline-block}
+#ngHistory td:nth-child(6),#ngHistory th:nth-child(6){min-width:118px;white-space:nowrap;text-align:left}
+#settleTable td:nth-child(3),#settleTable th:nth-child(3){min-width:118px;white-space:nowrap}
+#cashTable td,#cashTable th{white-space:nowrap}
+
+
+/* Leaderboard: never wrap any cell to two lines */
+#leaderboard th,#leaderboard td{white-space:nowrap}
+#leaderboard .shotbadge{white-space:nowrap;display:inline-block}
+
+
+/* Guarantee identical width for every section's cards/tables */
+section>.card,section>div>.card{width:100%}
+.budget-big{width:100%}
+
+
+/* Swipe anywhere in all tables (every row). The scroll container owns the
+   horizontal gesture (touch-action:pan-x => native left/right panning from any
+   point inside it); vertical swipes fall through to the page. Children inherit
+   the same touch-action so there are no dead zones on any row, cell or column. */
+.tablebox::after{pointer-events:none}
+.table-scroll{overflow-x:auto;overflow-y:hidden;touch-action:pan-x;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+table,tbody,thead,tr,td,th{touch-action:inherit}
+tbody tr{background:transparent}
+.table-scroll{cursor:grab;user-select:none;-webkit-user-select:none}
+.table-scroll:active{cursor:grabbing}
+
+
+
+/* ============ Harmonized header (card grid) ============ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+70%{box-shadow:0 0 0 8px rgba(201,164,58,0)}100%{box-shadow:0 0 0 0 rgba(201,164,58,0)}}
+
+
+
+html[data-theme="dark"] 
+
+
+@media (max-width:980px){
+  
+  
+  
+  
+  
+  
+}
+@media (max-width:720px){
+  
+  
+  
+  
+  
+  
+  
+  
+}
+
+
+/* ===== Unified premium hero header ===== */
+
+
+
+
+
+.h-main h1{font-size:clamp(30px,4vw,46px);font-weight:800;letter-spacing:-.03em;line-height:1.02;margin:0}
+.h-main .edit-title{background:transparent;border:none;color:#fff;font:inherit;font-weight:800;outline:none;border-radius:8px;padding:0 2px;max-width:100%}
+.h-main .subtitle{font-size:clamp(14px,1.5vw,18px);font-weight:600;color:rgba(255,255,255,.92)}
+.h-main .sub{font-size:12.5px;color:rgba(255,255,255,.68);margin-top:8px}
+
+.season-kpi{display:flex;flex-direction:column;align-items:center;line-height:1;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:8px 18px;backdrop-filter:blur(6px)}
+.season-kpi .y{display:flex;align-items:center;justify-content:center}
+.season-kpi .y{width:auto;background:transparent;border:none;color:#fff;font:inherit;font-weight:800;font-size:28px;letter-spacing:.5px;text-align:center;outline:none;padding:0;cursor:default;-webkit-user-select:none;user-select:none}
+.season-kpi .s{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.72);font-weight:700;margin-top:3px}
+.h-data{display:flex;align-items:center;gap:9px}
+.btn-sync{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.24);cursor:pointer;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;transition:var(--t);min-height:34px;backdrop-filter:blur(6px)}
+.btn-sync:hover{background:rgba(255,255,255,.3);transform:translateY(-1px)}
+.btn-sync:active{transform:translateY(0)}
+.sync{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.14);color:#fff;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:600;border:1px solid rgba(255,255,255,.2);white-space:nowrap}
+.sync .dot{width:8px;height:8px;border-radius:50%;background:var(--green-400);box-shadow:0 0 0 0 rgba(79,212,154,.5)}
+.sync.saving .dot,.sync.loading .dot{background:var(--gold-2);animation:pulse 1.1s infinite}
+.sync.err .dot{background:#ff7a86}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(243,228,166,.5)}70%{box-shadow:0 0 0 8px rgba(243,228,166,0)}100%{box-shadow:0 0 0 0 rgba(243,228,166,0)}}
+.h-theme{display:flex;align-items:center;gap:8px}
+.theme-btn{position:relative;z-index:120;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.24);color:#fff;width:42px;height:42px;border-radius:50%;font-size:18px;cursor:pointer;transition:var(--t);min-width:42px;min-height:42px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;backdrop-filter:blur(6px)}
+.theme-btn:hover{background:rgba(255,255,255,.3);transform:translateY(-1px) scale(1.05)}
+.theme-hint{font-size:10.5px;font-weight:600;color:rgba(255,255,255,.82);white-space:nowrap;pointer-events:none;line-height:1.1}
+
+@media (max-width:480px){   }
+
+html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f4a39);color:#eafff4;border:1px solid #2f6b4f}html[data-theme="dark"] .po-banner b{color:#ffe39a}
+
+/* ===== Unified premium hero header (no overlap; flex column controls) ===== */
+.header{position:relative;z-index:100;background:var(--grad-head);color:#fff;border:none;border-radius:22px;
+  box-shadow:var(--shadow-lg);padding:26px 30px;overflow:hidden;isolation:isolate;
+  display:grid;grid-template-columns:1fr auto;grid-template-areas:"main controls";gap:16px 28px;align-items:center}
+.header::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(620px 320px at 92% -40%, rgba(255,255,255,.16), transparent 60%)}
+.header>*{position:relative;z-index:1}
+.h-main{grid-area:main;min-width:0;display:flex;flex-direction:column;gap:4px}
+.h-controls{grid-area:controls;display:flex;flex-direction:column;align-items:flex-end;gap:14px;min-width:160px}
+
+
+@media (max-width:900px){
+  .header{grid-template-columns:1fr;grid-template-areas:"controls" "main";padding:20px;border-radius:18px;gap:14px}
+  .h-controls{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;min-width:0}
+  .h-main{grid-area:main}
+  .h-main h1{font-size:30px}
+  .season-kpi{padding:6px 14px}
+}
+@media (max-width:480px){
+  .h-controls{gap:10px}
+}
+
+
+/* header text is read-only (display only) but selectable for copy */
+.h-main .edit-title,.h-main h1 .edit-title{cursor:text;-webkit-user-select:text;user-select:text;outline:none;caret-color:transparent;background:transparent}
+.h-main .edit-title:focus,.h-main h1 .edit-title:focus{background:transparent;outline:none}
+.header .subtitle,.header .sub,.season-kpi .y,.season-kpi .s,.theme-hint,.sync{-webkit-user-select:text;user-select:text}
 
 /* ---- Cash-in history person filters ---- */
 .cash-filterbar{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px}
 .cash-filter-label{font-size:13px;font-weight:600;color:var(--muted)}
 .cash-filter-chips{display:flex;flex-wrap:wrap;gap:8px}
-.cash-chip{display:inline-flex;align-items:center;gap:7px;cursor:pointer;user-select:none;
+.cash-chip{display:inline-flex;align-items:center;gap:7px;cursor:pointer;user-select:none;-webkit-user-select:none;
   padding:6px 13px;border-radius:20px;font-size:13px;font-weight:600;line-height:1;
   background:var(--card);color:var(--text);border:1.5px solid var(--border);transition:all .15s ease}
 .cash-chip .player-dot{width:11px;height:11px}
 .cash-chip:hover{border-color:var(--green-500)}
-.cash-chip.active{background:var(--green-100);border-color:var(--green-500);color:var(--green-500);box-shadow:0 0 0 2px rgba(27,122,78,.12)}
+.cash-chip.active{background:var(--green-100);border-color:var(--green-500);color:var(--green-500);box-shadow:0 0 0 2px rgba(27,122,78,.15)}
 .cash-chip.active .cash-chip-check{opacity:1}
 .cash-chip-check{opacity:0;font-size:11px;transition:opacity .15s ease}
 .cash-filter-clear{cursor:pointer;padding:6px 13px;border-radius:20px;font-size:13px;font-weight:600;
@@ -156,99 +542,106 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
 .cash-filter-clear:disabled:hover{border-color:var(--border);color:var(--muted)}
 
 /* ---- Mobile: Game Day History column rebalance + compact actions ---- */
-@media(max-width:640px){
-  #history{min-width:600px}
+@media (max-width:640px){
   #history th,#history td{padding:9px 7px}
-  /* Date: keep on one/two lines, give it room */
+  /* Date clear on one line */
   #history th:nth-child(1),#history td:nth-child(1){white-space:nowrap;width:1%;font-size:12px}
-  /* Mode / Course / Indiv compact */
   #history th:nth-child(2),#history td:nth-child(2),
   #history th:nth-child(3),#history td:nth-child(3),
   #history th:nth-child(4),#history td:nth-child(4){white-space:nowrap}
-  /* Details (strokes) column: cap width so it stops dominating, stays readable */
+  /* Details column: cap width (override desktop min-width:260px) */
+  #history td:nth-child(5){min-width:0}
   #history th:nth-child(5),#history td:nth-child(5){max-width:150px;white-space:normal;word-break:break-word}
   #history td:nth-child(5) > div{font-size:11.5px;line-height:1.35}
-  /* Actions column: compact */
+  /* Actions: compact */
   #history th:nth-child(6),#history td:nth-child(6){white-space:nowrap;width:1%}
-  #history td:nth-child(6) .btn-sm{padding:5px 7px;font-size:12px}
+  #history td:nth-child(6) .btn-sm{padding:5px 7px;font-size:12px;border-radius:8px}
   .cash-filterbar{gap:7px}
   .cash-filter-label{width:100%;margin-bottom:-2px}
 }
 
-
-#boot{transition:opacity .45s ease}
-#boot.boot-hide{opacity:0;pointer-events:none}
 </style>
 </head>
 <body>
 
-<div id="boot"><div class="ball">⛳</div><p>Loading Swing Bros data from Google Sheets…</p></div>
+<div id="boot" role="status" aria-live="polite"><div class="ball" aria-hidden="true">🐯</div><p>Loading Swing Bros data from Google Sheets…</p></div>
 
 <div class="wrap">
   <div class="header">
-    <div class="titlewrap">
-      <h1>🏆 <input class="edit-title" id="titleInput" value="Swing Bros Championship and Budget Dashboard"></h1>
+    <div class="h-main">
+      <h1><span class="edit-title" id="titleInput">Swing Bros</span></h1>
+      <div class="subtitle">Championship and Budget Dashboard</div>
       <div class="sub">Live-synced to Google Sheets · use the <b>＋</b> button (bottom-right) to add data</div>
     </div>
-    <div class="right">
-      <span class="sync loading" id="syncChip"><span class="dot"></span><span id="syncText">Loading…</span></span>
-      <button class="theme-btn" id="themeBtn" title="Toggle dark mode">🌙</button>
-      <div class="season-badge"><span class="s">Season</span><span class="y">🏌️<input id="yearInput" value="2026"></span></div>
+    <div class="h-controls">
+      <div class="season-kpi"><span class="y" id="yearInput">2026</span><span class="s">Season</span></div>
+      <div class="h-data">
+        <button class="btn-sync" id="reloadBtnTop" type="button">🔄 Update</button>
+        <span class="sync loading" id="syncChip"><span class="dot"></span><span id="syncText">Loading…</span></span>
+      </div>
+      <div class="h-theme">
+        <button class="theme-btn" id="themeBtn" type="button" title="Toggle dark/light mode">🌙</button>
+        <span class="theme-hint" id="themeHint">Click to switch to dark mode</span>
+      </div>
     </div>
   </div>
 
-  <section><div class="section-title"><span class="ico">📊</span> Season Summary</div><div class="dash" id="dashboard"></div></section>
+  <section id="sec-summary"><div class="section-title"><span class="ico">📊</span> Season Summary</div><div class="dash" id="dashboard"></div></section>
 
-  <section>
+  <section id="sec-leaderboard">
     <div class="section-title"><span class="ico">🥇</span> Season Leaderboard <span class="pill po" style="font-size:12px">Play-off until Island Masters 2027</span></div>
     <div class="card">
-      <div class="po-banner" id="poBanner">🏝️ <span></span></div>
-      <div class="table-scroll"><table id="leaderboard">
-        <thead><tr><th>#</th><th>Player</th><th>Hdc</th><th>Points</th><th>Projected shots for final round</th><th>Total strokes</th><th>Avg gross</th><th>Avg net</th><th>Best round</th><th>Worst round</th></tr></thead>
-        <tbody></tbody></table></div>
+      
+      <div class="card-head"><button class="rotate-btn" onclick="openTableFs('leaderboard','Season Leaderboard')" title="Rotate / open full table"><span class="ph">📱</span>➜ Full table</button></div><div class="tablebox"><div class="table-scroll"><table id="leaderboard" class="m-stack">
+        <thead><tr><th>#</th><th>Player</th><th>Hdc</th><th>Points</th><th><span class="lbl-full">Projected shots for final round</span><span class="lbl-short">Proj. shots</span></th><th>Total strokes</th><th>Avg gross</th><th>Avg net</th><th>Best round</th><th>Worst round</th></tr></thead>
+        <tbody></tbody></table></div></div>
+      <div class="po-banner" id="poBanner" style="margin-top:16px;margin-bottom:0">🏝️ <span></span></div>
       <p class="small-muted">“Projected shots for final round” = stroke bonus the current standings would give on the Island Masters 2027 final: leader −5, 2nd −3, 3rd −1. Scores are shown relative to par (e.g. +2 or −2). Avg net uses the handicap valid on each round's date.</p>
     </div>
   </section>
 
-  <section><div class="section-title"><span class="ico">📅</span> Game Day History</div>
-    <div class="card"><div class="table-scroll"><table id="history"><thead><tr><th>Date</th><th>Mode</th><th>Course</th><th>Indiv?</th><th>Details (strokes · pts · €)</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div></section>
+  <section id="sec-next"><div class="section-title"><span class="ico">🗓️</span> What's Next — Swing Bros Appointments</div><div class="card" id="apptList"></div></section>
 
-  <section><div class="section-title"><span class="ico">💶</span> Pay-in from last match day</div>
+  <section id="sec-history"><div class="section-title"><span class="ico">📅</span> Game Day History</div>
+    <div class="card"><div class="card-head"><button class="rotate-btn" onclick="openTableFs('history','Game Day History')" title="Rotate / open full table"><span class="ph">📱</span>➜ Full table</button></div><div class="tablebox"><div class="table-scroll"><table id="history" class="m-stack"><thead><tr><th>Date</th><th>Mode</th><th>Course</th><th>Indiv?</th><th>Details (strokes · pts · €)</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div></div></section>
+
+  <section id="sec-payin"><div class="section-title"><span class="ico">💶</span> Outstanding payments (golf &amp; non-golf)</div>
     <div class="card"><p class="settle-note" id="settleHeader"></p>
-      <div class="table-scroll"><table id="settleTable"><thead><tr><th>Player</th><th>What</th><th>Amount to pay to our PayPal</th></tr></thead><tbody></tbody></table></div>
+      <div class="tablebox"><div class="table-scroll"><table id="settleTable" class="m-stack"><thead><tr><th>Player</th><th>What</th><th>Amount to pay to our PayPal</th><th>Paid?</th></tr></thead><tbody></tbody></table></div></div>
       <p class="small-muted">Amounts are the money entries recorded for the most recent game day. Forward this list so everyone knows what to transfer.</p></div></section>
 
-  <section><div class="section-title"><span class="ico">🪙</span> Cash Pool &amp; Competitions</div>
-    <div class="grid cols-2">
+  <section id="sec-cash"><div class="section-title"><span class="ico">🪙</span> Cash Pool &amp; Competitions</div>
+    <div style="display:block">
       <div class="card budget-big" style="display:flex;flex-direction:column;justify-content:center">
         <div class="lbl">Our budget (paid in by all of us)</div><div class="amt" id="totalBudget">0,00 €</div>
         <div class="small-muted" style="color:#cfe6da" id="budgetMeta"></div></div>
-      <div class="card"><h3 style="color:var(--green-500);margin-bottom:12px;font-size:16px">Cash-in ranking (birthday payments excluded)</h3>
-        <div class="table-scroll"><table id="cashTable"><thead><tr><th>#</th><th>Name</th><th>Total</th><th>Golf</th><th>PGA</th><th>FIFA</th><th>Others</th><th>#</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="card" style="margin-top:20px"><h3 style="color:var(--green-500);margin-bottom:12px;font-size:16px">Cash-in ranking (birthday payments excluded)</h3>
+        <div class="tablebox"><div class="table-scroll"><table id="cashTable" class="m-stack"><thead><tr><th>#</th><th>Name</th><th>Total</th><th>Golf</th><th>PGA</th><th>FIFA</th><th>Others</th><th>#</th></tr></thead><tbody></tbody></table></div></div></div>
     </div>
   </section>
 
-  <section><div class="section-title"><span class="ico">🗓️</span> What's Next — Swing Bros Appointments</div><div class="card" id="apptList"></div></section>
+  
 
-  <section><div class="section-title"><span class="ico">🪙</span> Cash-in &amp; expense history</div>
-    <div class="card">
-      <div class="cash-filterbar" id="cashFilterBar">
-        <span class="cash-filter-label">Filter by person:</span>
-        <div class="cash-filter-chips" id="cashFilterChips"></div>
-        <button type="button" class="cash-filter-clear" id="cashFilterClear">Show all</button>
-      </div>
-      <div class="table-scroll"><table id="ngHistory"><thead><tr><th>Date</th><th>Flow</th><th>Category</th><th>Name / details</th><th>Player</th><th>Amount</th><th></th></tr></thead><tbody></tbody></table></div>
-    </div></section>
+  <section id="sec-cashhist"><div class="section-title"><span class="ico">🪙</span> Cash-in &amp; expense history</div>
+    <div class="card"><div class="cash-filterbar" id="cashFilterBar"><span class="cash-filter-label">Filter by person:</span><div class="cash-filter-chips" id="cashFilterChips"></div><button type="button" class="cash-filter-clear" id="cashFilterClear">Show all</button></div><div class="card-head"><button class="rotate-btn" onclick="openTableFs('ngHistory','Cash-in & expense history')" title="Rotate / open full table"><span class="ph">📱</span>➜ Full table</button></div><div class="tablebox"><div class="table-scroll"><table id="ngHistory" class="m-stack"><thead><tr><th>Date</th><th>Flow</th><th>Category</th><th>Name / details</th><th>Player</th><th>Amount</th><th>Paid?</th><th></th></tr></thead><tbody></tbody></table></div></div></div></section>
 
-  <section><div class="card"><div class="toolbar">
+  <section id="sec-actions"><div class="card"><div class="toolbar">
     <button class="btn-gold" id="exportBtn">⬇️ Export CSV</button>
-    <button class="btn-outline" id="reloadBtn">🔄 Reload from Sheet</button>
     <button class="btn-red" id="resetBtn">🗑️ Reset Season</button>
   </div></div></section>
   <p class="small-muted" style="text-align:center;margin:24px 0">Swing Bros · live-synced to Google Sheets.</p>
 </div>
 
+<nav class="mnav" id="mnav">
+  <a href="#sec-summary"><span class="mi">📊</span>Summary</a>
+  <a href="#sec-leaderboard"><span class="mi">🥇</span>Table</a>
+  <a href="#sec-history"><span class="mi">📅</span>Games</a>
+  <a href="#sec-cash"><span class="mi">🪙</span>Budget</a>
+  <a href="#sec-next"><span class="mi">🗓️</span>Next</a>
+</nav>
+
 <div class="fab" id="fab"><div class="fab-items">
+  <div class="fab-item"><span class="lbl">Play-off shots</span><button class="btn-circ" data-open="shots">🏝️</button></div>
   <div class="fab-item"><span class="lbl">Adjust handicaps</span><button class="btn-circ" data-open="hdc">🎯</button></div>
   <div class="fab-item"><span class="lbl">New appointment</span><button class="btn-circ" data-open="appt">🗓️</button></div>
   <div class="fab-item"><span class="lbl">New cash-in / expense</span><button class="btn-circ" data-open="cash">🪙</button></div>
@@ -296,6 +689,27 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
   <button class="btn" id="saveHdcBtn" style="margin-top:14px">💾 Save handicap change</button>
 </div></div>
 
+<!-- MODAL SHOTS -->
+<div class="modal-ov" id="modal-shots"><div class="modal"><div class="modal-head"><h3>🏝️ Play-off shots (Island Masters final)</h3><button class="close-x" data-close>×</button></div>
+  <p class="small-muted" style="margin-bottom:14px">Set how many bonus shots each standings position gets on the final round. These are a proposal and can be re-adjusted anytime after aligning with the others.</p>
+  <div class="row row-2">
+    <div class="field"><label>🥇 1st place (leader) — shots</label><input type="number" step="1" min="0" id="sh_1" placeholder="5"></div>
+    <div class="field"><label>🥈 2nd place — shots</label><input type="number" step="1" min="0" id="sh_2" placeholder="3"></div>
+  </div>
+  <div class="row row-2">
+    <div class="field"><label>🥉 3rd place — shots</label><input type="number" step="1" min="0" id="sh_3" placeholder="1"></div>
+    <div class="field"><label>4th place — shots</label><input type="number" step="1" min="0" id="sh_4" placeholder="0"></div>
+  </div>
+  <button class="btn" id="saveShotsBtn" style="margin-top:6px">💾 Save play-off shots</button>
+</div></div>
+
+<!-- Full-screen landscape table reader -->
+<div id="tableFs">
+  <div class="fs-bar"><h4 id="tableFsTitle">Full table</h4><button class="fs-close" onclick="closeTableFs()">×</button></div>
+  <div class="fs-hint" id="tableFsHint"></div>
+  <div class="fs-body"><div class="fs-rotate" id="tableFsBody"></div></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -307,6 +721,8 @@ const GAME_MODES=["Stroke Play","Match Play","Stableford","Scramble","Rotating-S
 const NON_GOLF_TYPES=["Golf","PGA","FIFA","Others"];
 let CURRENCY="€";
 let PLAYOFF_SHOTS=[5,3,1,0];
+let BUDGET_BASELINE=120;      // default anchor; override via Settings "BudgetBaseline"
+let BUDGET_BASELINE_DATE=new Date().toISOString().slice(0,10);  // default = today; override via Settings "BudgetBaselineDate"
 
 /* =================================================================
    STATE (built from the Sheet). Internal shape:
@@ -317,17 +733,30 @@ let PLAYOFF_SHOTS=[5,3,1,0];
    ================================================================= */
 let state=null;
 let saveTimer=null, saving=false;
+let LOADED=false;
 
 /* ---------- HELPERS ---------- */
 const $=s=>document.querySelector(s);const $$=s=>document.querySelectorAll(s);
+function fmtDate(d){try{var s=String(d==null?"":d).trim();var m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);return m?(m[1].slice(2)+"-"+m[2]+"-"+m[3]):s;}catch(e){return d;}}
 function fmtMoney(n){return (n<0?"-":"")+Math.abs(n).toFixed(2).replace('.',',')+" "+CURRENCY;}
 function fmtNum(n,d=1){return (n===null||n===undefined||isNaN(n))?"–":Number(n).toFixed(d).replace('.',',');}
 function fmtPar(n){if(n===null||n===undefined||isNaN(n))return "–";n=Number(n);const r=(Math.round(n*100)/100);const txt=(r%1===0)?String(Math.abs(r)):String(Math.abs(r)).replace('.',',');return (r>0?"+":(r<0?"−":"±"))+txt;}
 function toast(m,t="ok"){const el=$("#toast");el.textContent=m;el.className="toast show "+t;clearTimeout(el._t);el._t=setTimeout(()=>el.className="toast",2600);}
+function keyTitle(t){t=String(t||"").trim();if(!t)return "Swing Bros";return t.replace(/\s*Championship and Budget Dashboard\s*/i,"").trim()||"Swing Bros";}
 function playerColor(name){const p=state.players.find(x=>x.name===name);return p?p.color:"#888";}
 function hdcOn(name,date){const h=state.hdcHistory[name]||[];let v=h.length?h[0].hdc:0;for(const e of h){if(e.date<=date)v=e.hdc;else break;}return Number(v);}
 function currentHdc(name){const h=state.hdcHistory[name]||[];return h.length?Number(h[h.length-1].hdc):0;}
 const B=v=>String(v).toUpperCase()==="TRUE"||v===true;
+function num(v){
+  if(v===null||v===undefined||v==="") return 0;
+  if(typeof v==="number") return isNaN(v)?0:v;
+  let str=String(v).trim(); if(str==="") return 0;
+  str=str.replace(/[^0-9.,\-]/g,""); if(str===""||str==="-") return 0;
+  const hc=str.indexOf(",")>-1, hd=str.indexOf(".")>-1;
+  if(hc&&hd){ if(str.lastIndexOf(",")>str.lastIndexOf(".")){str=str.replace(/\./g,"").replace(",",".");} else {str=str.replace(/,/g,"");} }
+  else if(hc){ str=str.replace(/\./g,"").replace(",","."); }
+  const n=parseFloat(str); return isNaN(n)?0:n;
+}
 function dstr(v){ // normalise date values returned by Sheets (may be ISO string)
   if(!v) return "";
   if(typeof v==="string"){const m=v.match(/^\d{4}-\d{2}-\d{2}/);if(m)return m[0];const d=new Date(v);if(!isNaN(d))return d.toISOString().slice(0,10);return v;}
@@ -344,31 +773,33 @@ function fromSheet(data){
   (data.Players||[]).forEach(r=>{if(r.Name)s.players.push({name:String(r.Name).trim(),color:String(r.Color||"#888").trim(),active:B(r["Active(TRUE/FALSE)"]!==undefined?r["Active(TRUE/FALSE)"]:r.Active)});});
   s.players.forEach(p=>s.hdcHistory[p.name]=[]);
   (data.Handicaps||[]).forEach(r=>{const n=String(r.Player||"").trim();if(!n)return;if(!s.hdcHistory[n])s.hdcHistory[n]=[];
-    s.hdcHistory[n].push({date:dstr(r["EffectiveDate(YYYY-MM-DD)"]||r.EffectiveDate||"1900-01-01")||"1900-01-01",hdc:Number(r.Hdc)||0});});
+    s.hdcHistory[n].push({date:dstr(r["EffectiveDate(YYYY-MM-DD)"]||r.EffectiveDate||"1900-01-01")||"1900-01-01",hdc:num(r.Hdc)});});
   Object.values(s.hdcHistory).forEach(h=>h.sort((a,b)=>a.date.localeCompare(b.date)));
   // group GameDays by GameID
   const games={};
   (data.GameDays||[]).forEach(r=>{const id=String(r.GameID||"").trim();if(!id||!r.Player)return;
     if(!games[id])games[id]={id,date:dstr(r["Date(YYYY-MM-DD)"]||r.Date),mode:String(r.Mode||""),course:String(r.Course||""),
       indivCounts:B(r.IndivCounts),isPlayoff:B(r.IsPlayoff),rows:[]};
-    const strokes=(r.Strokes===""||r.Strokes===null||r.Strokes===undefined)?null:Number(r.Strokes);
+    const strokes=(r.Strokes===""||r.Strokes===null||r.Strokes===undefined)?null:num(r.Strokes);
     games[id].rows.push({player:String(r.Player).trim(),strokes:(strokes===null||isNaN(strokes))?null:strokes,
-      points:Number(r.Points)||0,money:Number(r.Money)||0});});
+      points:num(r.Points),money:num(r.Money),paid:B(r.Paid)});});
   s.gameDays=Object.values(games).sort((a,b)=>a.date.localeCompare(b.date));
   (data.Cash||[]).forEach(r=>{const flow=String(r["Flow(In/Out)"]||r.Flow||"In").trim();const id=String(r.EntryID||uid());
-    const amount=Number(r.Amount)||0;const date=dstr(r["Date(YYYY-MM-DD)"]||r.Date);
+    const amount=num(r.Amount);const date=dstr(r["Date(YYYY-MM-DD)"]||r.Date);
     if(flow==="Out")s.outflows.push({id,date,name:String(r.Name||""),amount});
-    else s.cashIns.push({id,date,type:String(r.Category||"Others"),name:String(r.Name||""),payer:String(r.Player||"").trim(),amount,count:B(r.CountInRanking)});});
+    else s.cashIns.push({id,date,type:String(r.Category||"Others"),name:String(r.Name||""),payer:String(r.Player||"").trim(),amount,count:B(r.CountInRanking),paid:B(r.Paid)});});
   (data.Appointments||[]).forEach(r=>{if(r.What)s.appts.push({id:String(r.ApptID||uid()),what:String(r.What),when:String(r.When||"")});});
   (data.Settings||[]).forEach(r=>{const k=String(r.Key||"").trim();const v=r.Value;
     if(k==="Title")s.title=String(v);if(k==="Year")s.year=String(v).replace(/\.0$/,"");if(k==="Currency")CURRENCY=String(v)||"€";
-    if(k==="Theme")s.theme=String(v)||"light";if(k==="PlayoffShots"&&v){PLAYOFF_SHOTS=String(v).split(",").map(x=>Number(x.trim())||0);}});
+    if(k==="Theme")s.theme=String(v)||"light";if(k==="PlayoffShots"&&v){PLAYOFF_SHOTS=String(v).split(",").map(x=>num(x.trim()));}
+    if(k==="BudgetBaseline"&&v!==""&&v!==null&&v!==undefined){BUDGET_BASELINE=num(v);}
+    if(k==="BudgetBaselineDate"&&v){BUDGET_BASELINE_DATE=dstr(v);}});
   // Game-day money is the single source of truth: drop any previously-linked Golf cash-ins
   // (identified by the "C<gameId>_" id pattern) and rebuild them from the games.
   s.cashIns=s.cashIns.filter(c=>!/^C(G[0-9a-z]+)_/.test(String(c.id)));
-  s.gameDays.forEach(g=>{g.rows.forEach(r=>{const amt=Number(r.money)||0;if(amt>0){
+  s.gameDays.forEach(g=>{g.rows.forEach(r=>{const amt=num(r.money);if(amt>0){
     s.cashIns.push({id:"C"+g.id+"_"+r.player.replace(/\s+/g,""),gameId:g.id,date:g.date,type:"Golf",
-      name:"Match day "+g.date+(g.course?" · "+g.course:""),payer:r.player,amount:amt,count:true});}});});
+      name:"Match day "+g.date+(g.course?" · "+g.course:""),payer:r.player,amount:amt,count:true,paid:true});}});});
   return s;
 }
 function toSheet(){
@@ -376,10 +807,10 @@ function toSheet(){
   const Handicaps=[];Object.keys(state.hdcHistory).forEach(n=>state.hdcHistory[n].forEach(e=>Handicaps.push({Player:n,"EffectiveDate(YYYY-MM-DD)":e.date,Hdc:e.hdc})));
   const GameDays=[];state.gameDays.forEach(g=>g.rows.forEach(r=>GameDays.push({GameID:g.id,"Date(YYYY-MM-DD)":g.date,Mode:g.mode,Course:g.course,
     IndivCounts:g.indivCounts?"TRUE":"FALSE",IsPlayoff:g.isPlayoff?"TRUE":"FALSE",Player:r.player,
-    Strokes:(r.strokes===null?"":r.strokes),Points:r.points,Money:r.money})));
+    Strokes:(r.strokes===null?"":r.strokes),Points:r.points,Money:r.money,Paid:(r.paid?"TRUE":"FALSE")})));
   const Cash=[];
-  state.cashIns.forEach(c=>Cash.push({EntryID:c.id,"Date(YYYY-MM-DD)":c.date,"Flow(In/Out)":"In",Category:c.type,Name:c.name,Player:c.payer,Amount:c.amount,CountInRanking:c.count?"TRUE":"FALSE"}));
-  state.outflows.forEach(o=>Cash.push({EntryID:o.id,"Date(YYYY-MM-DD)":o.date,"Flow(In/Out)":"Out",Category:"Expense",Name:o.name,Player:"",Amount:o.amount,CountInRanking:"FALSE"}));
+  state.cashIns.forEach(c=>Cash.push({EntryID:c.id,"Date(YYYY-MM-DD)":c.date,"Flow(In/Out)":"In",Category:c.type,Name:c.name,Player:c.payer,Amount:c.amount,CountInRanking:c.count?"TRUE":"FALSE",Paid:(c.paid?"TRUE":"FALSE")}));
+  state.outflows.forEach(o=>Cash.push({EntryID:o.id,"Date(YYYY-MM-DD)":o.date,"Flow(In/Out)":"Out",Category:"Expense",Name:o.name,Player:"",Amount:o.amount,CountInRanking:"FALSE",Paid:"TRUE"}));
   const Appointments=state.appts.map(a=>({ApptID:a.id,What:a.what,When:a.when}));
   const Settings=[{Key:"Title",Value:state.title},{Key:"Year",Value:state.year},{Key:"Currency",Value:CURRENCY},
     {Key:"PlayoffShots",Value:PLAYOFF_SHOTS.join(",")},{Key:"Theme",Value:state.theme}];
@@ -390,28 +821,133 @@ function toSheet(){
    API (GET load / POST save)
    ================================================================= */
 function setSync(status,text){const c=$("#syncChip");c.className="sync "+status;$("#syncText").textContent=text;}
+const CACHE_KEY="swingBrosCache_v3";
+/* Human-readable reason for the most recent failed load. Surfaced in the boot
+   error screen, the sync chip tooltip, and the Reload toast so the actual
+   problem (deployment not public vs. blocked request vs. non-JSON) is visible
+   instead of a generic failure. */
+let LAST_LOAD_ERR="";
+/* ---- Reads: JSONP first, direct fetch as fallback ----
+   When the dashboard is hosted on a different origin than the Apps Script
+   Web App (e.g. GitHub Pages, or a local file://), a cross-origin `fetch`
+   GET only works if Google returns CORS headers — which it does not reliably
+   do for Apps Script. JSONP loads the data through a <script> tag instead,
+   which is NOT subject to CORS, so it works from any origin. It requires the
+   Apps Script doGet to echo a `callback` parameter (see the one-line change
+   documented for the server). If JSONP fails (e.g. the server was not updated),
+   we fall back to a direct fetch, which still works when same-origin or when
+   CORS headers happen to be present. */
+function loadViaJsonp(timeoutMs){
+  return new Promise(function(resolve,reject){
+    const cb="__swbros_cb_"+Date.now()+"_"+Math.floor(Math.random()*1e6);
+    const s=document.createElement("script");
+    let done=false;
+    function cleanup(){ try{delete window[cb];}catch(_){ window[cb]=undefined; } if(s&&s.parentNode) s.parentNode.removeChild(s); clearTimeout(t); }
+    const t=setTimeout(function(){ if(done)return; done=true; cleanup();
+      reject(new Error("JSONP timeout — the Web App did not call back. Make sure doGet echoes the ?callback= parameter (see setup notes).")); }, timeoutMs||15000);
+    window[cb]=function(data){ if(done)return; done=true; cleanup(); resolve(data); };
+    s.onerror=function(){ if(done)return; done=true; cleanup();
+      reject(new Error("JSONP request could not be loaded (network blocked, wrong URL, or deployment not public).")); };
+    s.src=API_URL+(API_URL.indexOf("?")>-1?"&":"?")+"callback="+cb+"&t="+Date.now();
+    document.head.appendChild(s);
+  });
+}
+async function loadViaFetch(timeoutMs){
+  const url=API_URL+(API_URL.indexOf("?")>-1?"&":"?")+"t="+Date.now();
+  const ctrl=new AbortController();
+  const to=setTimeout(()=>ctrl.abort(),timeoutMs||30000);
+  let res;
+  try{
+    res=await fetch(url,{method:"GET",redirect:"follow",signal:ctrl.signal});
+  }catch(err){
+    clearTimeout(to);
+    // A thrown fetch (TypeError/AbortError) means the request never completed:
+    // offline, DNS/connection failure, a timeout, or the browser blocked it
+    // (CORS — the usual cause cross-origin, e.g. GitHub Pages or file://).
+    throw new Error("NETWORK: the direct request was blocked by the browser (CORS) or did not complete. Cross-origin reads need JSONP — update the Apps Script doGet to echo ?callback= (see setup notes).");
+  }
+  clearTimeout(to);
+  if(!res.ok) throw new Error("HTTP "+res.status+" returned by the Web App URL.");
+  // Read as text first so we can tell real JSON apart from a Google sign-in page.
+  const textBody=await res.text();
+  const head=textBody.slice(0,400).toLowerCase();
+  if(head.indexOf("<!doctype")>-1||head.indexOf("<html")>-1||head.indexOf("accounts.google.com")>-1||head.indexOf("sign in")>-1||head.indexOf("request access")>-1){
+    throw new Error("AUTH: the Web App returned a Google sign-in / HTML page instead of data, so the deployment is not public. Re-deploy with “Who has access: Anyone”.");
+  }
+  try{ return JSON.parse(textBody); }
+  catch(_){ throw new Error("BADJSON: the response was not valid JSON (starts with: “"+textBody.slice(0,60).replace(/\s+/g," ").trim()+"”)."); }
+}
+async function fetchSheet(){
+  try{
+    return await loadViaJsonp(15000);          // primary: works cross-origin, no CORS needed
+  }catch(eJsonp){
+    try{
+      return await loadViaFetch(30000);        // fallback: same-origin or CORS-enabled setups
+    }catch(eFetch){
+      // Surface whichever message is most actionable (fetch tends to be specific).
+      const msg=String((eFetch&&eFetch.message)||"");
+      throw (msg.indexOf("AUTH:")===0||msg.indexOf("HTTP ")===0||msg.indexOf("BADJSON:")===0) ? eFetch : (eJsonp||eFetch);
+    }
+  }
+}
 async function apiLoad(){
   setSync("loading","Loading…");
-  const res=await fetch(API_URL,{method:"GET"});
-  if(!res.ok)throw new Error("HTTP "+res.status);
-  const data=await res.json();
-  state=fromSheet(data);
-  setSync("","Synced ✓");
+  let lastErr=null;
+  for(let attempt=1;attempt<=3;attempt++){
+    try{
+      const data=await fetchSheet();
+      state=fromSheet(data);
+      try{localStorage.setItem(CACHE_KEY,JSON.stringify(data));}catch(e){}
+      LAST_LOAD_ERR="";
+      setSync("","Synced ✓");
+      return;
+    }catch(e){ lastErr=e; if(attempt<3) await new Promise(r=>setTimeout(r,800*attempt)); }
+  }
+  LAST_LOAD_ERR=String((lastErr&&lastErr.message)||lastErr||"load failed");
+  try{ console.error("Swing Bros — could not load from Google Sheets:",lastErr); }catch(_){}
+  throw lastErr||new Error("load failed");
 }
 async function apiSave(){
-  // debounced full-dataset save
   clearTimeout(saveTimer);
   setSync("saving","Saving…");
   saveTimer=setTimeout(async()=>{
+    saving=true;
+    const body=JSON.stringify(toSheet());
+    // Cache locally first so nothing is lost even if the network write fails.
+    try{localStorage.setItem(CACHE_KEY,body);}catch(_){ }
+    // `text/plain` keeps this a "simple" request → no CORS preflight (which Apps Script cannot answer).
+    const opts={method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain;charset=utf-8"},body:body};
+    async function verifyFromSheet(){
+      // Re-read the authoritative state from Google Sheets so the SHEET always wins (idempotent).
+      try{
+        const fresh=await fetchSheet();
+        state=fromSheet(fresh);
+        try{localStorage.setItem(CACHE_KEY,JSON.stringify(fresh));}catch(_){ }
+        renderAll();
+        return true;
+      }catch(_){ return false; }
+    }
     try{
-      saving=true;
-      await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(toSheet())});
-      setSync("","Synced ✓");
-    }catch(e){setSync("err","Save failed – retry");toast("Could not save to Google Sheets. Check your connection.","err");}
-    finally{saving=false;}
-  },500);
+      const res=await fetch(API_URL,{...opts,mode:"cors"});
+      let ok=res && res.ok;
+      try{const j=await res.json(); if(j && j.status) ok=true;}catch(_){}
+      const verified=await verifyFromSheet();
+      setSync("", verified?"Synced ✓":"Synced ✓");
+    }catch(e1){
+      // Cross-origin read blocked (CORS) — the write still reaches Apps Script. Resend fire-and-forget,
+      // then re-fetch the authoritative state so the UI matches the sheet exactly.
+      try{
+        await fetch(API_URL,{...opts,mode:"no-cors"});
+        const verified=await verifyFromSheet();
+        setSync("", verified?"Synced ✓":"Saved ✓ (tap 🔄 to verify)");
+      }catch(e2){
+        setSync("err","Save failed – tap 🔄 Reload");
+        toast("Could not save to Google Sheets. Check your connection and that the deployment is public (Anyone).","err");
+      }
+    }finally{saving=false;}
+  },400);
 }
-function save(){apiSave();}  // alias used everywhere
+function save(){ if(!LOADED){ setSync('err','Not saved – data not loaded yet'); return; } apiSave(); }
 
 /* =================================================================
    STANDINGS / PLAYOFF
@@ -419,7 +955,7 @@ function save(){apiSave();}  // alias used everywhere
 function standingsBefore(beforeDate){
   const pts={};state.players.forEach(p=>pts[p.name]=0);
   state.gameDays.forEach(g=>{if(g.isPlayoff)return;if(beforeDate&&g.date>=beforeDate)return;
-    g.rows.forEach(r=>{if(pts[r.player]!==undefined)pts[r.player]+=Number(r.points)||0;});});
+    g.rows.forEach(r=>{if(pts[r.player]!==undefined)pts[r.player]+=num(r.points);});});
   return Object.entries(pts).sort((a,b)=>b[1]-a[1]);
 }
 function playoffShotsFor(name,beforeDate){const st=standingsBefore(beforeDate);const i=st.findIndex(e=>e[0]===name);return(i>=0&&i<PLAYOFF_SHOTS.length)?PLAYOFF_SHOTS[i]:0;}
@@ -471,6 +1007,7 @@ function readGameForm(){const date=$("#gd_date").value,mode=$("#gd_mode").value,
 function addOrSaveGame(){const g=readGameForm();
   if(!g.date)return toast("Please pick a date.","err");if(g.uniq!==state.players.length)return toast("Each slot must have a different player.","err");
   if(g.indiv&&g.rows.some(r=>r.strokes===null))return toast("Individual counts: enter strokes for all 4 players.","err");
+  if(editingGameId){const prev=state.gameDays.find(x=>x.id===editingGameId);if(prev){g.rows.forEach(r=>{const pr=prev.rows.find(p=>p.player===r.player);if(pr&&pr.paid)r.paid=true;});}}
   const entry={id:editingGameId||("G"+uid()),date:g.date,mode:g.mode,course:g.course,indivCounts:g.indiv,isPlayoff:g.po,rows:g.rows};
   if(editingGameId){state.gameDays[state.gameDays.findIndex(x=>x.id===editingGameId)]=entry;toast("Game day updated ✔");exitEdit();}
   else{state.gameDays.push(entry);toast(g.po?"🏝️ Play-off day added ✔":"Game day added ✔");}
@@ -489,7 +1026,7 @@ function deleteGame(id){if(!confirm("Delete this game day?"))return;state.gameDa
 function addCashIn(){const flow=$("#ng_flow").value,type=$("#ng_type").value,date=$("#ng_date").value,name=$("#ng_name").value.trim(),payer=$("#ng_payer").value,amount=parseFloat($("#ng_amount").value);
   if(!date)return toast("Pick a date.","err");if(isNaN(amount)||amount<=0)return toast("Enter a valid amount > 0.","err");
   if(flow==="Out")state.outflows.push({id:"C"+uid(),date,name:name||type,amount});
-  else state.cashIns.push({id:"C"+uid(),date,type,name:name||type,payer,amount,count:!!payer});
+  else state.cashIns.push({id:"C"+uid(),date,type,name:name||type,payer,amount,count:!!payer,paid:false});
   save();renderAll();toast((flow==="Out"?"Expense":"Cash-in")+" added ✔");$("#ng_name").value="";$("#ng_amount").value="";closeModal();}
 function deleteCashIn(id){const linked=state.cashIns.find(x=>x.id===id&&x.gameId);if(linked){toast("This cash-in comes from a game day. Edit or delete that game day instead.","err");return;}if(!confirm("Delete this entry?"))return;state.cashIns=state.cashIns.filter(x=>x.id!==id);state.outflows=state.outflows.filter(x=>x.id!==id);save();renderAll();}
 function addAppt(){const what=$("#ap_what").value.trim(),when=$("#ap_when").value.trim();if(!what||!when)return toast("Fill in both fields.","err");state.appts.push({id:"A"+uid(),what,when});save();renderAll();$("#ap_what").value="";$("#ap_when").value="";toast("Appointment added ✔");closeModal();}
@@ -497,6 +1034,15 @@ function deleteAppt(id){state.appts=state.appts.filter(x=>x.id!==id);save();rend
 function buildHdcForm(){$("#hdcList").innerHTML=state.players.map(p=>{const hist=state.hdcHistory[p.name]||[];const last=hist.length?hist[hist.length-1]:{hdc:0};
   const txt=hist.map(e=>`${e.date==="1900-01-01"?"start":e.date}: ${e.hdc}`).join("  →  ");
   return `<div class="hdc-row"><div class="nm"><span class="player-dot" style="background:${p.color}"></span><div>${p.name}<div class="hdc-hist">history: ${txt}</div></div></div><input type="number" step="0.1" class="hdc-input" data-name="${p.name}" value="${last.hdc}"></div>`;}).join("");}
+function saveShots(){
+  const v=[num($("#sh_1").value),num($("#sh_2").value),num($("#sh_3").value),num($("#sh_4").value)];
+  if(v.some(x=>isNaN(x)||x<0)) return toast("Enter valid shot numbers (0 or more).","err");
+  PLAYOFF_SHOTS=v;
+  save();            // persists to Settings 'PlayoffShots' in Google Sheet
+  renderAll();       // leaderboard "Projected shots" + banner update
+  toast("Play-off shots updated ✔");
+  closeModal();
+}
 function saveHdc(){const date=$("#hdc_date").value;if(!date)return toast("Pick an effective date.","err");let ch=0;
   $$(".hdc-input").forEach(inp=>{const name=inp.dataset.name,val=parseFloat(inp.value);if(isNaN(val))return;const hist=state.hdcHistory[name];const ex=hist.find(e=>e.date===date);
     if(ex){if(ex.hdc!==val){ex.hdc=val;ch++;}}else if(hdcOn(name,date)!==val){hist.push({date,hdc:val});ch++;}});
@@ -507,7 +1053,7 @@ function saveHdc(){const date=$("#hdc_date").value;if(!date)return toast("Pick a
    ================================================================= */
 function computeStats(){const stats={};
   state.players.forEach(p=>stats[p.name]={name:p.name,color:p.color,curHdc:currentHdc(p.name),points:0,rounds:0,totalStrokes:0,scoredRounds:0,netSum:0,best:null,worst:null,bestCourse:"",worstCourse:"",money:0});
-  state.gameDays.forEach(g=>g.rows.forEach(r=>{const s=stats[r.player];if(!s)return;s.points+=Number(r.points)||0;s.rounds++;s.money+=Number(r.money)||0;
+  state.gameDays.forEach(g=>g.rows.forEach(r=>{const s=stats[r.player];if(!s)return;s.points+=num(r.points);s.rounds++;s.money+=num(r.money);
     if(r.strokes!==null&&!isNaN(r.strokes)){const bonus=g.isPlayoff?playoffShotsFor(r.player,g.date):0;s.totalStrokes+=r.strokes;s.scoredRounds++;s.netSum+=r.strokes-hdcOn(r.player,g.date)-bonus;
       if(s.best===null||r.strokes<s.best){s.best=r.strokes;s.bestCourse=g.course||"";}if(s.worst===null||r.strokes>s.worst){s.worst=r.strokes;s.worstCourse=g.course||"";}}}));
   Object.values(stats).forEach(s=>{s.avgGross=s.scoredRounds?s.totalStrokes/s.scoredRounds:null;s.avgNet=s.scoredRounds?s.netSum/s.scoredRounds:null;s.projShots=projectedShots(s.name);});return stats;}
@@ -516,7 +1062,7 @@ function syncGameCashIns(game){
   state.cashIns=state.cashIns.filter(c=>c.gameId!==game.id);
   // create one Golf cash-in per player who owes money (>0) on this game
   game.rows.forEach(r=>{
-    const amt=Number(r.money)||0;
+    const amt=num(r.money);
     if(amt>0){
       state.cashIns.push({
         id:"C"+game.id+"_"+r.player.replace(/\s+/g,""),
@@ -526,20 +1072,30 @@ function syncGameCashIns(game){
         name:"Match day "+game.date+(game.course?" · "+game.course:""),
         payer:r.player,
         amount:amt,
-        count:true
+        count:true,
+        paid:true
       });
     }
   });
 }
 function removeGameCashIns(gameId){state.cashIns=state.cashIns.filter(c=>c.gameId!==gameId);}
-function budgetTotal(){return state.cashIns.reduce((a,c)=>a+Number(c.amount),0)-state.outflows.reduce((a,c)=>a+Number(c.amount),0);}
+function budgetTotal(){
+  // Anchored budget: BUDGET_BASELINE (e.g. 120 EUR) is the balance as of (the start of) BUDGET_BASELINE_DATE.
+  // Entries dated ON OR AFTER the baseline date adjust it. Historical entries (dated before) are ignored,
+  // so the balance can never be dragged down by old data.
+  const base = (BUDGET_BASELINE!==null && !isNaN(BUDGET_BASELINE)) ? BUDGET_BASELINE : 0;
+  const d = BUDGET_BASELINE_DATE || "9999-12-31";
+  const inA  = state.cashIns.filter(c=>String(c.date)>=d).reduce((a,c)=>a+num(c.amount),0);
+  const outA = state.outflows.filter(c=>String(c.date)>=d).reduce((a,c)=>a+num(c.amount),0);
+  return base + inA - outA;
+}
 function renderDashboard(stats){const arr=Object.values(stats);const totalDays=state.gameDays.length;const winner=arr.slice().sort((a,b)=>b.points-a.points)[0];
   let lowest=null,lw="",lc="";arr.forEach(s=>{if(s.best!==null&&(lowest===null||s.best<lowest)){lowest=s.best;lw=s.name;lc=s.bestCourse;}});
-  const ct={};state.players.forEach(p=>ct[p.name]=0);state.cashIns.forEach(c=>{if(c.count&&ct[c.payer]!==undefined)ct[c.payer]+=c.amount;});const tp=Object.entries(ct).sort((a,b)=>b[1]-a[1])[0];
+  const ct={};state.players.forEach(p=>ct[p.name]=0);state.cashIns.forEach(c=>{if(c.count&&ct[c.payer]!==undefined)ct[c.payer]+=num(c.amount);});const tp=Object.entries(ct).sort((a,b)=>b[1]-a[1])[0];
   $("#dashboard").innerHTML=`
-    <div class="stat"><div class="label">Game days played</div><div class="value">${totalDays}</div><div class="meta">${arr.reduce((a,s)=>a+s.scoredRounds,0)} rounds with score</div></div>
+    <div class="stat"><div class="label">Game days played</div><div class="value">${totalDays}</div><div class="meta">${state.gameDays.filter(g=>g.rows.some(r=>r.strokes!==null)).length} rounds with score</div></div>
     <div class="stat gold"><div class="label">🏆 Current leader</div><div class="value">${winner&&winner.points>0?winner.name:'–'}</div><div class="meta">${winner?fmtNum(winner.points,2)+' pts · −'+(winner.projShots||0)+' shots final':''}</div></div>
-    <div class="stat"><div class="label">🎯 Lowest single round</div><div class="value">${lowest!==null?fmtPar(lowest):'–'}</div><div class="meta">${lowest!==null?lw+(lc?' · '+lc:''):''}</div></div>
+    <div class="stat"><div class="label">🎯 Lowest single round</div><div class="value">${lowest!==null?lw:'–'}</div><div class="meta">${lowest!==null?fmtPar(lowest)+(lc?' · '+lc:''):''}</div></div>
     <div class="stat gold"><div class="label">🪙 Top cash contributor</div><div class="value">${tp&&tp[1]>0?tp[0]:'–'}</div><div class="meta">${tp&&tp[1]>0?fmtMoney(tp[1]):''}</div></div>
     <div class="stat"><div class="label">💶 Our budget</div><div class="value">${fmtMoney(budgetTotal())}</div><div class="meta">paid in by all of us</div></div>`;}
 function renderLeaderboard(stats){const arr=Object.values(stats).sort((a,b)=>b.points-a.points||((a.avgNet??999)-(b.avgNet??999)));const tb=$("#leaderboard tbody");
@@ -551,40 +1107,119 @@ function renderLeaderboard(stats){const arr=Object.values(stats).sort((a,b)=>b.p
   tb.classList.remove("flash");void tb.offsetWidth;tb.classList.add("flash");
   const st=standingsBefore(null);$("#poBanner").querySelector("span").innerHTML="<b>Projected shots for final round:</b> if the season ended today, "+st.slice(0,3).map((e,i)=>`${e[0]} gets −${PLAYOFF_SHOTS[i]} shot${PLAYOFF_SHOTS[i]===1?'':'s'}`).join(", ")+" on the Island Masters 2027 final round.";}
 function renderHistory(){const tb=$("#history tbody");const sorted=state.gameDays.slice().sort((a,b)=>b.date.localeCompare(a.date));
-  tb.innerHTML=sorted.length?sorted.map(g=>`<tr><td>${g.date}</td><td><span class="pill ${g.isPlayoff?'po':''}">${g.isPlayoff?'🏝️ '+g.mode:g.mode}</span></td><td>${g.course||'–'}</td><td>${g.indivCounts?'✔ yes':'–'}</td>
+  tb.innerHTML=sorted.length?sorted.map(g=>`<tr><td>${fmtDate(g.date)}</td><td><span class="pill ${g.isPlayoff?'po':''}">${g.isPlayoff?'🏝️ '+g.mode:g.mode}</span></td><td>${g.course||'–'}</td><td>${g.indivCounts?'✔ yes':'–'}</td>
     <td>${g.rows.map(r=>{const b=g.isPlayoff?playoffShotsFor(r.player,g.date):0;return `<div style="font-size:12.5px"><span class="player-dot" style="background:${playerColor(r.player)}"></span> ${r.player}: ${r.strokes!==null?fmtPar(r.strokes)+(b?` (−${b})`:'')+' · ':''}${fmtNum(r.points,2)} pts${r.money?' · '+fmtMoney(r.money):''}</div>`;}).join("")}</td>
     <td style="white-space:nowrap"><button class="btn-outline btn-sm" onclick="editGame('${g.id}')">✏️</button> <button class="btn-red btn-sm" onclick="deleteGame('${g.id}')">🗑️</button></td></tr>`).join(""):`<tr><td colspan="6" style="color:var(--muted)">No game days yet.</td></tr>`;}
-function renderSettlement(){const tb=$("#settleTable tbody");if(!state.gameDays.length){tb.innerHTML=`<tr><td colspan="3" style="color:var(--muted)">No match days yet.</td></tr>`;$("#settleHeader").textContent="";return;}
-  const last=state.gameDays.slice().sort((a,b)=>b.date.localeCompare(a.date))[0];$("#settleHeader").innerHTML=`Most recent match day: <b>${last.date}</b>${last.course?' · '+last.course:''} · <span class="pill ${last.isPlayoff?'po':''}">${last.mode}</span>`;
-  const owed=last.rows.filter(r=>Number(r.money)>0);if(!owed.length){tb.innerHTML=`<tr><td colspan="3" style="color:var(--muted)">No pay-in amounts recorded for this match day.</td></tr>`;return;}
-  tb.innerHTML=owed.map(r=>`<tr><td><span class="player-dot" style="background:${playerColor(r.player)}"></span> ${r.player}</td><td>Match day ${last.date}${last.course?' · '+last.course:''}</td><td><span class="money-neg">${fmtMoney(r.money)}</span></td></tr>`).join("")+`<tr style="font-weight:800"><td>Total</td><td></td><td><span class="pts">${fmtMoney(owed.reduce((a,r)=>a+Number(r.money),0))}</span></td></tr>`;}
+/* ---- Single source of truth for "outstanding payment" ----
+   A cash-in is an OPEN (outstanding) payment when it is money coming IN,
+   is attributable to a payer, was NOT auto-generated from a game day
+   (those are tracked via the game-day rows instead), and has a positive
+   amount. Both the Outstanding Payments table and the Cash-In History
+   confirm checkbox use THIS predicate, so the two can never diverge.
+   Category (Golf/PGA/FIFA/Others) is irrelevant here — a manual cash-in
+   is outstanding regardless of its category until it is confirmed. */
+function isOpenPayment(c){
+  return !!c && c.flow!=="Out" && !!c.payer && !c.gameId && num(c.amount)>0;
+}
+function renderSettlement(){
+  const tb=$("#settleTable tbody");
+  const items=[];
+  let headerTxt="";
+  if(state.gameDays.length){
+    const last=state.gameDays.slice().sort((a,b)=>b.date.localeCompare(a.date))[0];
+    headerTxt=`Latest match day: <b>${fmtDate(last.date)}</b>${last.course?' · '+last.course:''} · <span class="pill ${last.isPlayoff?'po':''}">${last.mode}</span>`;
+    last.rows.filter(r=>num(r.money)>0 && !r.paid).forEach(r=>{
+      items.push({kind:"golf",gameId:last.id,player:r.player,
+        what:`⛳ Golf · ${fmtDate(last.date)}${last.course?' · '+last.course:''}`,amount:num(r.money)});
+    });
+  }
+  // Every unconfirmed cash-in (any category) is an outstanding payment.
+  state.cashIns.filter(c=>isOpenPayment(c) && !c.paid).forEach(c=>{
+    items.push({kind:"cash",cashId:c.id,player:c.payer,
+      what:`${c.type?c.type+" · ":""}${c.name||""} (${fmtDate(c.date)})`,amount:num(c.amount)});
+  });
+  $("#settleHeader").innerHTML = headerTxt || "Outstanding payments across golf &amp; non-golf.";
+  if(!items.length){
+    tb.innerHTML=`<tr><td colspan="4" style="color:var(--green-pos);font-weight:600">✅ No outstanding payments — everyone is settled!</td></tr>`;
+    return;
+  }
+  tb.innerHTML=items.map(it=>{
+    const safePlayer=it.player.replace(/\\/g,"").replace(/'/g,"\\'");
+    const call = it.kind==="golf" ? `markGolfPaid('${it.gameId}','${safePlayer}')` : `markCashPaid('${it.cashId}')`;
+    return `<tr>
+      <td><span class="player-dot" style="background:${playerColor(it.player)}"></span> ${it.player}</td>
+      <td>${it.what}</td>
+      <td><span class="money-neg">${fmtMoney(it.amount)}</span></td>
+      <td style="text-align:center"><input type="checkbox" class="paid-chk" title="Mark as paid" style="width:22px;height:22px;cursor:pointer" onclick="${call}"></td>
+    </tr>`;
+  }).join("")
+  + `<tr style="font-weight:800"><td>Total outstanding</td><td></td><td><span class="pts">${fmtMoney(items.reduce((a,x)=>a+x.amount,0))}</span></td><td></td></tr>`;
+}
+function markGolfPaid(gameId, player){
+  const g=state.gameDays.find(x=>x.id===gameId); if(!g) return;
+  const row=g.rows.find(r=>r.player===player); if(!row) return;
+  row.paid=!row.paid; save(); renderAll(); toast(row.paid?"Marked as paid ✔":"Marked as unpaid");
+}
+function markCashPaid(cashId){
+  const c=state.cashIns.find(x=>x.id===cashId); if(!c) return;
+  c.paid=!c.paid; save(); renderAll(); toast(c.paid?"Marked as paid ✔":"Marked as unpaid");
+}
+function toggleCashPaid(cashId){
+  const c=state.cashIns.find(x=>x.id===cashId); if(!c) return;
+  c.paid=!c.paid; save(); renderAll(); toast(c.paid?"Marked as paid ✔":"Marked as unpaid");
+}
 let cashFilter=new Set();
 function cashFilterNames(){return state.players.map(p=>p.name);}
 function buildCashFilterChips(){
   const names=cashFilterNames();
-  // prune any selected names that no longer exist
   cashFilter.forEach(n=>{if(!names.includes(n))cashFilter.delete(n);});
   const wrap=document.getElementById("cashFilterChips");if(!wrap)return;
   wrap.innerHTML=names.map(n=>{const active=cashFilter.has(n)?" active":"";
-    return `<span class="cash-chip${active}" data-name="${n.replace(/"/g,'&quot;')}" role="button" tabindex="0" aria-pressed="${cashFilter.has(n)}"><span class="player-dot" style="background:${playerColor(n)}"></span>${n}<span class="cash-chip-check">✓</span></span>`;}).join("");
+    return `<span class="cash-chip${active}" data-name="${String(n).replace(/"/g,'&quot;')}" role="button" tabindex="0" aria-pressed="${cashFilter.has(n)}"><span class="player-dot" style="background:${playerColor(n)}"></span>${n}<span class="cash-chip-check">✓</span></span>`;}).join("");
   const clr=document.getElementById("cashFilterClear");if(clr)clr.disabled=cashFilter.size===0;
 }
 function toggleCashFilter(name){if(cashFilter.has(name))cashFilter.delete(name);else cashFilter.add(name);renderCash();}
 function clearCashFilter(){if(!cashFilter.size)return;cashFilter.clear();renderCash();}
-function cashFilterPass(c){
-  if(!cashFilter.size)return true;
-  return c.payer && cashFilter.has(c.payer);
-}
+function cashFilterPass(c){if(!cashFilter.size)return true;return !!c.payer && cashFilter.has(c.payer);}
 function renderCash(){const map={};state.players.forEach(p=>map[p.name]={name:p.name,color:p.color,total:0,Golf:0,PGA:0,FIFA:0,Others:0,count:0});
-  state.cashIns.forEach(c=>{if(!c.count)return;const m=map[c.payer];if(!m)return;const cat=["Golf","PGA","FIFA"].includes(c.type)?c.type:"Others";m[cat]+=c.amount;m.total+=c.amount;m.count++;});
+  state.cashIns.forEach(c=>{if(!c.count)return;const m=map[c.payer];if(!m)return;const cat=["Golf","PGA","FIFA"].includes(c.type)?c.type:"Others";m[cat]+=num(c.amount);m.total+=num(c.amount);m.count++;});
   $("#totalBudget").textContent=fmtMoney(budgetTotal());$("#budgetMeta").textContent=state.cashIns.length+" cash-ins · "+state.outflows.length+" expenses";
   const arr=Object.values(map).sort((a,b)=>b.total-a.total);
   $("#cashTable tbody").innerHTML=arr.map((m,i)=>`<tr><td><span class="rankbadge ${i===0&&m.total>0?'r1':''}">${i+1}</span></td><td><span class="player-dot" style="background:${m.color}"></span> ${m.name}</td><td class="pts">${fmtMoney(m.total)}</td><td>${fmtMoney(m.Golf)}</td><td>${fmtMoney(m.PGA)}</td><td>${fmtMoney(m.FIFA)}</td><td>${fmtMoney(m.Others)}</td><td>${m.count}</td></tr>`).join("");
   buildCashFilterChips();
   const inR=state.cashIns.map(c=>({...c,flow:"In"}));const outR=state.outflows.map(o=>({...o,flow:"Out",type:"Expense",payer:""}));const all=inR.concat(outR).filter(cashFilterPass).sort((a,b)=>b.date.localeCompare(a.date));
-  $("#ngHistory tbody").innerHTML=all.length?all.map(c=>`<tr><td>${c.date}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type||'–'}${c.gameId?' <span class=\'pill\'>⛳ from game</span>':''}</td><td>${c.name||'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${c.payer}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td>${c.gameId?'<span class="small-muted">via game</span>':`<button class="btn-red btn-sm" onclick="deleteCashIn('${c.id}')">🗑️</button>`}</td></tr>`).join(""):`<tr><td colspan="7" style="color:var(--muted)">${cashFilter.size?"No entries for the selected "+(cashFilter.size>1?"people":"person")+".":"No entries yet."}</td></tr>`;}
-function renderAppts(){$("#apptList").innerHTML=state.appts.length?state.appts.map(a=>{const po=/island|play.?off|final/i.test(a.what);return `<div class="appt ${po?'playoff':''}"><div class="what">${a.what}</div><div style="display:flex;align-items:center;gap:8px"><span class="when">${a.when}</span><button onclick="deleteAppt('${a.id}')">✕</button></div></div>`;}).join(""):`<p style="color:var(--muted)">No upcoming appointments.</p>`;}
-function renderAll(){const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();}
+  $("#ngHistory tbody").innerHTML=all.length?all.map(c=>{const payable=isOpenPayment(c);const paidCell = c.gameId ? '<span class="small-muted">via game</span>' : (payable ? `<input type="checkbox" class="paid-chk" title="Mark as received / confirm payment" style="width:20px;height:20px;cursor:pointer" ${c.paid?"checked":""} onclick="toggleCashPaid(\'${c.id}\')">` : '<span class="small-muted">—</span>');const actionCell = c.gameId ? '<span class="small-muted">⛳ from game</span>' : `<button class="btn-red btn-sm" onclick="deleteCashIn(\'${c.id}\')">🗑️</button>`;return `<tr><td>${fmtDate(c.date)}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type||'–'}${c.gameId?' <span class=\'pill\'>⛳</span>':''}</td><td>${c.name||'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${c.payer}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td style="text-align:center">${paidCell}</td><td style="text-align:center">${actionCell}</td></tr>`;}).join(""):`<tr><td colspan="8" style="color:var(--muted)">${cashFilter.size?"No entries for the selected "+(cashFilter.size>1?"people":"person")+".":"No entries yet."}</td></tr>`;}
+function renderAppts(){$("#apptList").innerHTML=state.appts.length?state.appts.map(a=>{const po=/island|play.?off|final/i.test(a.what);const w=String(a.when||"").trim();const hasDate=/\d/.test(w) && !/^tbd$/i.test(w) && !/^n\/?a$/i.test(w);const cls=po?"playoff":(hasDate?"dated":"tbd");return `<div class="appt ${cls}"><div class="what">${a.what}</div><div style="display:flex;align-items:center;gap:8px"><span class="when">${w||"tbd"}</span><button onclick="deleteAppt('${a.id}')">✕</button></div></div>`;}).join(""):`<p style="color:var(--muted)">No upcoming appointments.</p>`;}
+
+const M_LABELS={
+  leaderboard:["#","Player","Hdc","Points","Proj. shots","Total","Avg gross","Avg net","Best","Worst"],
+  history:["Date","Mode","Course","Indiv?","Details","Actions"],
+  settleTable:["Player","What","Amount to pay in","Paid?"],
+  cashTable:["#","Name","Total","Golf","PGA","FIFA","Others","#"],
+  ngHistory:["Date","Flow","Category","Name / details","Player","Amount","Paid?",""]
+};
+function decorateMobileTables(){
+  Object.keys(M_LABELS).forEach(function(tid){
+    const tbl=document.getElementById(tid); if(!tbl) return;
+    const labels=M_LABELS[tid];
+    tbl.querySelectorAll("tbody tr").forEach(function(tr){
+      const tds=tr.querySelectorAll("td"); if(tds.length<2) return;
+      tds.forEach(function(td,i){ td.setAttribute("data-label", labels[i]!==undefined?labels[i]:""); td.classList.remove("m-title","m-actions","m-block"); });
+      tds[0].classList.add("m-title");
+      if(tid==="history"){ if(tds[4])tds[4].classList.add("m-block"); if(tds[5])tds[5].classList.add("m-actions"); }
+      if(tid==="ngHistory"){ if(tds[6])tds[6].classList.add("m-actions"); if(tds[7])tds[7].classList.add("m-actions"); }
+      if(tid==="settleTable"){ if(tds[3])tds[3].classList.add("m-actions"); }
+    });
+  });
+}
+function setupScrollSpy(){
+  const ids=["sec-summary","sec-leaderboard","sec-history","sec-cash","sec-next"];
+  const links=document.querySelectorAll(".mnav a");
+  function onScroll(){ let cur=ids[0]; ids.forEach(function(id){const el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<=120)cur=id;}); links.forEach(function(a){a.classList.toggle("active",a.getAttribute("href")==="#"+cur);}); }
+  window.addEventListener("scroll",onScroll,{passive:true}); onScroll();
+}
+
+function renderAll(){const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();decorateMobileTables();enableDragScroll();}
 
 /* EXPORT */
 function exportCSV(){const stats=computeStats();const arr=Object.values(stats).sort((a,b)=>b.points-a.points);
@@ -600,9 +1235,11 @@ function exportCSV(){const stats=computeStats();const arr=Object.values(stats).s
 /* MODAL/FAB/THEME */
 function openModal(key){closeModal();$("#modal-"+key).classList.add("show");$("#fab").classList.remove("open");const today=new Date().toISOString().slice(0,10);
   if(key==="game"&&!editingGameId){$("#gd_date").value=today;$("#gd_playoff").checked=false;updateScoringNote();updatePlayoffInfo();buildPlayersForm();}
-  if(key==="cash"){$("#ng_date").value=today;}if(key==="hdc"){$("#hdc_date").value=today;buildHdcForm();}}
+  if(key==="cash"){$("#ng_date").value=today;}if(key==="hdc"){$("#hdc_date").value=today;buildHdcForm();}
+  if(key==="shots"){$("#sh_1").value=(PLAYOFF_SHOTS[0]!==undefined?PLAYOFF_SHOTS[0]:5);$("#sh_2").value=(PLAYOFF_SHOTS[1]!==undefined?PLAYOFF_SHOTS[1]:3);$("#sh_3").value=(PLAYOFF_SHOTS[2]!==undefined?PLAYOFF_SHOTS[2]:1);$("#sh_4").value=(PLAYOFF_SHOTS[3]!==undefined?PLAYOFF_SHOTS[3]:0);}}
 function closeModal(){$$(".modal-ov").forEach(m=>m.classList.remove("show"));}
-function setTheme(t){document.documentElement.setAttribute("data-theme",t);$("#themeBtn").textContent=t==="dark"?"☀️":"🌙";if(state){state.theme=t;}}
+function updateThemeHint(){try{var h=document.getElementById("themeHint");if(!h)return;var dark=document.documentElement.getAttribute("data-theme")==="dark";h.textContent=dark?"Click to switch to light mode":"Click to switch to dark mode";}catch(e){}}
+function setTheme(t){document.documentElement.setAttribute("data-theme",t);$("#themeBtn").textContent=t==="dark"?"☀️":"🌙";if(state){state.theme=t;}updateThemeHint();}
 
 /* =================================================================
    INIT
@@ -622,9 +1259,7 @@ function wireUI(){
   populateSelect($("#gd_mode"),GAME_MODES);populateSelect($("#ng_type"),NON_GOLF_TYPES);
   populateSelect($("#ng_payer"),state.players.map(p=>p.name),true);
   $$(".cur-sym").forEach(e=>e.textContent=CURRENCY);
-  $("#titleInput").value=state.title;$("#yearInput").value=state.year;
-  $("#titleInput").addEventListener("input",e=>{state.title=e.target.value;save();});
-  $("#yearInput").addEventListener("input",e=>{state.year=e.target.value;save();});
+  $("#titleInput").textContent=keyTitle(state.title);{var _y=document.getElementById("yearInput"); if(_y) _y.textContent=state.year;}
   setTheme(state.theme||"light");
   $("#gd_indivCounts").addEventListener("change",()=>{updateScoringNote();buildPlayersForm();});
   $("#gd_playoff").addEventListener("change",()=>{updatePlayoffInfo();buildPlayersForm();});
@@ -633,61 +1268,199 @@ function wireUI(){
   $("#addGameBtn").addEventListener("click",addOrSaveGame);
   $("#cancelEditBtn").addEventListener("click",()=>{exitEdit();resetGameFormValues();closeModal();});
   $("#addNgBtn").addEventListener("click",addCashIn);$("#addApBtn").addEventListener("click",addAppt);$("#saveHdcBtn").addEventListener("click",saveHdc);
+  $("#saveShotsBtn").addEventListener("click",saveShots);
   $("#exportBtn").addEventListener("click",exportCSV);
-  $("#reloadBtn").addEventListener("click",async()=>{try{await apiLoad();wireAfterData();renderAll();toast("Reloaded from Google Sheets ✔");}catch(e){toast("Reload failed.","err");}});
-  $("#themeBtn").addEventListener("click",()=>{const t=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";setTheme(t);save();});
-  $("#resetBtn").addEventListener("click",()=>{toast("To reset, clear the rows in the Google Sheet directly.","err");});
+  $("#reloadBtnTop").addEventListener("click",async()=>{try{setSync("loading","Updating…");await apiLoad();LOADED=true;wireAfterData();renderAll();toast("Updated from Google Sheets ✔");}catch(e){toast("Update failed — check connection.","err");}});
+  (function(){
+    // A single click handler covers mouse, touch (tap -> synthetic click) and
+    // keyboard activation (Enter/Space on a <button>). It does NOT depend on a
+    // scroll event, touchend hacks, or capture-phase delegation — those caused
+    // the earlier "only works after scrolling" flakiness. The loader is removed
+    // from the DOM (removeBoot) so nothing can sit above the toggle at the top.
+    function __toggleTheme(){
+      const t=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";
+      setTheme(t); save();
+    }
+    const tb=document.getElementById("themeBtn");
+    if(tb){
+      tb.setAttribute("type","button");
+      tb.addEventListener("click",__toggleTheme);
+      tb.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "||e.key==="Spacebar"){ e.preventDefault(); __toggleTheme(); } });
+    }
+  })();
+  $("#resetBtn").addEventListener("click",()=>{
+    if(!confirm("Do you really want to reset the season? This clears all game days, cash-ins, expenses and appointments (players, handicaps and settings are kept).")) return;
+    const pw=prompt("Enter the reset password to confirm:");
+    if(pw===null) return;
+    if(pw!=="SwingBros2020!!"){ toast("Wrong password — season was NOT reset.","err"); return; }
+    state.gameDays=[]; state.cashIns=[]; state.outflows=[]; state.appts=[];
+    save(); renderAll();
+    toast("Season has been reset ✔");
+  });
   $("#fabMain").addEventListener("click",()=>$("#fab").classList.toggle("open"));
   $$(".fab-item .btn-circ").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.open==="game")exitEdit();openModal(b.dataset.open);}));
   $$("[data-close]").forEach(b=>b.addEventListener("click",closeModal));
   $$(".modal-ov").forEach(ov=>ov.addEventListener("click",e=>{if(e.target===ov)closeModal();}));
-  document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();$("#fab").classList.remove("open");}});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeTableFs();$("#fab").classList.remove("open");}});
+  enableDragScroll();  // init
+  // Add a "swipe / rotate" scroll hint above each wide table (shown only on mobile via CSS).
+  document.querySelectorAll(".table-scroll").forEach(function(ts){
+    if(ts.previousElementSibling && ts.previousElementSibling.classList && ts.previousElementSibling.classList.contains("scrollhint")) return;
+    var h=document.createElement("div"); h.className="scrollhint";
+    h.innerHTML="\u2194\ufe0f Swipe to see more \u00b7 rotate \ud83d\udd04 or pinch to zoom";
+    ts.parentNode.insertBefore(h, ts);
+  });
+  setupScrollSpy();document.documentElement.style.scrollBehavior="smooth";
 }
-function wireAfterData(){$("#titleInput").value=state.title;$("#yearInput").value=state.year;populateSelect($("#ng_payer"),state.players.map(p=>p.name),true);$$(".cur-sym").forEach(e=>e.textContent=CURRENCY);}
+function wireAfterData(){$("#titleInput").textContent=keyTitle(state.title);{var _y=document.getElementById("yearInput"); if(_y) _y.textContent=state.year;}populateSelect($("#ng_payer"),state.players.map(p=>p.name),true);$$(".cur-sym").forEach(e=>e.textContent=CURRENCY);}
 
-window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=deleteCashIn;window.deleteAppt=deleteAppt;
 
-let BOOT_DONE=false;
-function hideBoot(){
-  if(BOOT_DONE)return;BOOT_DONE=true;
-  const b=document.getElementById("boot");if(!b)return;
+/* ---- Full-table landscape reader ---- */
+function openTableFs(tableId,title){
+  const src=document.getElementById(tableId); if(!src) return;
+  const clone=src.cloneNode(true);
+  clone.classList.remove("m-stack");
+  const body=document.getElementById("tableFsBody");
+  body.innerHTML=""; body.appendChild(clone);
+  document.getElementById("tableFsTitle").textContent=title||"Full table";
+  const portrait = window.matchMedia("(max-width:720px) and (orientation:portrait)").matches;
+  document.getElementById("tableFsHint").textContent = portrait
+    ? "Rotate your phone to landscape for the best view · swipe to scroll"
+    : "Scroll to see all columns · press Esc or × to close";
+  document.getElementById("tableFs").classList.add("show");
+  // best-effort: ask the device to go landscape (works on some Android browsers in fullscreen)
+  try{
+    const el=document.getElementById("tableFs");
+    if(el.requestFullscreen){ el.requestFullscreen().then(function(){
+      if(screen.orientation && screen.orientation.lock){ screen.orientation.lock("landscape").catch(function(){}); }
+    }).catch(function(){}); }
+  }catch(e){}
+}
+function closeTableFs(){
+  document.getElementById("tableFs").classList.remove("show");
+  try{ if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); }catch(e){}
+  try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){}
+}
+window.openTableFs=openTableFs; window.closeTableFs=closeTableFs;
+
+/* ---- Mouse drag-to-scroll for tables (desktop only, from anywhere) ----
+   Touch and trackpad are handled natively by `overflow-x:auto` +
+   `touch-action:pan-x`, so this handler is scoped to the MOUSE pointer only.
+   Hijacking touch here (preventDefault + pointer capture) is exactly what used
+   to fight native panning and create dead zones, so we never touch it now. */
+function enableDragScroll(){
+  document.querySelectorAll(".table-scroll").forEach(function(el){
+    if(el.__dragBound) return; el.__dragBound=true;
+    var CTRL="button,a,input,select,textarea,label,[],[onclick]";
+    var tDown=false,tx=0,ty=0,tLeft=0,tAxis=null;
+    el.addEventListener("touchstart",function(e){
+      if(e.touches.length!==1){ tDown=false; return; }
+      var t=e.touches[0];
+      if(t.target&&t.target.closest&&t.target.closest(CTRL)){ tDown=false; return; }
+      tDown=true; tAxis=null; tx=t.clientX; ty=t.clientY; tLeft=el.scrollLeft;
+    },{passive:true});
+    el.addEventListener("touchmove",function(e){
+      if(!tDown||e.touches.length!==1) return;
+      var t=e.touches[0], dx=t.clientX-tx, dy=t.clientY-ty;
+      if(tAxis===null && (Math.abs(dx)>6||Math.abs(dy)>6)) tAxis=Math.abs(dx)>Math.abs(dy)?"x":"y";
+      if(tAxis==="x"){ el.scrollLeft=tLeft-dx; if(e.cancelable) e.preventDefault(); }
+    },{passive:false});
+    function tEnd(){ tDown=false; tAxis=null; }
+    el.addEventListener("touchend",tEnd); el.addEventListener("touchcancel",tEnd);
+    var mDown=false,mx=0,my=0,mLeft=0,mAxis=null,moved=false,pid=null;
+    el.addEventListener("pointerdown",function(e){
+      if(e.pointerType==="touch") return;
+      if(e.target&&e.target.closest&&e.target.closest(CTRL)) return;
+      if(e.pointerType==="mouse"&&e.button!==0) return;
+      mDown=true; moved=false; mAxis=null; pid=e.pointerId; mx=e.clientX; my=e.clientY; mLeft=el.scrollLeft; el.style.cursor="grabbing";
+    });
+    el.addEventListener("pointermove",function(e){
+      if(!mDown||e.pointerId!==pid) return;
+      var dx=e.clientX-mx, dy=e.clientY-my;
+      if(mAxis===null&&(Math.abs(dx)>5||Math.abs(dy)>5)){ mAxis=Math.abs(dx)>=Math.abs(dy)?"x":"y"; if(mAxis==="x"){try{el.setPointerCapture(pid);}catch(_){ }} }
+      if(mAxis==="x"){ el.scrollLeft=mLeft-dx; moved=true; if(e.cancelable) e.preventDefault(); }
+    },{passive:false});
+    function mEnd(){ if(!mDown) return; mDown=false; mAxis=null; el.style.cursor="grab"; try{if(pid!=null)el.releasePointerCapture(pid);}catch(_){ } pid=null; }
+    el.addEventListener("pointerup",mEnd); el.addEventListener("pointercancel",mEnd); el.addEventListener("lostpointercapture",mEnd);
+    el.addEventListener("click",function(e){ if(moved){ e.stopPropagation(); e.preventDefault(); moved=false; } },true);
+    el.addEventListener("wheel",function(e){ if(Math.abs(e.deltaX)>Math.abs(e.deltaY)) return; if(e.shiftKey){ el.scrollLeft+=e.deltaY; e.preventDefault(); } },{passive:false});
+  });
+}
+window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=deleteCashIn;window.deleteAppt=deleteAppt;window.markGolfPaid=markGolfPaid;window.markCashPaid=markCashPaid;window.toggleCashPaid=toggleCashPaid;
+
+/* ---- Loading screen teardown ----
+   Fade the loader out and then REMOVE it from the DOM entirely. The fade class
+   drops pointer-events immediately, and the node is deleted on transitionend
+   (with a timeout fallback), so no invisible overlay can ever remain to block
+   the theme toggle or any other control. This is driven purely by init
+   completion — never by a scroll event. */
+function removeBoot(){
+  const b=document.getElementById("boot");
+  if(!b || b.__removing) return;
+  b.__removing=true;
   b.classList.add("boot-hide");
-  const done=function(){if(b&&b.parentNode)b.parentNode.removeChild(b);};
+  const done=function(){ if(b && b.parentNode) b.parentNode.removeChild(b); };
   b.addEventListener("transitionend",done,{once:true});
   setTimeout(done,650);
 }
+
+/* ---- Content-Security-Policy guard ----
+   If a restrictive CSP <meta> tag is present (this happens when the file is
+   saved from an in-app PREVIEW pane rather than downloaded directly), it will
+   block the connection to Google Sheets on every host, so the dashboard can
+   never sync no matter how the Apps Script is deployed. A page cannot relax
+   its own meta CSP at runtime, so instead of failing silently we detect the
+   tag and explain exactly how to fix it. Returns a message string, or "". */
+function cspBlockReason(){
+  try{
+    const metas=document.querySelectorAll('meta[http-equiv="Content-Security-Policy" i]');
+    for(const m of metas){
+      const c=(m.getAttribute("content")||"").toLowerCase();
+      // These directives block the fetch (connect-src) and the JSONP <script> (script-src)
+      // to script.google.com. default-src 'none' with no connect-src override does the same.
+      if(c.indexOf("connect-src 'none'")>-1 || /default-src\s+'none'/.test(c) && c.indexOf("connect-src")===-1){
+        return "BLOCKED by a Content-Security-Policy <meta> tag in this HTML file (connect-src/script-src forbid the Google connection). This tag is added when the file is saved from a preview pane. Fix: re-download the dashboard using the Download button (not “save” from the preview), make sure line ~4 does NOT contain <meta http-equiv=\"Content-Security-Policy\">, and deploy that file.";
+      }
+    }
+  }catch(_){}
+  return "";
+}
 function ensureUIReady(){
-  // Make the dashboard usable even if data has not arrived yet.
-  if(!state){try{state=fromSheet({});}catch(e){state={players:[],hdcHistory:{},gameDays:[],cashIns:[],outflows:[],appts:[],title:"Swing Bros",year:(new Date()).getFullYear(),theme:"light"};}}
-  try{wireUI();}catch(e){}
-  try{renderAll();}catch(e){}
+  // Reveal a usable dashboard even if data has not arrived yet (safe empty skeleton).
+  if(!state){ try{ state=fromSheet({}); }catch(e){ return false; } }
+  try{ wireUI(); renderAll(); }catch(e){ return false; }
+  return true;
 }
 (async function start(){
-  // Hard cap: reveal the dashboard after at most 5s no matter what.
-  const bootCap=setTimeout(function(){
-    if(BOOT_DONE)return;
-    ensureUIReady();
-    setSync("loading","Still loading… showing dashboard");
-    hideBoot();
-  },5000);
-
+  let shownCache=false, revealed=false;
+  const cspMsg=cspBlockReason();
   try{
-    await apiLoad();                 // success: state is populated
+    const cached=localStorage.getItem(CACHE_KEY);
+    if(cached){ state=fromSheet(JSON.parse(cached)); wireUI(); renderAll(); removeBoot(); shownCache=true; revealed=true; setSync("loading","Updating…"); }
+  }catch(e){}
+  // Hard cap: never keep the full-page loader for more than 5 seconds.
+  const bootCap=setTimeout(function(){
+    if(revealed) return;
+    if(ensureUIReady()){ revealed=true; setSync("loading","Still loading…"); removeBoot(); }
+  },5000);
+  try{
+    await apiLoad();                 // keeps running in the background; not cancelled by the cap
+    LOADED=true;
     clearTimeout(bootCap);
-    wireUI();
-    renderAll();
-    hideBoot();                      // if already revealed by the cap, this is a no-op
+    if(shownCache || revealed){ wireAfterData(); renderAll(); } else { wireUI(); renderAll(); removeBoot(); }
   }catch(e){
     clearTimeout(bootCap);
-    if(!BOOT_DONE){
-      // Could not load and we have not revealed yet → show inline error on boot screen.
-      const b=document.getElementById("boot");
-      if(b){b.innerHTML='<div class="ball" style="animation:none">⚠️</div><p style="max-width:460px;text-align:center">Could not load from Google Sheets.<br><br>Check that your Apps Script Web App is deployed with access set to <b>Anyone</b>, then reload this page.<br><br><small>'+e+'</small></p>';}
+    const reason=cspMsg||LAST_LOAD_ERR||e;
+    if(shownCache || revealed){ setSync("err","Offline – data unavailable · "+reason); removeBoot(); }
+    else{
+      $("#boot").innerHTML='<div class="ball" style="animation:none;font-size:48px">⚠️</div>'+
+        '<p style="max-width:540px;text-align:center">Could not load from Google Sheets.<br><br>'+
+        (cspMsg
+          ? 'This HTML file contains a <b>Content-Security-Policy</b> tag that blocks the Google connection. It is added when the file is saved from a <b>preview</b> pane. <b>Re-download the dashboard with the Download button</b>, confirm line&nbsp;~4 has no <code>&lt;meta http-equiv="Content-Security-Policy"&gt;</code>, and deploy that file.'
+          : 'Most often the Web App is no longer public. In Apps Script open <b>Deploy → Manage deployments → Edit (✏️)</b>, set <b>Execute as: Me</b> and <b>Who has access: Anyone</b>, choose <b>New version</b>, click <b>Deploy</b>, then reload this page.<br><br>'+
+            'Tip: open the <code>/exec</code> URL directly in a new tab — it should show JSON, not a Google sign-in page.')+
+        '<br><br><small><b>Reason:</b> '+reason+'</small></p>';
       setSync("err","Offline");
-      // Still release the screen shortly so the app is not permanently blocked.
-      setTimeout(hideBoot,3500);
-    }else{
-      setSync("err","Offline – data unavailable");
     }
   }
 })();
