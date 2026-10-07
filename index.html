@@ -1224,8 +1224,30 @@ function removeBoot(){
   setTimeout(done,650);
 }
 
+/* ---- Content-Security-Policy guard ----
+   If a restrictive CSP <meta> tag is present (this happens when the file is
+   saved from an in-app PREVIEW pane rather than downloaded directly), it will
+   block the connection to Google Sheets on every host, so the dashboard can
+   never sync no matter how the Apps Script is deployed. A page cannot relax
+   its own meta CSP at runtime, so instead of failing silently we detect the
+   tag and explain exactly how to fix it. Returns a message string, or "". */
+function cspBlockReason(){
+  try{
+    const metas=document.querySelectorAll('meta[http-equiv="Content-Security-Policy" i]');
+    for(const m of metas){
+      const c=(m.getAttribute("content")||"").toLowerCase();
+      // These directives block the fetch (connect-src) and the JSONP <script> (script-src)
+      // to script.google.com. default-src 'none' with no connect-src override does the same.
+      if(c.indexOf("connect-src 'none'")>-1 || /default-src\s+'none'/.test(c) && c.indexOf("connect-src")===-1){
+        return "BLOCKED by a Content-Security-Policy <meta> tag in this HTML file (connect-src/script-src forbid the Google connection). This tag is added when the file is saved from a preview pane. Fix: re-download the dashboard using the Download button (not “save” from the preview), make sure line ~4 does NOT contain <meta http-equiv=\"Content-Security-Policy\">, and deploy that file.";
+      }
+    }
+  }catch(_){}
+  return "";
+}
 (async function start(){
   let shownCache=false;
+  const cspMsg=cspBlockReason();
   try{
     const cached=localStorage.getItem(CACHE_KEY);
     if(cached){ state=fromSheet(JSON.parse(cached)); wireUI(); renderAll(); removeBoot(); shownCache=true; setSync("loading","Updating…"); }
@@ -1235,13 +1257,16 @@ function removeBoot(){
     LOADED=true;
     if(shownCache){ wireAfterData(); renderAll(); } else { wireUI(); renderAll(); removeBoot(); }
   }catch(e){
-    if(shownCache){ setSync("err","Offline – showing last saved · "+(LAST_LOAD_ERR||e)); }
+    const reason=cspMsg||LAST_LOAD_ERR||e;
+    if(shownCache){ setSync("err","Offline – showing last saved · "+reason); }
     else{
       $("#boot").innerHTML='<div class="ball" style="animation:none;font-size:48px">⚠️</div>'+
-        '<p style="max-width:520px;text-align:center">Could not load from Google Sheets.<br><br>'+
-        'Most often the Web App is no longer public. In Apps Script open <b>Deploy → Manage deployments → Edit (✏️)</b>, set <b>Execute as: Me</b> and <b>Who has access: Anyone</b>, choose <b>New version</b>, click <b>Deploy</b>, then reload this page.<br><br>'+
-        'Tip: open the <code>/exec</code> URL directly in a new tab — it should show JSON, not a Google sign-in page.<br><br>'+
-        '<small><b>Reason:</b> '+(LAST_LOAD_ERR||e)+'</small></p>';
+        '<p style="max-width:540px;text-align:center">Could not load from Google Sheets.<br><br>'+
+        (cspMsg
+          ? 'This HTML file contains a <b>Content-Security-Policy</b> tag that blocks the Google connection. It is added when the file is saved from a <b>preview</b> pane. <b>Re-download the dashboard with the Download button</b>, confirm line&nbsp;~4 has no <code>&lt;meta http-equiv="Content-Security-Policy"&gt;</code>, and deploy that file.'
+          : 'Most often the Web App is no longer public. In Apps Script open <b>Deploy → Manage deployments → Edit (✏️)</b>, set <b>Execute as: Me</b> and <b>Who has access: Anyone</b>, choose <b>New version</b>, click <b>Deploy</b>, then reload this page.<br><br>'+
+            'Tip: open the <code>/exec</code> URL directly in a new tab — it should show JSON, not a Google sign-in page.')+
+        '<br><br><small><b>Reason:</b> '+reason+'</small></p>';
       setSync("err","Offline");
     }
   }
