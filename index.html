@@ -58,7 +58,7 @@ body{
 .header{
   background:var(--grad-head);color:#fff;border-radius:26px;padding:30px 34px;isolation:isolate;
   box-shadow:var(--shadow-lg);display:flex;justify-content:space-between;align-items:center;
-  gap:22px;flex-wrap:wrap;position:relative;overflow:hidden;isolation:isolate;
+  gap:22px;flex-wrap:wrap;position:relative;overflow:hidden;
 }
 .header::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
   background:radial-gradient(600px 300px at 85% -40%, rgba(255,255,255,.18), transparent 60%);}
@@ -85,7 +85,7 @@ body{
 .sync.err .dot{background:#ff7a86}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(243,228,166,.55)}70%{box-shadow:0 0 0 9px rgba(243,228,166,0)}100%{box-shadow:0 0 0 0 rgba(243,228,166,0)}}
 
-.theme-btn{position:relative;z-index:6;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);color:#fff;
+.theme-btn{position:relative;z-index:50;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);color:#fff;
   width:46px;height:46px;border-radius:50%;font-size:19px;cursor:pointer;transition:var(--t);
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .theme-btn:hover{background:rgba(255,255,255,.26);transform:translateY(-1px) scale(1.05)}
@@ -413,6 +413,9 @@ section>.card,section>div>.card{width:100%}
 .table-scroll{touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
 table,tbody,thead,tr,td,th{touch-action:inherit}
 tbody tr{background:transparent}
+.table-scroll{cursor:grab;user-select:none;-webkit-user-select:none}
+.table-scroll:active{cursor:grabbing}
+#themeBtn{min-width:44px;min-height:44px;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 </style>
 </head>
 <body>
@@ -956,7 +959,7 @@ function setupScrollSpy(){
   window.addEventListener("scroll",onScroll,{passive:true}); onScroll();
 }
 
-function renderAll(){const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();decorateMobileTables();}
+function renderAll(){const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();decorateMobileTables();enableDragScroll();}
 
 /* EXPORT */
 function exportCSV(){const stats=computeStats();const arr=Object.values(stats).sort((a,b)=>b.points-a.points);
@@ -998,7 +1001,14 @@ function wireUI(){
   $("#saveShotsBtn").addEventListener("click",saveShots);
   $("#exportBtn").addEventListener("click",exportCSV);
   $("#reloadBtn").addEventListener("click",async()=>{try{await apiLoad();LOADED=true;wireAfterData();renderAll();toast("Reloaded from Google Sheets ✔");}catch(e){toast("Reload failed – check Apps Script deployment (Anyone).","err");}});
-  $("#themeBtn").addEventListener("click",()=>{const t=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";setTheme(t);save();});
+  (function(){
+    function __toggleTheme(ev){ if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+      const t=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark"; setTheme(t); save(); }
+    const tb=document.getElementById("themeBtn");
+    if(tb){ tb.addEventListener("click",__toggleTheme); tb.addEventListener("touchend",__toggleTheme,{passive:false}); }
+    // fail-safe: delegated capture handler so the toggle works even if an overlay sits above it at the top
+    document.addEventListener("click",function(e){ if(e.target && e.target.closest && e.target.closest("#themeBtn")) __toggleTheme(e); }, true);
+  })();
   $("#resetBtn").addEventListener("click",()=>{
     if(!confirm("Do you really want to reset the season? This clears all game days, cash-ins, expenses and appointments (players, handicaps and settings are kept).")) return;
     const pw=prompt("Enter the reset password to confirm:");
@@ -1013,6 +1023,7 @@ function wireUI(){
   $$("[data-close]").forEach(b=>b.addEventListener("click",closeModal));
   $$(".modal-ov").forEach(ov=>ov.addEventListener("click",e=>{if(e.target===ov)closeModal();}));
   document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeTableFs();$("#fab").classList.remove("open");}});
+  enableDragScroll();  // init
   // Add a "swipe / rotate" scroll hint above each wide table (shown only on mobile via CSS).
   document.querySelectorAll(".table-scroll").forEach(function(ts){
     if(ts.previousElementSibling && ts.previousElementSibling.classList && ts.previousElementSibling.classList.contains("scrollhint")) return;
@@ -1052,6 +1063,46 @@ function closeTableFs(){
   try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){}
 }
 window.openTableFs=openTableFs; window.closeTableFs=closeTableFs;
+
+/* ---- Universal drag-to-scroll for tables (mouse + touch, from anywhere) ---- */
+function enableDragScroll(){
+  document.querySelectorAll(".table-scroll").forEach(function(el){
+    if(el.__dragBound) return; el.__dragBound=true;
+    let down=false, startX=0, startLeft=0, moved=false, decideAxis=null, startY=0;
+    el.style.cursor="grab";
+    el.addEventListener("pointerdown",function(e){
+      // left mouse button or touch/pen
+      if(e.pointerType==="mouse" && e.button!==0) return;
+      down=true; moved=false; decideAxis=null;
+      startX=e.clientX; startY=e.clientY; startLeft=el.scrollLeft;
+      el.style.cursor="grabbing";
+    });
+    el.addEventListener("pointermove",function(e){
+      if(!down) return;
+      const dx=e.clientX-startX, dy=e.clientY-startY;
+      if(decideAxis===null && (Math.abs(dx)>4 || Math.abs(dy)>4)){
+        decideAxis = Math.abs(dx) >= Math.abs(dy) ? "x" : "y";
+        if(decideAxis==="x"){ try{el.setPointerCapture(e.pointerId);}catch(_){} }
+      }
+      if(decideAxis==="x"){
+        el.scrollLeft = startLeft - dx;
+        moved=true;
+        e.preventDefault();           // keep the horizontal drag inside the table
+      }
+      // if axis==="y" -> let the page scroll vertically (do nothing)
+    },{passive:false});
+    function end(e){
+      if(!down) return; down=false; el.style.cursor="grab";
+      try{ if(e&&e.pointerId!=null) el.releasePointerCapture(e.pointerId);}catch(_){}
+    }
+    el.addEventListener("pointerup",end);
+    el.addEventListener("pointercancel",end);
+    el.addEventListener("pointerleave",end);
+    // prevent accidental click (e.g., on edit/delete buttons) right after a horizontal drag
+    el.addEventListener("click",function(e){ if(moved){ e.stopPropagation(); e.preventDefault(); moved=false; } },true);
+  });
+}
+
 window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=deleteCashIn;window.deleteAppt=deleteAppt;window.markGolfPaid=markGolfPaid;window.markCashPaid=markCashPaid;window.toggleCashPaid=toggleCashPaid;
 
 (async function start(){
