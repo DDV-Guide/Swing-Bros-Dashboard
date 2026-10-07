@@ -684,16 +684,35 @@ function toSheet(){
    ================================================================= */
 function setSync(status,text){const c=$("#syncChip");c.className="sync "+status;$("#syncText").textContent=text;}
 const CACHE_KEY="swingBrosCache_v3";
+/* Human-readable reason for the most recent failed load. Surfaced in the boot
+   error screen, the sync chip tooltip, and the Reload toast so the actual
+   problem (deployment not public vs. blocked request vs. non-JSON) is visible
+   instead of a generic failure. */
+let LAST_LOAD_ERR="";
 async function fetchSheet(){
   const url=API_URL+(API_URL.indexOf("?")>-1?"&":"?")+"t="+Date.now();
   const ctrl=new AbortController();
   const to=setTimeout(()=>ctrl.abort(),30000);
+  let res;
   try{
-    const res=await fetch(url,{method:"GET",redirect:"follow",signal:ctrl.signal});
+    res=await fetch(url,{method:"GET",redirect:"follow",signal:ctrl.signal});
+  }catch(err){
     clearTimeout(to);
-    if(!res.ok) throw new Error("HTTP "+res.status);
-    return await res.json();
-  } finally { clearTimeout(to); }
+    // A thrown fetch (TypeError/AbortError) means the request never completed:
+    // offline, DNS/connection failure, a 30s timeout, or the browser blocked it
+    // (CORS — common when the page is opened as a local file:// rather than hosted).
+    throw new Error("NETWORK: the request was blocked or did not complete (offline, timeout, or a CORS/file:// restriction).");
+  }
+  clearTimeout(to);
+  if(!res.ok) throw new Error("HTTP "+res.status+" returned by the Web App URL.");
+  // Read as text first so we can tell real JSON apart from a Google sign-in page.
+  const textBody=await res.text();
+  const head=textBody.slice(0,400).toLowerCase();
+  if(head.indexOf("<!doctype")>-1||head.indexOf("<html")>-1||head.indexOf("accounts.google.com")>-1||head.indexOf("sign in")>-1||head.indexOf("request access")>-1){
+    throw new Error("AUTH: the Web App returned a Google sign-in / HTML page instead of data, so the deployment is not public. Re-deploy with “Who has access: Anyone”.");
+  }
+  try{ return JSON.parse(textBody); }
+  catch(_){ throw new Error("BADJSON: the response was not valid JSON (starts with: “"+textBody.slice(0,60).replace(/\s+/g," ").trim()+"”)."); }
 }
 async function apiLoad(){
   setSync("loading","Loading…");
@@ -703,10 +722,13 @@ async function apiLoad(){
       const data=await fetchSheet();
       state=fromSheet(data);
       try{localStorage.setItem(CACHE_KEY,JSON.stringify(data));}catch(e){}
+      LAST_LOAD_ERR="";
       setSync("","Synced ✓");
       return;
     }catch(e){ lastErr=e; if(attempt<3) await new Promise(r=>setTimeout(r,800*attempt)); }
   }
+  LAST_LOAD_ERR=String((lastErr&&lastErr.message)||lastErr||"load failed");
+  try{ console.error("Swing Bros — could not load from Google Sheets:",lastErr); }catch(_){}
   throw lastErr||new Error("load failed");
 }
 async function apiSave(){
@@ -1023,7 +1045,7 @@ function wireUI(){
   $("#addNgBtn").addEventListener("click",addCashIn);$("#addApBtn").addEventListener("click",addAppt);$("#saveHdcBtn").addEventListener("click",saveHdc);
   $("#saveShotsBtn").addEventListener("click",saveShots);
   $("#exportBtn").addEventListener("click",exportCSV);
-  $("#reloadBtn").addEventListener("click",async()=>{try{await apiLoad();LOADED=true;wireAfterData();renderAll();toast("Reloaded from Google Sheets ✔");}catch(e){toast("Reload failed – check Apps Script deployment (Anyone).","err");}});
+  $("#reloadBtn").addEventListener("click",async()=>{try{await apiLoad();LOADED=true;wireAfterData();renderAll();toast("Reloaded from Google Sheets ✔");}catch(e){toast("Reload failed: "+(LAST_LOAD_ERR||"check the Apps Script deployment (Who has access: Anyone)."),"err");}});
   (function(){
     // A single click handler covers mouse, touch (tap -> synthetic click) and
     // keyboard activation (Enter/Space on a <button>). It does NOT depend on a
@@ -1160,9 +1182,13 @@ function removeBoot(){
     LOADED=true;
     if(shownCache){ wireAfterData(); renderAll(); } else { wireUI(); renderAll(); removeBoot(); }
   }catch(e){
-    if(shownCache){ setSync("err","Offline – showing last saved"); }
+    if(shownCache){ setSync("err","Offline – showing last saved · "+(LAST_LOAD_ERR||e)); }
     else{
-      $("#boot").innerHTML='<div class="ball" style="animation:none;font-size:48px">⚠️</div><p style="max-width:480px;text-align:center">Could not load from Google Sheets.<br><br>Open Apps Script → <b>Deploy → Manage deployments → Edit</b> → <b>Who has access: Anyone</b> → <b>New version</b> → Deploy, then reload.<br><br><small>'+e+'</small></p>';
+      $("#boot").innerHTML='<div class="ball" style="animation:none;font-size:48px">⚠️</div>'+
+        '<p style="max-width:520px;text-align:center">Could not load from Google Sheets.<br><br>'+
+        'Most often the Web App is no longer public. In Apps Script open <b>Deploy → Manage deployments → Edit (✏️)</b>, set <b>Execute as: Me</b> and <b>Who has access: Anyone</b>, choose <b>New version</b>, click <b>Deploy</b>, then reload this page.<br><br>'+
+        'Tip: open the <code>/exec</code> URL directly in a new tab — it should show JSON, not a Google sign-in page.<br><br>'+
+        '<small><b>Reason:</b> '+(LAST_LOAD_ERR||e)+'</small></p>';
       setSync("err","Offline");
     }
   }
