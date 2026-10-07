@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=5.0, user-scalable=yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Swing Bros Championship & Budget Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -35,8 +35,8 @@ body{font-family:'Poppins',system-ui,sans-serif;color:var(--ink);line-height:1.5
 .header .right{display:flex;align-items:center;gap:16px}
 .season-badge{background:var(--gold);color:#3a2f05;padding:10px 22px;border-radius:14px;text-align:center;box-shadow:var(--shadow);font-weight:800;flex-shrink:0}
 .season-badge .s{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;display:block;opacity:.75;font-weight:700}
-.season-badge .y{font-size:28px;line-height:1;display:flex;align-items:center;gap:4px;white-space:nowrap}
-.season-badge .y input{background:transparent;border:none;color:#3a2f05;font:inherit;font-weight:800;width:5ch;min-width:5ch;outline:none;text-align:center;letter-spacing:.5px;padding:0}
+.season-badge .y{font-size:28px;line-height:1;display:flex;align-items:center;justify-content:center}
+.season-badge .y input{background:transparent;border:none;color:#3a2f05;font:inherit;font-weight:800;width:4ch;min-width:4ch;outline:none;text-align:center;letter-spacing:1px;padding:0}
 .theme-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer;transition:.2s}
 .theme-btn:hover{background:rgba(255,255,255,.3);transform:scale(1.08)}
 /* sync status chip */
@@ -160,7 +160,7 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
   .theme-btn{width:40px;height:40px;font-size:18px}.sync{font-size:11px;padding:6px 11px}
   .season-badge{padding:7px 14px}
   .season-badge .y{font-size:26px}
-  .season-badge .y input{width:5ch;min-width:5ch;font-size:26px;text-align:center}
+  .season-badge .y input{width:4ch;min-width:4ch;font-size:26px;text-align:center}
   section{margin-top:20px;scroll-margin-top:12px}
   .section-title{font-size:17px}
   .card{padding:12px;border-radius:14px}
@@ -199,6 +199,41 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
 
 .scrollhint{display:none}
 #history td:nth-child(5){min-width:260px}
+
+/* ---- Fit-to-width tables with a "rotate to read full table" button ---- */
+.tablebox{position:relative}
+.tablebox .table-scroll{overflow:hidden}            /* desktop: clip to card width (show only fitting cols) */
+.tablebox::after{content:"";position:absolute;top:0;right:0;bottom:0;width:46px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--card));border-radius:0 14px 14px 0;opacity:.9}
+.rotate-btn{position:absolute;top:-6px;right:-4px;z-index:5;display:inline-flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,var(--green-600),var(--green-500));color:#fff;border:none;cursor:pointer;
+  padding:7px 12px;border-radius:999px;font-size:12px;font-weight:600;box-shadow:var(--shadow);transition:.18s}
+.rotate-btn:hover{transform:translateY(-1px) scale(1.03);box-shadow:var(--shadow-lg)}
+.rotate-btn .ph{display:inline-block;animation:tilt 1.6s ease-in-out infinite;font-size:15px}
+@keyframes tilt{0%,100%{transform:rotate(0)}45%{transform:rotate(-80deg)}55%{transform:rotate(-80deg)}}
+.card-head{display:flex;justify-content:flex-end;align-items:center;position:relative;height:0}
+
+/* Full-screen table overlay (landscape reader) */
+#tableFs{position:fixed;inset:0;z-index:1200;background:var(--bg);display:none;flex-direction:column}
+#tableFs.show{display:flex;animation:fade .25s}
+#tableFs .fs-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;
+  background:linear-gradient(120deg,var(--green-900),var(--green-700));color:#fff;flex:0 0 auto}
+#tableFs .fs-bar h4{font-size:15px;font-weight:700;margin:0}
+#tableFs .fs-close{background:rgba(255,255,255,.18);border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:20px;cursor:pointer}
+#tableFs .fs-body{flex:1 1 auto;overflow:auto;padding:14px}
+#tableFs .fs-hint{font-size:12px;color:var(--muted);padding:4px 16px 0}
+#tableFs table{width:max-content;min-width:100%;font-size:14px}
+/* On portrait phones, rotate the content so the wide table reads across the long side */
+@media (max-width:720px) and (orientation:portrait){
+  #tableFs .fs-body{display:flex;align-items:center;justify-content:center;overflow:hidden}
+  #tableFs .fs-rotate{transform:rotate(90deg);transform-origin:center;width:100vh;height:100vw;overflow:auto;padding:14px}
+}
+@media (max-width:720px){
+  .rotate-btn{padding:6px 10px;font-size:11px}
+  .tablebox::after{display:none}   /* on mobile we allow native horizontal scroll instead of clipping */
+  .tablebox .table-scroll{overflow-x:auto}
+}
+
 </style>
 </head>
 <body>
@@ -215,7 +250,7 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
     <div class="right">
       <span class="sync loading" id="syncChip"><span class="dot"></span><span id="syncText">Loading…</span></span>
       <button class="theme-btn" id="themeBtn" title="Toggle dark mode">🌙</button>
-      <div class="season-badge"><span class="s">Season</span><span class="y">🏌️<input id="yearInput" value="2026"></span></div>
+      <div class="season-badge"><span class="s">Season</span><span class="y"><input id="yearInput" value="2026"></span></div>
     </div>
   </div>
 
@@ -225,35 +260,35 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
     <div class="section-title"><span class="ico">🥇</span> Season Leaderboard <span class="pill po" style="font-size:12px">Play-off until Island Masters 2027</span></div>
     <div class="card">
       <div class="po-banner" id="poBanner">🏝️ <span></span></div>
-      <div class="table-scroll"><table id="leaderboard" class="m-stack">
+      <div class="card-head"><button class="rotate-btn" onclick="openTableFs('leaderboard','Season Leaderboard')" title="Rotate / open full table"><span class="ph">📱</span>➜ Full table</button></div><div class="tablebox"><div class="table-scroll"><table id="leaderboard" class="m-stack">
         <thead><tr><th>#</th><th>Player</th><th>Hdc</th><th>Points</th><th>Projected shots for final round</th><th>Total strokes</th><th>Avg gross</th><th>Avg net</th><th>Best round</th><th>Worst round</th></tr></thead>
-        <tbody></tbody></table></div>
+        <tbody></tbody></table></div></div>
       <p class="small-muted">“Projected shots for final round” = stroke bonus the current standings would give on the Island Masters 2027 final: leader −5, 2nd −3, 3rd −1. Scores are shown relative to par (e.g. +2 or −2). Avg net uses the handicap valid on each round's date.</p>
     </div>
   </section>
 
   <section id="sec-history"><div class="section-title"><span class="ico">📅</span> Game Day History</div>
-    <div class="card"><div class="table-scroll"><table id="history" class="m-stack"><thead><tr><th>Date</th><th>Mode</th><th>Course</th><th>Indiv?</th><th>Details (strokes · pts · €)</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div></section>
+    <div class="card"><div class="card-head"><button class="rotate-btn" onclick="openTableFs('history','Game Day History')" title="Rotate / open full table"><span class="ph">📱</span>➜ Full table</button></div><div class="tablebox"><div class="table-scroll"><table id="history" class="m-stack"><thead><tr><th>Date</th><th>Mode</th><th>Course</th><th>Indiv?</th><th>Details (strokes · pts · €)</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div></div></section>
 
   <section id="sec-payin"><div class="section-title"><span class="ico">💶</span> Outstanding payments (golf &amp; non-golf)</div>
     <div class="card"><p class="settle-note" id="settleHeader"></p>
-      <div class="table-scroll"><table id="settleTable" class="m-stack"><thead><tr><th>Player</th><th>What</th><th>Amount to pay to our PayPal</th><th>Paid?</th></tr></thead><tbody></tbody></table></div>
+      <div class="card-head"><button class="rotate-btn" onclick="openTableFs('settleTable','Outstanding payments')" title="Rotate / open full table"><span class="ph">📱</span>➜ Full table</button></div><div class="tablebox"><div class="table-scroll"><table id="settleTable" class="m-stack"><thead><tr><th>Player</th><th>What</th><th>Amount to pay to our PayPal</th><th>Paid?</th></tr></thead><tbody></tbody></table></div></div>
       <p class="small-muted">Amounts are the money entries recorded for the most recent game day. Forward this list so everyone knows what to transfer.</p></div></section>
 
   <section id="sec-cash"><div class="section-title"><span class="ico">🪙</span> Cash Pool &amp; Competitions</div>
-    <div class="grid cols-2">
+    <div class="grid" style="grid-template-columns:1fr">
       <div class="card budget-big" style="display:flex;flex-direction:column;justify-content:center">
         <div class="lbl">Our budget (paid in by all of us)</div><div class="amt" id="totalBudget">0,00 €</div>
         <div class="small-muted" style="color:#cfe6da" id="budgetMeta"></div></div>
       <div class="card"><h3 style="color:var(--green-500);margin-bottom:12px;font-size:16px">Cash-in ranking (birthday payments excluded)</h3>
-        <div class="table-scroll"><table id="cashTable" class="m-stack"><thead><tr><th>#</th><th>Name</th><th>Total</th><th>Golf</th><th>PGA</th><th>FIFA</th><th>Others</th><th>#</th></tr></thead><tbody></tbody></table></div></div>
+        <div class="card-head"><button class="rotate-btn" onclick="openTableFs('cashTable','Cash-in ranking')" title="Rotate / open full table"><span class="ph">📱</span>➜ Full table</button></div><div class="tablebox"><div class="table-scroll"><table id="cashTable" class="m-stack"><thead><tr><th>#</th><th>Name</th><th>Total</th><th>Golf</th><th>PGA</th><th>FIFA</th><th>Others</th><th>#</th></tr></thead><tbody></tbody></table></div></div></div>
     </div>
   </section>
 
   <section id="sec-next"><div class="section-title"><span class="ico">🗓️</span> What's Next — Swing Bros Appointments</div><div class="card" id="apptList"></div></section>
 
   <section id="sec-cashhist"><div class="section-title"><span class="ico">🪙</span> Cash-in &amp; expense history</div>
-    <div class="card"><div class="table-scroll"><table id="ngHistory" class="m-stack"><thead><tr><th>Date</th><th>Flow</th><th>Category</th><th>Name / details</th><th>Player</th><th>Amount</th><th>Paid?</th><th></th></tr></thead><tbody></tbody></table></div></div></section>
+    <div class="card"><div class="card-head"><button class="rotate-btn" onclick="openTableFs('ngHistory','Cash-in & expense history')" title="Rotate / open full table"><span class="ph">📱</span>➜ Full table</button></div><div class="tablebox"><div class="table-scroll"><table id="ngHistory" class="m-stack"><thead><tr><th>Date</th><th>Flow</th><th>Category</th><th>Name / details</th><th>Player</th><th>Amount</th><th>Paid?</th><th></th></tr></thead><tbody></tbody></table></div></div></div></section>
 
   <section id="sec-actions"><div class="card"><div class="toolbar">
     <button class="btn-gold" id="exportBtn">⬇️ Export CSV</button>
@@ -333,6 +368,13 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:0 0 0 3px rgba
   </div>
   <button class="btn" id="saveShotsBtn" style="margin-top:6px">💾 Save play-off shots</button>
 </div></div>
+
+<!-- Full-screen landscape table reader -->
+<div id="tableFs">
+  <div class="fs-bar"><h4 id="tableFsTitle">Full table</h4><button class="fs-close" onclick="closeTableFs()">×</button></div>
+  <div class="fs-hint" id="tableFsHint"></div>
+  <div class="fs-body"><div class="fs-rotate" id="tableFsBody"></div></div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -769,7 +811,7 @@ function wireUI(){
   $$(".fab-item .btn-circ").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.open==="game")exitEdit();openModal(b.dataset.open);}));
   $$("[data-close]").forEach(b=>b.addEventListener("click",closeModal));
   $$(".modal-ov").forEach(ov=>ov.addEventListener("click",e=>{if(e.target===ov)closeModal();}));
-  document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();$("#fab").classList.remove("open");}});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeTableFs();$("#fab").classList.remove("open");}});
   // Add a "swipe / rotate" scroll hint above each wide table (shown only on mobile via CSS).
   document.querySelectorAll(".table-scroll").forEach(function(ts){
     if(ts.previousElementSibling && ts.previousElementSibling.classList && ts.previousElementSibling.classList.contains("scrollhint")) return;
@@ -781,6 +823,34 @@ function wireUI(){
 }
 function wireAfterData(){$("#titleInput").textContent=keyTitle(state.title);$("#yearInput").value=state.year;populateSelect($("#ng_payer"),state.players.map(p=>p.name),true);$$(".cur-sym").forEach(e=>e.textContent=CURRENCY);}
 
+
+/* ---- Full-table landscape reader ---- */
+function openTableFs(tableId,title){
+  const src=document.getElementById(tableId); if(!src) return;
+  const clone=src.cloneNode(true);
+  clone.classList.remove("m-stack");
+  const body=document.getElementById("tableFsBody");
+  body.innerHTML=""; body.appendChild(clone);
+  document.getElementById("tableFsTitle").textContent=title||"Full table";
+  const portrait = window.matchMedia("(max-width:720px) and (orientation:portrait)").matches;
+  document.getElementById("tableFsHint").textContent = portrait
+    ? "Rotate your phone to landscape for the best view · swipe to scroll"
+    : "Scroll to see all columns · press Esc or × to close";
+  document.getElementById("tableFs").classList.add("show");
+  // best-effort: ask the device to go landscape (works on some Android browsers in fullscreen)
+  try{
+    const el=document.getElementById("tableFs");
+    if(el.requestFullscreen){ el.requestFullscreen().then(function(){
+      if(screen.orientation && screen.orientation.lock){ screen.orientation.lock("landscape").catch(function(){}); }
+    }).catch(function(){}); }
+  }catch(e){}
+}
+function closeTableFs(){
+  document.getElementById("tableFs").classList.remove("show");
+  try{ if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); }catch(e){}
+  try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){}
+}
+window.openTableFs=openTableFs; window.closeTableFs=closeTableFs;
 window.editGame=editGame;window.deleteGame=deleteGame;window.deleteCashIn=deleteCashIn;window.deleteAppt=deleteAppt;window.markGolfPaid=markGolfPaid;window.markCashPaid=markCashPaid;window.toggleCashPaid=toggleCashPaid;
 
 (async function start(){
