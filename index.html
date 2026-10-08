@@ -594,6 +594,32 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 .rankhist-note{font-size:12px;color:var(--muted);margin:10px 2px 2px}
 .rankhist-empty{font-size:13px;color:var(--muted);padding:18px 4px}
 
+
+/* ---- High-contrast data-entry fields inside the + modals ---- */
+.modal input,.modal select,.modal textarea{
+  background:#000;color:#fff;border:1.5px solid #000;caret-color:#fff;}
+.modal input::placeholder,.modal textarea::placeholder{color:#cfd8d3;opacity:1}
+.modal select option{background:#000;color:#fff}
+.modal input:focus,.modal select:focus,.modal textarea:focus{
+  border-color:var(--green-500);box-shadow:var(--ring);background:#000;color:#fff}
+/* checkbox: keep accent visible on the dark field row */
+.modal .checkbox-row input[type=checkbox]{background:#fff}
+[data-theme="dark"] .modal input,[data-theme="dark"] .modal select,[data-theme="dark"] .modal textarea{
+  background:#fff;color:#000;border-color:#fff;caret-color:#000}
+[data-theme="dark"] .modal input::placeholder,[data-theme="dark"] .modal textarea::placeholder{color:#55615b;opacity:1}
+[data-theme="dark"] .modal select option{background:#fff;color:#000}
+[data-theme="dark"] .modal input:focus,[data-theme="dark"] .modal select:focus,[data-theme="dark"] .modal textarea:focus{
+  background:#fff;color:#000;border-color:var(--green-500)}
+/* currency symbol prefix stays readable on the inverted field */
+.modal .currency-wrap .sym,.modal .currency-wrap .cur-sym{color:#cfd8d3}
+[data-theme="dark"] .modal .currency-wrap .sym,[data-theme="dark"] .modal .currency-wrap .cur-sym{color:#55615b}
+
+
+/* ---- Road to Sylt summary card accent (matches .stat cards) ---- */
+.stat.sylt{position:relative}
+.stat.sylt .value{color:var(--green-600)}
+[data-theme="dark"] .stat.sylt .value{color:var(--green-400)}
+
 </style>
 </head>
 <body>
@@ -766,7 +792,28 @@ const GAME_MODES=["Stroke Play","Match Play","Stableford","Scramble","Rotating-S
 const NON_GOLF_TYPES=["Golf","PGA","FIFA","Others"];
 let CURRENCY="€";
 let PLAYOFF_SHOTS=[5,3,1,0];
+/* Standard competition ranking (1,2,2,4): equal scores share a rank, the next
+   rank skips accordingly. `values` is an array already sorted DESC by the
+   ranking key (points). Returns an array of 1-based ranks aligned to input. */
+function daysToSylt(){
+  try{
+    var d=new Date(ISLAND_MASTERS_DATE+"T00:00:00");
+    if(isNaN(d.getTime())) return null;
+    var now=new Date(); now.setHours(0,0,0,0);
+    var diff=Math.ceil((d-now)/86400000);
+    return diff>0?diff:0;
+  }catch(e){ return null; }
+}
+function competitionRanks(values){
+  var ranks=[], lastVal=null, lastRank=0;
+  for(var i=0;i<values.length;i++){
+    if(i===0 || values[i]!==lastVal){ lastRank=i+1; lastVal=values[i]; }
+    ranks.push(lastRank);
+  }
+  return ranks;
+}
 let BUDGET_BASELINE=120;      // default anchor; override via Settings "BudgetBaseline"
+let ISLAND_MASTERS_DATE="2027-05-01";   // single source of truth for "Road to Sylt"; override via Settings "IslandMastersDate"
 let BUDGET_BASELINE_DATE=new Date().toISOString().slice(0,10);  // default = today; override via Settings "BudgetBaselineDate"
 
 /* =================================================================
@@ -838,7 +885,8 @@ function fromSheet(data){
     if(k==="Title")s.title=String(v);if(k==="Year")s.year=String(v).replace(/\.0$/,"");if(k==="Currency")CURRENCY=String(v)||"€";
     if(k==="Theme")s.theme=String(v)||"light";if(k==="PlayoffShots"&&v){PLAYOFF_SHOTS=String(v).split(",").map(x=>num(x.trim()));}
     if(k==="BudgetBaseline"&&v!==""&&v!==null&&v!==undefined){BUDGET_BASELINE=num(v);}
-    if(k==="BudgetBaselineDate"&&v){BUDGET_BASELINE_DATE=dstr(v);}});
+    if(k==="BudgetBaselineDate"&&v){BUDGET_BASELINE_DATE=dstr(v);}
+    if(k==="IslandMastersDate"&&v){ISLAND_MASTERS_DATE=dstr(v)||ISLAND_MASTERS_DATE;}});
   // Game-day money is the single source of truth: drop any previously-linked Golf cash-ins
   // (identified by the "C<gameId>_" id pattern) and rebuild them from the games.
   s.cashIns=s.cashIns.filter(c=>!/^C(G[0-9a-z]+)_/.test(String(c.id)));
@@ -1142,10 +1190,12 @@ function renderDashboard(stats){const arr=Object.values(stats);const totalDays=s
     <div class="stat gold"><div class="label">🏆 Current leader</div><div class="value">${winner&&winner.points>0?winner.name:'–'}</div><div class="meta">${winner?fmtNum(winner.points,2)+' pts · −'+(winner.projShots||0)+' shots final':''}</div></div>
     <div class="stat"><div class="label">🎯 Lowest single round</div><div class="value">${lowest!==null?lw:'–'}</div><div class="meta">${lowest!==null?fmtPar(lowest)+(lc?' · '+lc:''):''}</div></div>
     <div class="stat gold"><div class="label">🪙 Top cash contributor</div><div class="value">${tp&&tp[1]>0?tp[0]:'–'}</div><div class="meta">${tp&&tp[1]>0?fmtMoney(tp[1]):''}</div></div>
-    <div class="stat"><div class="label">💶 Our budget</div><div class="value">${fmtMoney(budgetTotal())}</div><div class="meta">paid in by all of us</div></div>`;}
+    <div class="stat"><div class="label">💶 Our budget</div><div class="value">${fmtMoney(budgetTotal())}</div><div class="meta">paid in by all of us</div></div>
+    <div class="stat sylt"><div class="label">🏖️ Road to Sylt</div><div class="value">${(function(){var d=daysToSylt();return d===null?'–':d;})()}</div><div class="meta">${(function(){var d=daysToSylt();return d===null?'set Island Masters date':'Days until Island Masters '+String(ISLAND_MASTERS_DATE).slice(0,4);})()}</div></div>`;}
 function renderLeaderboard(stats){const arr=Object.values(stats).sort((a,b)=>b.points-a.points||((a.avgNet??999)-(b.avgNet??999)));const tb=$("#leaderboard tbody");
-  tb.innerHTML=arr.map((s,i)=>`<tr class="${i===0&&s.points>0?'leader':''}"><td><span class="rankbadge ${i===0?'r1':''}">${i+1}</span></td>
-    <td><span class="player-dot" style="background:${s.color};margin-right:6px"></span>${s.name} ${i===0&&s.points>0?'🏆':''}</td>
+  const rankNums=competitionRanks(arr.map(a=>a.points));
+  tb.innerHTML=arr.map((s,i)=>`<tr class="${rankNums[i]===1&&s.points>0?'leader':''}"><td><span class="rankbadge ${rankNums[i]===1?'r1':''}">${rankNums[i]}</span></td>
+    <td><span class="player-dot" style="background:${s.color};margin-right:6px"></span>${s.name} ${rankNums[i]===1&&s.points>0?'🏆':''}</td>
     <td>${fmtNum(s.curHdc,1)}</td><td class="pts">${fmtNum(s.points,2)}</td><td>${s.projShots>0?`<span class="shotbadge">−${s.projShots} shots</span>`:'–'}</td>
     <td>${s.totalStrokes?fmtPar(s.totalStrokes):'–'}</td><td>${s.avgGross!==null?fmtPar(s.avgGross):'–'}</td><td>${s.avgNet!==null?fmtPar(s.avgNet):'–'}</td>
     <td>${s.best!==null?fmtPar(s.best)+(s.bestCourse?' · '+s.bestCourse:''):'–'}</td><td>${s.worst!==null?fmtPar(s.worst)+(s.worstCourse?' · '+s.worstCourse:''):'–'}</td></tr>`).join("");
@@ -1274,14 +1324,17 @@ function rankingHistorySeries(){
                          .slice().sort(function(a,b){return a.date.localeCompare(b.date);});
   var players=state.players.map(function(p){return {name:p.name,color:p.color};});
   var cum={}; players.forEach(function(p){cum[p.name]=0;});
-  var cols=[]; // each col: {label, ranks:{name->rank}}
+  var cols=[]; // each col: {label, ranks:{name->rank}, maxRank}
   days.forEach(function(g,idx){
     g.rows.forEach(function(r){ if(cum[r.player]!==undefined) cum[r.player]+=num(r.points); });
-    // rank players by cumulative points (desc); stable tie-break by name
+    // order by cumulative points DESC (name only for a stable listing order, NOT for the rank number)
     var ordered=players.map(function(p){return [p.name,cum[p.name]];})
                        .sort(function(a,b){return b[1]-a[1] || a[0].localeCompare(b[0]);});
-    var ranks={}; ordered.forEach(function(e,i){ranks[e[0]]=i+1;});
-    cols.push({label:"GD "+(idx+1), date:g.date, ranks:ranks});
+    // standard competition ranking: equal points share the same rank (1,2,2,4)
+    var rnums=competitionRanks(ordered.map(function(e){return e[1];}));
+    var ranks={}, maxRank=1;
+    ordered.forEach(function(e,i){ ranks[e[0]]=rnums[i]; if(rnums[i]>maxRank)maxRank=rnums[i]; });
+    cols.push({label:"GD "+(idx+1), date:g.date, ranks:ranks, maxRank:maxRank});
   });
   return {players:players, cols:cols};
 }
@@ -1304,19 +1357,34 @@ function renderRankChart(){
   }
   // Geometry
   var padL=40, padR=18, padT=18, padB=34;
-  var stepX=Math.max(74, 90);                 // horizontal spacing per match day
+  var stepX=Math.max(74, 90);
   var plotW=(C.length>1?(C.length-1)*stepX:stepX);
-  var rowH=46;                                 // vertical spacing per rank
-  var plotH=(N>1?(N-1)*rowH:rowH);
+  var rowH=46;
+  var maxRank=N; // ranks range 1..N (competition ranking never exceeds N)
+  var plotH=(maxRank>1?(maxRank-1)*rowH:rowH);
   var W=padL+plotW+padR, H=padT+plotH+padB;
   function X(i){ return padL + (C.length>1 ? i*stepX : plotW/2); }
-  function Y(rank){ return padT + (N>1 ? (rank-1)*(plotH/(N-1)) : plotH/2); }
+  function Yrank(rank){ return padT + (maxRank>1 ? (rank-1)*(plotH/(maxRank-1)) : plotH/2); }
   host.style.minWidth=W+"px";
 
+  // Pre-compute a small symmetric vertical fan-out for players sharing a rank in a
+  // given column, so tied lines remain individually visible while clearly sitting
+  // on the SAME rank line (no artificial rank separation — only a few px nudge).
+  var SPREAD=7; // px max offset from the shared rank line
+  function offsetFor(colIdx, playerName){
+    var col=C[colIdx]; var r=col.ranks[playerName];
+    // players sharing this rank, in stable name order
+    var group=P.filter(function(q){return col.ranks[q.name]===r;}).map(function(q){return q.name;}).sort();
+    if(group.length<2) return 0;
+    var k=group.indexOf(playerName);
+    var mid=(group.length-1)/2;
+    return (k-mid)*(SPREAD*2/(group.length)); // spread evenly around the rank line
+  }
+
   var svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Ranking history chart">';
-  // horizontal gridlines + rank labels
-  for(var rk=1; rk<=N; rk++){
-    var y=Y(rk);
+  // horizontal gridlines + rank labels (one per rank position)
+  for(var rk=1; rk<=maxRank; rk++){
+    var y=Yrank(rk);
     svg+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="var(--line)" stroke-width="1"/>';
     svg+='<text x="'+(padL-10)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" font-weight="700" fill="var(--muted)">'+rk+'</text>';
   }
@@ -1325,9 +1393,9 @@ function renderRankChart(){
     var x=X(i);
     svg+='<text x="'+x+'" y="'+(H-12)+'" text-anchor="middle" font-size="10.5" font-weight="600" fill="var(--muted)">'+escapeHtml(c.label)+'</text>';
   });
-  // one polyline + markers per player
+  // one polyline + markers per player (tied players share a rank line, lightly fanned)
   P.forEach(function(p){
-    var pts=C.map(function(c,i){ return {x:X(i), y:Y(c.ranks[p.name])}; });
+    var pts=C.map(function(c,i){ return {x:X(i), y:Yrank(c.ranks[p.name])+offsetFor(i,p.name)}; });
     var d=pts.map(function(pt,i){return (i?"L":"M")+pt.x.toFixed(1)+" "+pt.y.toFixed(1);}).join(" ");
     svg+='<path d="'+d+'" fill="none" stroke="'+p.color+'" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity="0.95"/>';
     pts.forEach(function(pt){
@@ -1365,6 +1433,15 @@ function setTheme(t){document.documentElement.setAttribute("data-theme",t);$("#t
    INIT
    ================================================================= */
 function wireUI(){
+  (function(){
+    if(window.__syltTimer) return;
+    var lastDay=new Date().toDateString();
+    window.__syltTimer=setInterval(function(){
+      var d=new Date().toDateString();
+      if(d!==lastDay){ lastDay=d; try{ if(state) renderDashboard(computeStats()); }catch(e){} }
+    },60*1000);
+  })();
+
   (function(){
     var btn=document.getElementById("rankHistToggle");
     var body=document.getElementById("rankHistBody");
