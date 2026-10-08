@@ -661,10 +661,10 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 .pl-tile:hover .pl-img{transform:scale(1.06)}
 .pl-tile .pl-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 30%,rgba(0,0,0,.78) 100%)}
 .pl-tile .pl-accent{position:absolute;left:0;right:0;bottom:0;height:6px}
-.pl-tile .pl-meta{position:absolute;left:0;right:0;bottom:0;padding:18px 20px;color:#fff}
+.pl-tile .pl-meta{position:absolute;left:0;right:0;bottom:0;padding:18px 16px;color:#fff}
 .pl-tile .pl-name{font-size:clamp(18px,2.4vw,26px);font-weight:800;letter-spacing:-.01em;line-height:1.1;
-  text-shadow:0 2px 12px rgba(0,0,0,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.pl-tile .pl-nick{font-size:13px;font-weight:600;opacity:.92;margin-top:3px;text-shadow:0 2px 10px rgba(0,0,0,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  text-shadow:0 2px 12px rgba(0,0,0,.5);white-space:nowrap;overflow:visible;display:inline-block;transform-origin:left center;max-width:none}
+.pl-tile .pl-nick{font-size:13px;font-weight:600;opacity:.92;margin-top:3px;text-shadow:0 2px 10px rgba(0,0,0,.5);white-space:nowrap;overflow:visible;display:inline-block;transform-origin:left center;max-width:none}
 .pl-tile .pl-initials{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-size:72px;font-weight:800;color:#fff}
 
@@ -1595,6 +1595,23 @@ var PL_COMPETITIONS=[
 ];
 function plPlayers(){ return (state&&state.players)?state.players.filter(function(p){return p&&p.name;}):[]; }
 
+function plFitTileText(){
+  var grid=document.getElementById("plGrid"); if(!grid) return;
+  grid.querySelectorAll(".pl-meta").forEach(function(meta){
+    var avail=meta.clientWidth; if(!avail) return;
+    ["pl-name","pl-nick"].forEach(function(cls){
+      var el=meta.querySelector("."+cls); if(!el) return;
+      el.style.transform="none"; // reset before measuring
+      var w=el.scrollWidth;
+      if(w>avail){
+        var scale=Math.max(0.72, avail/w); // never squeeze below 72%
+        el.style.transform="scaleX("+scale+")";
+      }else{
+        el.style.transform="none";
+      }
+    });
+  });
+}
 function plRenderLanding(){
   var grid=document.getElementById("plGrid"); if(!grid) return;
   var players=plPlayers();
@@ -1610,6 +1627,7 @@ function plRenderLanding(){
       + '<div class="pl-accent" style="background:'+(p.color||"#2fb37c")+'"></div>'
       + '</div>';
   }).join("");
+  requestAnimationFrame(plFitTileText);
 }
 
 function plStatsFor(name){
@@ -1754,6 +1772,11 @@ function plCloseOverlay(){
   PL_OPEN=false;
 }
 function wirePlayersUI(){
+  if(!window.__plFitBound){ window.__plFitBound=true;
+    window.addEventListener("resize",function(){ if(typeof plFitTileText==="function") plFitTileText(); });
+    window.addEventListener("orientationchange",function(){ setTimeout(function(){ if(typeof plFitTileText==="function") plFitTileText(); },250); });
+  }
+
   var btn=document.getElementById("fabPlayers");
   if(btn && !btn.__wired){ btn.__wired=true; btn.addEventListener("click",plOpenOverlay); }
   var bd=document.getElementById("plBackDash");
