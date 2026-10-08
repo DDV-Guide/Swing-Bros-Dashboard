@@ -616,7 +616,7 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 
 
 /* ---- "Designed in Gnadental" attribution ---- */
-.credit{font-size:11.5px;font-weight:500;letter-spacing:.02em;line-height:1.4}
+.credit{font-size:11.5px;font-weight:500;font-style:italic;letter-spacing:.02em;line-height:1.4}
 .credit-head{margin-top:8px;color:rgba(255,255,255,.72)}
 [data-theme="dark"] .credit-head{color:rgba(255,255,255,.72)}
 .credit-foot{text-align:center;color:var(--muted);margin:4px 0 34px;opacity:.85}
@@ -685,8 +685,10 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 .pl-hero h1{font-size:clamp(28px,5vw,46px);font-weight:800;letter-spacing:-.02em;line-height:1;margin:0;
   text-shadow:0 2px 16px rgba(0,0,0,.5)}
 .pl-hero .pl-hero-nick{font-size:clamp(15px,2.2vw,19px);font-weight:600;opacity:.95;margin-top:6px;
-  text-shadow:0 2px 12px rgba(0,0,0,.5)}
-.pl-hero .pl-hero-sub{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;font-size:13.5px;font-weight:600;opacity:.95}
+  text-shadow:0 2px 12px rgba(0,0,0,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.pl-hero .pl-hero-sub{display:flex;flex-wrap:nowrap;gap:14px;margin-top:14px;font-size:13.5px;font-weight:600;opacity:.95;white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.pl-hero .pl-hero-sub::-webkit-scrollbar{display:none}
+.pl-hero .pl-hero-sub span{flex:0 0 auto}
 .pl-hero .pl-hero-sub span{display:inline-flex;align-items:center;gap:6px}
 .pl-hero .pl-colorbar{position:absolute;left:0;right:0;bottom:0;height:7px}
 
@@ -739,6 +741,11 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 @media (max-width:720px){
   .fab-main{box-shadow:0 8px 20px rgba(202,164,58,.42)}
   .fab-players{box-shadow:0 8px 18px rgba(16,40,30,.20)}
+}
+
+
+@media (max-width:520px){
+  .pl-hero .pl-hero-sub{gap:10px;font-size:12px}
 }
 
 </style>
@@ -1619,10 +1626,9 @@ function plStatsFor(name){
       out.best=(s.best!=null)?s.best:null;
       break;
     }}
-    // seasons played = distinct years with a scored round for this player
-    var yrs={};
-    (state.gameDays||[]).forEach(function(g){ (g.rows||[]).forEach(function(r){ if(r.player===name && r.strokes!==null){ var y=String(g.date||"").slice(0,4); if(y)yrs[y]=1; } }); });
-    var n=Object.keys(yrs).length; out.seasons=n>0?n:null;
+    // seasons played = seasons since the first Swing Bros season (2023), inclusive
+    var SB_FIRST_SEASON=2023; var _cy=(new Date()).getFullYear();
+    out.seasons=Math.max(1,(_cy-SB_FIRST_SEASON+1));
   }catch(e){}
   return out;
 }
