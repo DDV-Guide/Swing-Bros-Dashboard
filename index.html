@@ -348,7 +348,7 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:var(--ring);ba
   .checkbox-row{align-items:flex-start}.checkbox-row input{width:22px;height:22px;margin-top:2px;flex:none}
   #sec-actions .toolbar{flex-direction:column}#sec-actions .toolbar button{width:100%}
   .appt{flex-direction:column;align-items:flex-start;gap:6px}.appt .when{align-self:flex-start}
-  .fab{right:18px;bottom:84px}.fab-main{width:58px;height:58px;font-size:28px}
+  .fab{right:18px;bottom:calc(20px + env(safe-area-inset-bottom,0px))}.fab-main{width:56px;height:56px;font-size:27px}.fab-players{right:18px;bottom:calc(20px + 56px + 26px + env(safe-area-inset-bottom,0px));width:56px;height:56px}
   .scrollhint{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);margin:4px 0 16px;line-height:1.5;flex-wrap:wrap}
   .mnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:850;background:var(--glass);
     backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);
@@ -629,7 +629,7 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
   cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
 .fab-players:hover{transform:scale(1.07);box-shadow:0 16px 38px rgba(16,40,30,.30);background:var(--green-50)}
 [data-theme="dark"] .fab-players{background:var(--card);color:var(--green-400);border-color:var(--line)}
-@media(max-width:600px){.fab{right:22px;bottom:calc(22px + env(safe-area-inset-bottom,0px))}.fab-main{width:56px;height:56px}.fab-players{right:22px;bottom:calc(22px + 56px + 18px + env(safe-area-inset-bottom,0px));width:56px;height:56px}}
+@media(max-width:600px){.fab{right:18px;bottom:calc(20px + env(safe-area-inset-bottom,0px))}.fab-main{width:56px;height:56px}.fab-players{right:18px;bottom:calc(20px + 56px + 26px + env(safe-area-inset-bottom,0px));width:56px;height:56px}}
 
 /* ============ Overlay shell ============ */
 .pl-overlay{position:fixed;inset:0;z-index:3000;background:var(--bg);
@@ -729,9 +729,16 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 
 /* FABs: keep clear separation on short/landscape viewports and respect safe-area */
 @media (max-height:520px){
-  .fab{right:18px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}
-  .fab-main{width:52px;height:52px}
-  .fab-players{right:18px;bottom:calc(14px + 52px + 14px + env(safe-area-inset-bottom,0px));width:52px;height:52px}
+  .fab{right:16px;bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+  .fab-main{width:50px;height:50px}
+  .fab-players{right:16px;bottom:calc(12px + 50px + 22px + env(safe-area-inset-bottom,0px));width:50px;height:50px}
+}
+
+
+/* Mobile: lighter FAB shadows so the two buttons read as separate controls */
+@media (max-width:720px){
+  .fab-main{box-shadow:0 8px 20px rgba(202,164,58,.42)}
+  .fab-players{box-shadow:0 8px 18px rgba(16,40,30,.20)}
 }
 
 </style>
@@ -1010,7 +1017,7 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function fromSheet(data){
   const s={players:[],hdcHistory:{},gameDays:[],cashIns:[],outflows:[],appts:[],
            title:"Swing Bros Championship and Budget Dashboard",year:"2026",theme:"light"};
-  (data.Players||[]).forEach(r=>{if(r.Name)s.players.push({name:String(r.Name).trim(),color:String(r.Color||"#888").trim(),active:B(r["Active(TRUE/FALSE)"]!==undefined?r["Active(TRUE/FALSE)"]:r.Active),nickname:String(r.Nickname||"").trim(),country:String(r.Country||"").trim(),golfclub:String(r["Golf Club"]||r.Golfclub||r.GolfClub||"").trim(),golferSince:String(r["Golfer Since"]||r["Golfer since"]||"").trim(),bio:String(r.Bio||"").trim(),trophies:{"Swing Bros Championship":String(r["Swing Bros Championship"]||"").trim(),"Hacker Tour":String(r["Hacker Tour Champion"]||r["Hacker Tour"]||"").trim(),"Live Golf":String(r["Live Golf Champion"]||r["Live Golf"]||"").trim(),"Island Master":String(r["Island Master"]||r["Island Masters"]||"").trim()}});});
+  (data.Players||[]).forEach(r=>{if(r.Name)s.players.push({name:String(r.Name).trim(),_raw:r,color:String(r.Color||"#888").trim(),active:B(r["Active(TRUE/FALSE)"]!==undefined?r["Active(TRUE/FALSE)"]:r.Active),nickname:String(r.Nickname||"").trim(),country:String(r.Country||"").trim(),golfclub:String(r["Golf Club"]||r.Golfclub||r.GolfClub||"").trim(),golferSince:String(r["Golfer Since"]||r["Golfer since"]||"").trim(),bio:String(r.Bio||"").trim(),trophies:{"Swing Bros Championship":String(r["Swing Bros Championship"]||"").trim(),"Hacker Tour":String(r["Hacker Tour Champion"]||r["Hacker Tour"]||"").trim(),"Live Golf":String(r["Live Golf Champion"]||r["Live Golf"]||"").trim(),"Island Master":String(r["Island Master"]||r["Island Masters"]||"").trim()}});});
   s.players.forEach(p=>s.hdcHistory[p.name]=[]);
   (data.Handicaps||[]).forEach(r=>{const n=String(r.Player||"").trim();if(!n)return;if(!s.hdcHistory[n])s.hdcHistory[n]=[];
     s.hdcHistory[n].push({date:dstr(r["EffectiveDate(YYYY-MM-DD)"]||r.EffectiveDate||"1900-01-01")||"1900-01-01",hdc:num(r.Hdc)});});
@@ -1044,7 +1051,7 @@ function fromSheet(data){
   return s;
 }
 function toSheet(){
-  const Players=state.players.map(p=>({Name:p.name,Color:p.color,"Active(TRUE/FALSE)":p.active===false?"FALSE":"TRUE"}));
+  const Players=state.players.map(p=>{var raw=(p&&p._raw)||{};var o={};for(var k in raw){ if(Object.prototype.hasOwnProperty.call(raw,k) && k!=="_raw") o[k]=raw[k]; }o.Name=p.name;o.Color=p.color;o["Active(TRUE/FALSE)"]=(p.active===false?"FALSE":"TRUE");if(p.nickname!==undefined && raw.Nickname===undefined) o.Nickname=p.nickname;if(p.country!==undefined && raw.Country===undefined) o.Country=p.country;if(p.golfclub!==undefined && raw["Golf Club"]===undefined) o["Golf Club"]=p.golfclub;if(p.golferSince!==undefined && raw["Golfer Since"]===undefined) o["Golfer Since"]=p.golferSince;if(p.bio!==undefined && raw.Bio===undefined) o.Bio=p.bio;if(p.trophies){if(raw["Swing Bros Championship"]===undefined) o["Swing Bros Championship"]=p.trophies["Swing Bros Championship"]||"";if(raw["Hacker Tour Champion"]===undefined) o["Hacker Tour Champion"]=p.trophies["Hacker Tour"]||"";if(raw["Live Golf Champion"]===undefined) o["Live Golf Champion"]=p.trophies["Live Golf"]||"";if(raw["Island Master"]===undefined) o["Island Master"]=p.trophies["Island Master"]||"";}return o;});
   const Handicaps=[];Object.keys(state.hdcHistory).forEach(n=>state.hdcHistory[n].forEach(e=>Handicaps.push({Player:n,"EffectiveDate(YYYY-MM-DD)":e.date,Hdc:e.hdc})));
   const GameDays=[];state.gameDays.forEach(g=>g.rows.forEach(r=>GameDays.push({GameID:g.id,"Date(YYYY-MM-DD)":g.date,Mode:g.mode,Course:g.course,
     IndivCounts:g.indivCounts?"TRUE":"FALSE",IsPlayoff:g.isPlayoff?"TRUE":"FALSE",Player:r.player,
@@ -1690,7 +1697,7 @@ function plRenderProfile(idx){
   host.innerHTML =
     '<div class="pl-hero">'+hero+'<div class="pl-hero-shade"></div>'
     + '<div class="pl-hero-body">'
-    + (subs.length?'<div class="pl-flag">'+plFlag(p.country)+plEsc(p.country||p.golfclub||"Swing Bros")+'</div>':'')
+    + ''
     + '<h1>'+plEsc(p.name)+'</h1>'+nick
     + (subs.length?'<div class="pl-hero-sub">'+subs.join("")+'</div>':'')
     + '</div><div class="pl-colorbar" style="background:'+color+'"></div></div>'
