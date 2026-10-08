@@ -882,7 +882,7 @@ function fromSheet(data){
     const strokes=(r.Strokes===""||r.Strokes===null||r.Strokes===undefined)?null:num(r.Strokes);
     games[id].rows.push({player:String(r.Player).trim(),strokes:(strokes===null||isNaN(strokes))?null:strokes,
       points:num(r.Points),money:num(r.Money),paid:B(r.Paid)});});
-  s.gameDays=Object.values(games).sort((a,b)=>a.date.localeCompare(b.date));
+  s.gameDays=Object.values(games); // preserve physical sheet order (new rows stay appended at the end)
   (data.Cash||[]).forEach(r=>{const flow=String(r["Flow(In/Out)"]||r.Flow||"In").trim();const id=String(r.EntryID||uid());
     const amount=num(r.Amount);const date=dstr(r["Date(YYYY-MM-DD)"]||r.Date);
     if(flow==="Out")s.outflows.push({id,date,name:String(r.Name||""),amount});
