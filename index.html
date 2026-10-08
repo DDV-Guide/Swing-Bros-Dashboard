@@ -595,30 +595,23 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 .rankhist-empty{font-size:13px;color:var(--muted);padding:18px 4px}
 
 
-/* ---- High-contrast data-entry fields inside the + modals ---- */
-.modal input,.modal select,.modal textarea{
-  background:#000;color:#fff;border:1.5px solid #000;caret-color:#fff;}
-.modal input::placeholder,.modal textarea::placeholder{color:#cfd8d3;opacity:1}
-.modal select option{background:#000;color:#fff}
-.modal input:focus,.modal select:focus,.modal textarea:focus{
-  border-color:var(--green-500);box-shadow:var(--ring);background:#000;color:#fff}
-/* checkbox: keep accent visible on the dark field row */
-.modal .checkbox-row input[type=checkbox]{background:#fff}
-[data-theme="dark"] .modal input,[data-theme="dark"] .modal select,[data-theme="dark"] .modal textarea{
-  background:#fff;color:#000;border-color:#fff;caret-color:#000}
-[data-theme="dark"] .modal input::placeholder,[data-theme="dark"] .modal textarea::placeholder{color:#55615b;opacity:1}
-[data-theme="dark"] .modal select option{background:#fff;color:#000}
-[data-theme="dark"] .modal input:focus,[data-theme="dark"] .modal select:focus,[data-theme="dark"] .modal textarea:focus{
-  background:#fff;color:#000;border-color:var(--green-500)}
-/* currency symbol prefix stays readable on the inverted field */
-.modal .currency-wrap .sym,.modal .currency-wrap .cur-sym{color:#cfd8d3}
-[data-theme="dark"] .modal .currency-wrap .sym,[data-theme="dark"] .modal .currency-wrap .cur-sym{color:#55615b}
+
 
 
 /* ---- Road to Sylt summary card accent (matches .stat cards) ---- */
 .stat.sylt{position:relative}
 .stat.sylt .value{color:var(--green-600)}
 [data-theme="dark"] .stat.sylt .value{color:var(--green-400)}
+
+
+/* ---- "+" menu option cards (FAB) — high-contrast, theme-inverted ---- */
+/* Light mode: black cards, white text. Dark mode: white cards, dark text. */
+.fab-item .lbl{background:#111;color:#fff;border-color:#111}
+.fab-item .btn-circ{background:#111;color:#fff;border-color:#111}
+.fab-item .btn-circ:hover{background:#000;color:#fff;transform:scale(1.08);box-shadow:var(--shadow-glow)}
+[data-theme="dark"] .fab-item .lbl{background:#fff;color:#111;border-color:#fff}
+[data-theme="dark"] .fab-item .btn-circ{background:#fff;color:#0f1a16;border-color:#fff}
+[data-theme="dark"] .fab-item .btn-circ:hover{background:#f3f3f3;color:#0f1a16;transform:scale(1.08);box-shadow:var(--shadow-glow)}
 
 </style>
 </head>
@@ -656,7 +649,7 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
         <thead><tr><th>#</th><th>Player</th><th>Hdc</th><th>Points</th><th><span class="lbl-full">Projected shots for final round</span><span class="lbl-short">Proj. shots</span></th><th>Total strokes</th><th>Avg gross</th><th>Avg net</th><th>Best round</th><th>Worst round</th></tr></thead>
         <tbody></tbody></table></div></div>
       <div class="po-banner" id="poBanner" style="margin-top:16px;margin-bottom:0">🏝️ <span></span></div>
-      <p class="small-muted">“Projected shots for final round” = stroke bonus the current standings would give on the Island Masters 2027 final: leader −5, 2nd −3, 3rd −1. Scores are shown relative to par (e.g. +2 or −2). Avg net uses the handicap valid on each round's date.</p>
+      <p class="small-muted">“Projected shots for final round” = stroke bonus the current standings would give on the Island Masters final: <span id="shotRuleText">leader −5, 2nd −3, 3rd −1</span>. Scores are shown relative to par (e.g. +2 or −2). Avg net uses the handicap valid on each round's date.</p>
     </div>
   
       <div class="rankhist">
@@ -725,7 +718,7 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
     <div class="field"><label>Date</label><input type="date" id="gd_date"></div>
     <div class="field"><label>Game Mode</label><select id="gd_mode"></select></div>
     <div class="field"><label>Course name (optional)</label><input type="text" id="gd_course" placeholder="e.g. Son Muntaner"></div></div>
-  <div class="checkbox-row"><input type="checkbox" id="gd_playoff"><label for="gd_playoff" style="margin:0"><b>🏝️ Play-off / Final Day</b> — auto-apply standings bonus shots (−5 / −3 / −1) to net</label></div>
+  <div class="checkbox-row"><input type="checkbox" id="gd_playoff"><label for="gd_playoff" style="margin:0"><b>🏝️ Play-off / Final Day</b> — auto-apply standings bonus shots (<span id="poShotRule">−5 / −3 / −1</span>) to net</label></div>
   <div class="info-box hidden" id="poInfo"></div>
   <div class="checkbox-row"><input type="checkbox" id="gd_indivCounts"><label for="gd_indivCounts" style="margin:0">Individual stroke score counts (e.g. Rotating Threesome)</label></div>
   <p class="small-muted" id="scoringNote"></p>
@@ -797,12 +790,25 @@ let PLAYOFF_SHOTS=[5,3,1,0];
    ranking key (points). Returns an array of 1-based ranks aligned to input. */
 function daysToSylt(){
   try{
-    var d=new Date(ISLAND_MASTERS_DATE+"T00:00:00");
+    var d=new Date(SYLT_START_DATE+"T00:00:00");
     if(isNaN(d.getTime())) return null;
     var now=new Date(); now.setHours(0,0,0,0);
-    var diff=Math.ceil((d-now)/86400000);
-    return diff>0?diff:0;
+    var diff=Math.round((d-now)/86400000);
+    // Only show while the trip is still in the future (>=1 day away).
+    // On the start date and afterwards, return null so the card is hidden.
+    return diff>0?diff:null;
   }catch(e){ return null; }
+}
+function ordinalName(i){return ["leader","2nd","3rd","4th","5th","6th","7th","8th"][i]||((i+1)+"th");}
+/* Single source of truth for the "final-round shot allocation" description.
+   Builds "leader −X, 2nd −Y, 3rd −Z" purely from PLAYOFF_SHOTS, listing only
+   positions that actually award shots (>0). Used by the leaderboard banner,
+   the explanatory text, and the Play-off/Final-Day setup so they can never
+   diverge. */
+function shotRuleText(){
+  var parts=[];
+  for(var i=0;i<PLAYOFF_SHOTS.length;i++){ var s=num(PLAYOFF_SHOTS[i]); if(s>0) parts.push(ordinalName(i)+" −"+s); }
+  return parts.length?parts.join(", "):"no bonus shots configured";
 }
 function competitionRanks(values){
   var ranks=[], lastVal=null, lastRank=0;
@@ -813,7 +819,8 @@ function competitionRanks(values){
   return ranks;
 }
 let BUDGET_BASELINE=120;      // default anchor; override via Settings "BudgetBaseline"
-let ISLAND_MASTERS_DATE="2027-05-01";   // single source of truth for "Road to Sylt"; override via Settings "IslandMastersDate"
+let SYLT_START_DATE="2027-03-10";   // single source of truth for "Road to Sylt" (trip start); override via Settings "IslandMastersDate"
+let ISLAND_MASTERS_DATE=SYLT_START_DATE;   // kept as alias for backward compatibility
 let BUDGET_BASELINE_DATE=new Date().toISOString().slice(0,10);  // default = today; override via Settings "BudgetBaselineDate"
 
 /* =================================================================
@@ -886,7 +893,7 @@ function fromSheet(data){
     if(k==="Theme")s.theme=String(v)||"light";if(k==="PlayoffShots"&&v){PLAYOFF_SHOTS=String(v).split(",").map(x=>num(x.trim()));}
     if(k==="BudgetBaseline"&&v!==""&&v!==null&&v!==undefined){BUDGET_BASELINE=num(v);}
     if(k==="BudgetBaselineDate"&&v){BUDGET_BASELINE_DATE=dstr(v);}
-    if(k==="IslandMastersDate"&&v){ISLAND_MASTERS_DATE=dstr(v)||ISLAND_MASTERS_DATE;}});
+    if(k==="IslandMastersDate"&&v){SYLT_START_DATE=dstr(v)||SYLT_START_DATE;ISLAND_MASTERS_DATE=SYLT_START_DATE;}});
   // Game-day money is the single source of truth: drop any previously-linked Golf cash-ins
   // (identified by the "C<gameId>_" id pattern) and rebuild them from the games.
   s.cashIns=s.cashIns.filter(c=>!/^C(G[0-9a-z]+)_/.test(String(c.id)));
@@ -1084,8 +1091,9 @@ function updateScoringNote(){$("#scoringNote").innerHTML=$("#gd_indivCounts").ch
   ?"📌 <b>Rotating Threesome / indiv counts:</b> Team 0,25 pts per 6 holes (max 0,75; tie → 0,125 each). Individual net: best 0,75 · 2nd 0,50 · 3rd 0,25 · 4th 0. Enter the combined <i>Points won</i> per player."
   :"📌 <b>Scramble / team modes:</b> only the day result counts. Enter the points each player earned.";}
 function updatePlayoffInfo(){const po=$("#gd_playoff").checked;const box=$("#poInfo");
+  {var _psr=document.getElementById("poShotRule");if(_psr){var _lst=[];for(var _i=0;_i<PLAYOFF_SHOTS.length;_i++){if(num(PLAYOFF_SHOTS[_i])>0)_lst.push("−"+num(PLAYOFF_SHOTS[_i]));}_psr.textContent=_lst.length?_lst.join(" / "):"no bonus";}}
   if(po){box.classList.remove("hidden");const date=$("#gd_date").value||new Date().toISOString().slice(0,10);const st=standingsBefore(date);
-    box.innerHTML="🏝️ <b>Play-off seeding (standings before this day):</b> "+st.map((e,i)=>`${i+1}. ${e[0]} (${fmtNum(e[1],2)} pts, −${PLAYOFF_SHOTS[i]||0})`).join(" · ")+". Bonus shots are subtracted from net automatically.";
+    box.innerHTML="🏝️ <b>Play-off seeding (standings before this day):</b> "+st.map((e,i)=>`${i+1}. ${e[0]} (${fmtNum(e[1],2)} pts, −${num(PLAYOFF_SHOTS[i])||0})`).join(" · ")+". Allocation rule: <b>"+shotRuleText()+"</b>. Bonus shots are subtracted from net automatically.";
     if(!$("#gd_indivCounts").checked){$("#gd_indivCounts").checked=true;updateScoringNote();buildPlayersForm();}}
   else box.classList.add("hidden");}
 
@@ -1191,7 +1199,7 @@ function renderDashboard(stats){const arr=Object.values(stats);const totalDays=s
     <div class="stat"><div class="label">🎯 Lowest single round</div><div class="value">${lowest!==null?lw:'–'}</div><div class="meta">${lowest!==null?fmtPar(lowest)+(lc?' · '+lc:''):''}</div></div>
     <div class="stat gold"><div class="label">🪙 Top cash contributor</div><div class="value">${tp&&tp[1]>0?tp[0]:'–'}</div><div class="meta">${tp&&tp[1]>0?fmtMoney(tp[1]):''}</div></div>
     <div class="stat"><div class="label">💶 Our budget</div><div class="value">${fmtMoney(budgetTotal())}</div><div class="meta">paid in by all of us</div></div>
-    <div class="stat sylt"><div class="label">🏖️ Road to Sylt</div><div class="value">${(function(){var d=daysToSylt();return d===null?'–':d;})()}</div><div class="meta">${(function(){var d=daysToSylt();return d===null?'set Island Masters date':'Days until Island Masters '+String(ISLAND_MASTERS_DATE).slice(0,4);})()}</div></div>`;}
+    ${(function(){var d=daysToSylt();return d===null?'':'<div class="stat sylt"><div class="label">🏖️ Road to Sylt</div><div class="value">'+d+'</div><div class="meta">Days until the trip to Sylt</div></div>';})()}`;}
 function renderLeaderboard(stats){const arr=Object.values(stats).sort((a,b)=>b.points-a.points||((a.avgNet??999)-(b.avgNet??999)));const tb=$("#leaderboard tbody");
   const rankNums=competitionRanks(arr.map(a=>a.points));
   tb.innerHTML=arr.map((s,i)=>`<tr class="${rankNums[i]===1&&s.points>0?'leader':''}"><td><span class="rankbadge ${rankNums[i]===1?'r1':''}">${rankNums[i]}</span></td>
@@ -1200,7 +1208,7 @@ function renderLeaderboard(stats){const arr=Object.values(stats).sort((a,b)=>b.p
     <td>${s.totalStrokes?fmtPar(s.totalStrokes):'–'}</td><td>${s.avgGross!==null?fmtPar(s.avgGross):'–'}</td><td>${s.avgNet!==null?fmtPar(s.avgNet):'–'}</td>
     <td>${s.best!==null?fmtPar(s.best)+(s.bestCourse?' · '+s.bestCourse:''):'–'}</td><td>${s.worst!==null?fmtPar(s.worst)+(s.worstCourse?' · '+s.worstCourse:''):'–'}</td></tr>`).join("");
   tb.classList.remove("flash");void tb.offsetWidth;tb.classList.add("flash");
-  const st=standingsBefore(null);$("#poBanner").querySelector("span").innerHTML="<b>Projected shots for final round:</b> if the season ended today, "+st.slice(0,3).map((e,i)=>`${e[0]} gets −${PLAYOFF_SHOTS[i]} shot${PLAYOFF_SHOTS[i]===1?'':'s'}`).join(", ")+" on the Island Masters 2027 final round.";}
+  const st=standingsBefore(null);const topN=Math.min(st.length,PLAYOFF_SHOTS.length);const alloc=[];for(let bi=0;bi<topN;bi++){const sh=num(PLAYOFF_SHOTS[bi]);if(sh>0)alloc.push(`${st[bi][0]} gets −${sh} shot${sh===1?'':'s'}`);}$("#poBanner").querySelector("span").innerHTML="<b>Projected shots for final round:</b> if the season ended today, "+(alloc.length?alloc.join(", "):"no bonus shots are configured")+" on the Island Masters final round.";{var _sr=document.getElementById("shotRuleText");if(_sr)_sr.textContent=shotRuleText();}}
 function renderHistory(){const tb=$("#history tbody");const sorted=state.gameDays.slice().sort((a,b)=>b.date.localeCompare(a.date));
   tb.innerHTML=sorted.length?sorted.map(g=>`<tr><td>${fmtDate(g.date)}</td><td><span class="pill ${g.isPlayoff?'po':''}">${g.isPlayoff?'🏝️ '+g.mode:g.mode}</span></td><td>${g.course||'–'}</td><td>${g.indivCounts?'✔ yes':'–'}</td>
     <td>${g.rows.map(r=>{const b=g.isPlayoff?playoffShotsFor(r.player,g.date):0;return `<div style="font-size:12.5px"><span class="player-dot" style="background:${playerColor(r.player)}"></span> ${r.player}: ${r.strokes!==null?fmtPar(r.strokes)+(b?` (−${b})`:'')+' · ':''}${fmtNum(r.points,2)} pts${r.money?' · '+fmtMoney(r.money):''}</div>`;}).join("")}</td>
