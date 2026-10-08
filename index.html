@@ -113,11 +113,11 @@ section{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
 /* ---------------- Tables ---------------- */
 .card-head{display:flex;justify-content:flex-end;align-items:center;position:relative;height:0}
 .tablebox{position:relative}
-.tablebox .table-scroll{overflow-x:auto;overflow-y:hidden;border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-y;cursor:grab;background:var(--card);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.tablebox .table-scroll{overflow-x:auto;overflow-y:hidden;border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pan-y;cursor:grab;background:var(--card);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .table-scroll img,.table-scroll a{-webkit-user-drag:none;user-drag:none}
 .tablebox::after{content:"";position:absolute;top:0;right:0;bottom:0;width:52px;pointer-events:none;
   background:linear-gradient(90deg,transparent,var(--card));border-radius:0 var(--radius-sm) var(--radius-sm) 0;opacity:.92}
-.table-scroll{overflow-x:auto;overflow-y:hidden;border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x;background:var(--card)}
+.table-scroll{overflow-x:auto;overflow-y:hidden;border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pan-y;background:var(--card)}
 table{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px;min-width:620px;background:var(--card)}
 thead th{background:transparent;color:var(--muted);padding:12px 14px;text-align:left;font-weight:700;
   font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;
@@ -324,9 +324,9 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:var(--ring);ba
   .dash{grid-template-columns:1fr 1fr;gap:12px}
   .stat{padding:16px}.stat .value{font-size:20px}
   .budget-big{padding:16px}
-  .table-scroll{-webkit-overflow-scrolling:touch;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;touch-action:pan-x}
+  .table-scroll{-webkit-overflow-scrolling:touch;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;touch-action:pan-x pan-y}
   .tablebox::after{display:none}
-  .tablebox .table-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x}
+  .tablebox .table-scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pan-y}
   table{font-size:13.5px;min-width:600px}
   thead th{padding:10px 10px;font-size:11px}
   tbody td{padding:11px 10px}
@@ -407,7 +407,7 @@ section>.card,section>div>.card{width:100%}
    point inside it); vertical swipes fall through to the page. Children inherit
    the same touch-action so there are no dead zones on any row, cell or column. */
 .tablebox::after{pointer-events:none}
-.table-scroll{overflow-x:auto;overflow-y:hidden;touch-action:pan-x;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.table-scroll{overflow-x:auto;overflow-y:hidden;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
 table,tbody,thead,tr,td,th{touch-action:inherit}
 tbody tr{background:transparent}
 .table-scroll{cursor:grab;user-select:none;-webkit-user-select:none}
@@ -575,6 +575,25 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
   .cash-filter-label{width:100%;margin-bottom:-2px}
 }
 
+
+/* ---- Ranking history (expandable chart) ---- */
+.rankhist{margin-top:16px}
+.rankhist-toggle{display:inline-flex;align-items:center;gap:9px;cursor:pointer;
+  padding:10px 16px;border-radius:12px;font-size:14px;font-weight:700;color:var(--ink);
+  background:var(--card-2);border:1.5px solid var(--line);transition:all .18s ease}
+.rankhist-toggle:hover{border-color:var(--green-500);color:var(--green-700)}
+.rankhist-toggle .rh-ico{font-size:16px;font-weight:800;line-height:1;color:var(--green-600)}
+.rankhist-body{overflow:hidden;max-height:0;opacity:0;transition:max-height .45s ease,opacity .35s ease,margin-top .35s ease;margin-top:0}
+.rankhist-body:not([hidden]).open{max-height:1200px;opacity:1;margin-top:14px}
+.rankhist-legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px}
+.rankhist-legend .lg-item{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink-soft)}
+.rankhist-legend .lg-dot{width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 2px var(--card)}
+.rankhist-scroll{background:transparent;border-radius:var(--radius-sm);cursor:grab}
+.rankhist-chart{min-width:520px}
+.rankhist-chart svg{display:block;width:100%;height:auto}
+.rankhist-note{font-size:12px;color:var(--muted);margin:10px 2px 2px}
+.rankhist-empty{font-size:13px;color:var(--muted);padding:18px 4px}
+
 </style>
 </head>
 <body>
@@ -613,7 +632,18 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
       <div class="po-banner" id="poBanner" style="margin-top:16px;margin-bottom:0">🏝️ <span></span></div>
       <p class="small-muted">“Projected shots for final round” = stroke bonus the current standings would give on the Island Masters 2027 final: leader −5, 2nd −3, 3rd −1. Scores are shown relative to par (e.g. +2 or −2). Avg net uses the handicap valid on each round's date.</p>
     </div>
-  </section>
+  
+      <div class="rankhist">
+        <button type="button" class="rankhist-toggle" id="rankHistToggle" aria-expanded="false" aria-controls="rankHistBody">
+          <span class="rh-ico">＋</span><span class="rh-label">Show ranking history</span>
+        </button>
+        <div class="rankhist-body" id="rankHistBody" hidden>
+          <div class="rankhist-legend" id="rankHistLegend"></div>
+          <div class="rankhist-scroll table-scroll"><div id="rankHistChart" class="rankhist-chart"></div></div>
+          <p class="rankhist-note">Position after each match day (playoffs excluded) · Rank 1 = top. Swipe horizontally if there are many match days.</p>
+        </div>
+      </div>
+    </section>
 
   <section id="sec-next"><div class="section-title"><span class="ico">🗓️</span> What's Next — Swing Bros Appointments</div><div class="card" id="apptList"></div></section>
 
@@ -1234,7 +1264,82 @@ function setupScrollSpy(){
   window.addEventListener("scroll",onScroll,{passive:true}); onScroll();
 }
 
-function renderAll(){const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();decorateMobileTables();enableDragScroll();}
+
+/* ---- Ranking history: cumulative standings after each non-playoff match day ----
+   Uses the SAME ranking source of truth as the leaderboard (points desc, ties
+   broken by name for stable positions). The last column equals the current
+   leaderboard order by points. Recomputes on every renderAll(). */
+function rankingHistorySeries(){
+  var days=state.gameDays.filter(function(g){return !g.isPlayoff;})
+                         .slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  var players=state.players.map(function(p){return {name:p.name,color:p.color};});
+  var cum={}; players.forEach(function(p){cum[p.name]=0;});
+  var cols=[]; // each col: {label, ranks:{name->rank}}
+  days.forEach(function(g,idx){
+    g.rows.forEach(function(r){ if(cum[r.player]!==undefined) cum[r.player]+=num(r.points); });
+    // rank players by cumulative points (desc); stable tie-break by name
+    var ordered=players.map(function(p){return [p.name,cum[p.name]];})
+                       .sort(function(a,b){return b[1]-a[1] || a[0].localeCompare(b[0]);});
+    var ranks={}; ordered.forEach(function(e,i){ranks[e[0]]=i+1;});
+    cols.push({label:"GD "+(idx+1), date:g.date, ranks:ranks});
+  });
+  return {players:players, cols:cols};
+}
+function renderRankChart(){
+  var host=document.getElementById("rankHistChart");
+  var legend=document.getElementById("rankHistLegend");
+  if(!host) return;
+  var data=rankingHistorySeries();
+  var P=data.players, C=data.cols, N=P.length;
+  if(!C.length || !N){
+    host.innerHTML='<div class="rankhist-empty">No match days yet — the ranking history will appear once games are recorded.</div>';
+    if(legend) legend.innerHTML="";
+    return;
+  }
+  // Legend (existing player colors)
+  if(legend){
+    legend.innerHTML=P.map(function(p){
+      return '<span class="lg-item"><span class="lg-dot" style="background:'+p.color+'"></span>'+escapeHtml(p.name)+'</span>';
+    }).join("");
+  }
+  // Geometry
+  var padL=40, padR=18, padT=18, padB=34;
+  var stepX=Math.max(74, 90);                 // horizontal spacing per match day
+  var plotW=(C.length>1?(C.length-1)*stepX:stepX);
+  var rowH=46;                                 // vertical spacing per rank
+  var plotH=(N>1?(N-1)*rowH:rowH);
+  var W=padL+plotW+padR, H=padT+plotH+padB;
+  function X(i){ return padL + (C.length>1 ? i*stepX : plotW/2); }
+  function Y(rank){ return padT + (N>1 ? (rank-1)*(plotH/(N-1)) : plotH/2); }
+  host.style.minWidth=W+"px";
+
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMinYMin meet" role="img" aria-label="Ranking history chart">';
+  // horizontal gridlines + rank labels
+  for(var rk=1; rk<=N; rk++){
+    var y=Y(rk);
+    svg+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="var(--line)" stroke-width="1"/>';
+    svg+='<text x="'+(padL-10)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" font-weight="700" fill="var(--muted)">'+rk+'</text>';
+  }
+  // vertical day labels
+  C.forEach(function(c,i){
+    var x=X(i);
+    svg+='<text x="'+x+'" y="'+(H-12)+'" text-anchor="middle" font-size="10.5" font-weight="600" fill="var(--muted)">'+escapeHtml(c.label)+'</text>';
+  });
+  // one polyline + markers per player
+  P.forEach(function(p){
+    var pts=C.map(function(c,i){ return {x:X(i), y:Y(c.ranks[p.name])}; });
+    var d=pts.map(function(pt,i){return (i?"L":"M")+pt.x.toFixed(1)+" "+pt.y.toFixed(1);}).join(" ");
+    svg+='<path d="'+d+'" fill="none" stroke="'+p.color+'" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" opacity="0.95"/>';
+    pts.forEach(function(pt){
+      svg+='<circle cx="'+pt.x.toFixed(1)+'" cy="'+pt.y.toFixed(1)+'" r="4.5" fill="'+p.color+'" stroke="var(--card)" stroke-width="2"/>';
+    });
+  });
+  svg+='</svg>';
+  host.innerHTML=svg;
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+
+function renderAll(){const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();renderRankChart();decorateMobileTables();enableDragScroll();}
 
 /* EXPORT */
 function exportCSV(){const stats=computeStats();const arr=Object.values(stats).sort((a,b)=>b.points-a.points);
@@ -1260,6 +1365,33 @@ function setTheme(t){document.documentElement.setAttribute("data-theme",t);$("#t
    INIT
    ================================================================= */
 function wireUI(){
+  (function(){
+    var btn=document.getElementById("rankHistToggle");
+    var body=document.getElementById("rankHistBody");
+    if(btn && body && !btn.__wired){ btn.__wired=true;
+      btn.addEventListener("click",function(){
+        var open=body.hasAttribute("hidden");
+        if(open){
+          body.removeAttribute("hidden");
+          /* allow layout before animating */
+          requestAnimationFrame(function(){ body.classList.add("open"); });
+          btn.setAttribute("aria-expanded","true");
+          btn.querySelector(".rh-ico").textContent="−";
+          btn.querySelector(".rh-label").textContent="Hide ranking history";
+          renderRankChart();
+        }else{
+          body.classList.remove("open");
+          btn.setAttribute("aria-expanded","false");
+          btn.querySelector(".rh-ico").textContent="＋";
+          btn.querySelector(".rh-label").textContent="Show ranking history";
+          var hide=function(){ if(!body.classList.contains("open")) body.setAttribute("hidden",""); body.removeEventListener("transitionend",hide); };
+          body.addEventListener("transitionend",hide);
+          setTimeout(hide,480);
+        }
+      });
+    }
+  })();
+
   (function(){
     const chips=document.getElementById("cashFilterChips");
     if(chips && !chips.__wired){chips.__wired=true;
@@ -1383,13 +1515,20 @@ function enableDragScroll(){
     el.addEventListener("touchmove",function(e){
       if(!tDown||e.touches.length!==1) return;
       var t=e.touches[0], dx=t.clientX-tx, dy=t.clientY-ty;
-      if(tAxis===null && (Math.abs(dx)>6||Math.abs(dy)>6)){
-        tAxis=Math.abs(dx)>Math.abs(dy)?"x":"y";
+      // Lock the axis once the gesture is unambiguous. A clearer horizontal bias
+      // (1.25x) is required to claim "x", so near-vertical drags always go to the page.
+      if(tAxis===null && (Math.abs(dx)>8||Math.abs(dy)>8)){
+        tAxis=(Math.abs(dx)>Math.abs(dy)*1.25)?"x":"y";
       }
-      if(tAxis==="x"){
+      // Only hijack when the gesture is horizontal AND this table can actually
+      // scroll horizontally; otherwise let the browser scroll the page vertically.
+      var canScrollX=el.scrollWidth>el.clientWidth+1;
+      if(tAxis==="x" && canScrollX){
         tMoved=true;
         el.scrollLeft=tLeft-dx;
         if(e.cancelable) e.preventDefault();   /* stop vertical hijack + text selection */
+      }else if(tAxis==="y"){
+        tDown=false;   /* hand the vertical gesture entirely to the page */
       }
     },{passive:false});
     function tEnd(){ tDown=false; tAxis=null; }
