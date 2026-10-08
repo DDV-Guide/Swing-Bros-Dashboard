@@ -585,6 +585,7 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 .rankhist-toggle .rh-ico{font-size:16px;font-weight:800;line-height:1;color:var(--green-600)}
 .rankhist-body{overflow:hidden;max-height:0;opacity:0;transition:max-height .45s ease,opacity .35s ease,margin-top .35s ease;margin-top:0}
 .rankhist-body:not([hidden]).open{max-height:1200px;opacity:1;margin-top:14px}
+#histGdBody.open,#histCashBody.open{max-height:4000px}
 .rankhist-legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px}
 .rankhist-legend .lg-item{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink-soft)}
 .rankhist-legend .lg-dot{width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 2px var(--card)}
@@ -666,8 +667,8 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 
   <section id="sec-next"><div class="section-title"><span class="ico">🗓️</span> What's Next — Swing Bros Appointments</div><div class="card" id="apptList"></div></section>
 
-  <section id="sec-history"><div class="section-title"><span class="ico">📅</span> Game Day History</div>
-    <div class="card"><div class="card-head"><button class="rotate-btn" onclick="openTableFs('history','Game Day History')" title="Rotate / open full table"><span class="ph">📱</span>➜ Full table</button></div><div class="tablebox"><div class="table-scroll"><table id="history" class="m-stack"><thead><tr><th>Date</th><th>Mode</th><th>Course</th><th>Indiv?</th><th>Details (strokes · pts · €)</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div></div></section>
+  <section id="sec-history"><div class="section-title"><span class="ico">📅</span> Game Day History</div><div class="rankhist" style="margin-top:0"><button type="button" class="rankhist-toggle" id="histGdToggle" aria-expanded="false" aria-controls="histGdBody"><span class="rh-ico">＋</span><span class="rh-label">Show details</span></button><div class="rankhist-body" id="histGdBody" hidden>
+    <div class="card"><div class="card-head"><button class="rotate-btn" onclick="openTableFs('history','Game Day History')" title="Rotate / open full table"><span class="ph">📱</span>➜ Full table</button></div><div class="tablebox"><div class="table-scroll"><table id="history" class="m-stack"><thead><tr><th>Date</th><th>Mode</th><th>Course</th><th>Indiv?</th><th>Details (strokes · pts · €)</th><th>Actions</th></tr></thead><tbody></tbody></table></div></div></div></div></div></section>
 
   <section id="sec-payin"><div class="section-title"><span class="ico">💶</span> Outstanding payments (golf &amp; non-golf)</div>
     <div class="card"><p class="settle-note" id="settleHeader"></p>
@@ -686,8 +687,8 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 
   
 
-  <section id="sec-cashhist"><div class="section-title"><span class="ico">🪙</span> Cash-in &amp; expense history</div>
-    <div class="card"><div class="cash-filterbar" id="cashFilterBar"><span class="cash-filter-label">Filter by person:</span><div class="cash-filter-chips" id="cashFilterChips"></div><button type="button" class="cash-filter-clear" id="cashFilterClear">Show all</button></div><div class="card-head"><button class="rotate-btn" onclick="openTableFs('ngHistory','Cash-in & expense history')" title="Rotate / open full table"><span class="ph">📱</span>➜ Full table</button></div><div class="tablebox"><div class="table-scroll"><table id="ngHistory" class="m-stack"><thead><tr><th>Date</th><th>Flow</th><th>Category</th><th>Name / details</th><th>Player</th><th>Amount</th><th>Paid?</th><th></th></tr></thead><tbody></tbody></table></div></div></div></section>
+  <section id="sec-cashhist"><div class="section-title"><span class="ico">🪙</span> Cash-in &amp; expense history</div><div class="rankhist" style="margin-top:0"><button type="button" class="rankhist-toggle" id="histCashToggle" aria-expanded="false" aria-controls="histCashBody"><span class="rh-ico">＋</span><span class="rh-label">Show details</span></button><div class="rankhist-body" id="histCashBody" hidden>
+    <div class="card"><div class="cash-filterbar" id="cashFilterBar"><span class="cash-filter-label">Filter by person:</span><div class="cash-filter-chips" id="cashFilterChips"></div><button type="button" class="cash-filter-clear" id="cashFilterClear">Show all</button></div><div class="card-head"><button class="rotate-btn" onclick="openTableFs('ngHistory','Cash-in & expense history')" title="Rotate / open full table"><span class="ph">📱</span>➜ Full table</button></div><div class="tablebox"><div class="table-scroll"><table id="ngHistory" class="m-stack"><thead><tr><th>Date</th><th>Flow</th><th>Category</th><th>Name / details</th><th>Player</th><th>Amount</th><th>Paid?</th><th></th></tr></thead><tbody></tbody></table></div></div></div></div></div></section>
 
   <section id="sec-actions"><div class="card"><div class="toolbar">
     <button class="btn-gold" id="exportBtn">⬇️ Export CSV</button>
@@ -1450,32 +1451,38 @@ function wireUI(){
     },60*1000);
   })();
 
-  (function(){
-    var btn=document.getElementById("rankHistToggle");
-    var body=document.getElementById("rankHistBody");
-    if(btn && body && !btn.__wired){ btn.__wired=true;
-      btn.addEventListener("click",function(){
-        var open=body.hasAttribute("hidden");
-        if(open){
-          body.removeAttribute("hidden");
-          /* allow layout before animating */
-          requestAnimationFrame(function(){ body.classList.add("open"); });
-          btn.setAttribute("aria-expanded","true");
-          btn.querySelector(".rh-ico").textContent="−";
-          btn.querySelector(".rh-label").textContent="Hide ranking history";
-          renderRankChart();
-        }else{
-          body.classList.remove("open");
-          btn.setAttribute("aria-expanded","false");
-          btn.querySelector(".rh-ico").textContent="＋";
-          btn.querySelector(".rh-label").textContent="Show ranking history";
-          var hide=function(){ if(!body.classList.contains("open")) body.setAttribute("hidden",""); body.removeEventListener("transitionend",hide); };
-          body.addEventListener("transitionend",hide);
-          setTimeout(hide,480);
-        }
-      });
-    }
-  })();
+  function wireCollapsible(btnId, bodyId, opts){
+    opts=opts||{};
+    var btn=document.getElementById(btnId);
+    var body=document.getElementById(bodyId);
+    if(!(btn && body) || btn.__wired) return;
+    btn.__wired=true;
+    var showLbl=opts.showLabel||"Show details";
+    var hideLbl=opts.hideLabel||"Hide details";
+    btn.addEventListener("click",function(){
+      var opening=body.hasAttribute("hidden");
+      if(opening){
+        body.removeAttribute("hidden");
+        requestAnimationFrame(function(){ body.classList.add("open"); });
+        btn.setAttribute("aria-expanded","true");
+        btn.querySelector(".rh-ico").textContent="−";
+        btn.querySelector(".rh-label").textContent=hideLbl;
+        if(typeof opts.onOpen==="function"){ try{ opts.onOpen(); }catch(e){} }
+      }else{
+        body.classList.remove("open");
+        btn.setAttribute("aria-expanded","false");
+        btn.querySelector(".rh-ico").textContent="＋";
+        btn.querySelector(".rh-label").textContent=showLbl;
+        var hide=function(){ if(!body.classList.contains("open")) body.setAttribute("hidden",""); body.removeEventListener("transitionend",hide); };
+        body.addEventListener("transitionend",hide);
+        setTimeout(hide,480);
+      }
+    });
+  }
+  wireCollapsible("rankHistToggle","rankHistBody",{showLabel:"Show ranking history",hideLabel:"Hide ranking history",onOpen:function(){renderRankChart();}});
+  wireCollapsible("histGdToggle","histGdBody",{showLabel:"Show details",hideLabel:"Hide details"});
+  wireCollapsible("histCashToggle","histCashBody",{showLabel:"Show details",hideLabel:"Hide details"});
+
 
   (function(){
     const chips=document.getElementById("cashFilterChips");
