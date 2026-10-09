@@ -986,15 +986,17 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
   .pb-maxday-eq,.pb-formula{flex-wrap:wrap}
   .pb-pill{white-space:normal}
 
-  /* ----- Tables as clean 2-column rows on mobile; values ALWAYS visible (Issues 1,2,3) ----- */
+  /* ----- Tables as clean 2-column rows on mobile; values ALWAYS fully visible (Issues 1,2,3) ----- */
   .pb-card .pb-table,.pb-grid-2 > .pb-card .pb-table{display:block;width:100%!important;margin:4px 0 0!important}
   .pb-table thead{display:block}
-  .pb-table thead tr,.pb-table tbody tr{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%}
-  .pb-table th,.pb-table td{display:block;flex:1 1 0;min-width:0;padding:9px 4px;font-size:13px;
-    overflow:visible;white-space:normal;word-break:normal;border-left:0;border-right:0}
-  .pb-table th:first-child,.pb-table td:first-child{text-align:left}
-  .pb-table th:last-child,.pb-table td:last-child{text-align:right;white-space:nowrap}
-  .pb-table td:last-child .pb-pill{display:inline-block;max-width:none}
+  .pb-table thead tr,.pb-table tbody tr{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%}
+  .pb-table th,.pb-table td{display:block;padding:9px 2px;font-size:13px;overflow:visible;white-space:normal;word-break:normal;border-left:0;border-right:0}
+  /* label column: flexible but capped so the value column keeps room */
+  .pb-table th:first-child,.pb-table td:first-child{flex:1 1 auto;min-width:0;text-align:left}
+  /* value column: sizes to its content (pill/number) and never shrinks or clips */
+  .pb-table th:last-child,.pb-table td:last-child{flex:0 0 auto;white-space:nowrap;text-align:right}
+  .pb-table td:last-child .pb-pill{display:inline-block;max-width:none;white-space:nowrap}
+  .pb-table .pb-pill{font-size:12.5px;padding:5px 12px}
 
   /* ----- Rotating Threesome stages: stack vertically (Issue 2) ----- */
   .pb-stages{flex-direction:column}
