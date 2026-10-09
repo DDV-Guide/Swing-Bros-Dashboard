@@ -223,7 +223,7 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:var(--ring);ba
   display:flex;align-items:center;gap:10px;border:1px solid var(--line)}
 
 /* ---------------- FAB ---------------- */
-.fab{position:fixed;right:30px;bottom:calc(30px + 64px + 18px + env(safe-area-inset-bottom,0px));z-index:800}
+.fab{position:fixed;right:30px;bottom:calc(30px + 2*(64px + 18px) + env(safe-area-inset-bottom,0px));z-index:800}
 .fab-main{width:64px;height:64px;border-radius:50%;background:var(--grad-gold);color:#3a2f05;font-size:30px;
   font-weight:700;box-shadow:0 14px 34px rgba(202,164,58,.5);display:flex;align-items:center;justify-content:center;
   transition:var(--t);border:1px solid rgba(255,255,255,.4)}
@@ -348,7 +348,7 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:var(--ring);ba
   .checkbox-row{align-items:flex-start}.checkbox-row input{width:22px;height:22px;margin-top:2px;flex:none}
   #sec-actions .toolbar{flex-direction:column}#sec-actions .toolbar button{width:100%}
   .appt{flex-direction:column;align-items:flex-start;gap:6px}.appt .when{align-self:flex-start}
-  .fab{right:18px;bottom:calc(20px + 56px + 26px + env(safe-area-inset-bottom,0px))}.fab-main{width:56px;height:56px;font-size:27px}.fab-players{right:18px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:56px;height:56px}
+  .fab{right:18px;bottom:calc(20px + 2*(56px + 26px) + env(safe-area-inset-bottom,0px))}.fab-main{width:56px;height:56px;font-size:27px}.fab-players{right:18px;bottom:calc(20px + 56px + 26px + env(safe-area-inset-bottom,0px));width:56px;height:56px}.fab-playbook{right:18px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:56px;height:56px}
   .scrollhint{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);margin:4px 0 16px;line-height:1.5;flex-wrap:wrap}
   .mnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:850;background:var(--glass);
     backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);
@@ -623,13 +623,19 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 
 
 /* ============ Players floating button (above the +) ============ */
-.fab-players{position:fixed;right:30px;bottom:calc(30px + env(safe-area-inset-bottom,0px));z-index:801;width:64px;height:64px;border-radius:50%;
+.fab-players{position:fixed;right:30px;bottom:calc(30px + 64px + 18px + env(safe-area-inset-bottom,0px));z-index:801;width:64px;height:64px;border-radius:50%;
+  background:var(--card);color:var(--green-700);border:1px solid var(--line);
+  box-shadow:0 12px 30px rgba(16,40,30,.22);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+.fab-playbook{position:fixed;right:30px;bottom:calc(30px + env(safe-area-inset-bottom,0px));z-index:802;width:64px;height:64px;border-radius:50%;
   background:var(--card);color:var(--green-700);border:1px solid var(--line);
   box-shadow:0 12px 30px rgba(16,40,30,.22);display:flex;align-items:center;justify-content:center;
   cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
 .fab-players:hover{transform:scale(1.07);box-shadow:0 16px 38px rgba(16,40,30,.30);background:var(--green-50)}
+.fab-playbook:hover{transform:scale(1.07);box-shadow:0 16px 38px rgba(16,40,30,.30);background:var(--green-50)}
 [data-theme="dark"] .fab-players{background:var(--card);color:var(--green-400);border-color:var(--line)}
-@media(max-width:600px){.fab{right:18px;bottom:calc(20px + 56px + 26px + env(safe-area-inset-bottom,0px))}.fab-main{width:56px;height:56px}.fab-players{right:18px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:56px;height:56px}}
+[data-theme="dark"] .fab-playbook{background:var(--card);color:var(--green-400);border-color:var(--line)}
+@media(max-width:600px){.fab{right:18px;bottom:calc(20px + 2*(56px + 26px) + env(safe-area-inset-bottom,0px))}.fab-main{width:56px;height:56px}.fab-players{right:18px;bottom:calc(20px + 56px + 26px + env(safe-area-inset-bottom,0px));width:56px;height:56px}.fab-playbook{right:18px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:56px;height:56px}}
 
 /* ============ Overlay shell ============ */
 .pl-overlay{position:fixed;inset:0;z-index:3000;background:var(--bg);
@@ -731,22 +737,242 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 
 /* FABs: keep clear separation on short/landscape viewports and respect safe-area */
 @media (max-height:520px){
-  .fab{right:16px;bottom:calc(12px + 50px + 22px + env(safe-area-inset-bottom,0px))}
+  .fab{right:16px;bottom:calc(12px + 2*(50px + 22px) + env(safe-area-inset-bottom,0px))}
   .fab-main{width:50px;height:50px}
-  .fab-players{right:16px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:50px;height:50px}
+  .fab-players{right:16px;bottom:calc(12px + 50px + 22px + env(safe-area-inset-bottom,0px));width:50px;height:50px}
+  .fab-playbook{right:16px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:50px;height:50px}
 }
 
 
 /* Mobile: lighter FAB shadows so the two buttons read as separate controls */
 @media (max-width:720px){
   .fab-main{box-shadow:0 8px 20px rgba(202,164,58,.42)}
-  .fab-players{box-shadow:0 8px 18px rgba(16,40,30,.20)}
+  .fab-players,.fab-playbook{box-shadow:0 8px 18px rgba(16,40,30,.20)}
 }
 
 
 @media (max-width:520px){
   .pl-hero .pl-hero-sub{gap:10px;font-size:12px}
 }
+
+
+/* ============ Playbook FAB (above the +) ============ */
+/* (positioning rules added inline with the other FAB rules; this block only
+   ensures the icon inherits the same look — base rule cloned from .fab-players) */
+
+/* ============ Playbook overlay shell ============ */
+.pb-overlay{position:fixed;inset:0;z-index:3000;background:var(--bg);
+  opacity:0;visibility:hidden;transition:opacity .35s ease;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.pb-overlay.show{opacity:1;visibility:visible}
+.pb-topbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 18px;background:linear-gradient(180deg,var(--bg),color-mix(in srgb,var(--bg) 70%,transparent));
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.pb-brand{font-weight:800;letter-spacing:-.01em;color:var(--ink);font-size:15px;text-align:center;flex:1}
+.pb-topbar-spacer{display:block;min-width:150px}
+@media(max-width:600px){.pb-brand{display:none}.pb-topbar-spacer{display:none}}
+
+.pb-wrap{max-width:1000px;margin:0 auto;padding:22px 18px 80px}
+
+/* Hero */
+.pb-hero{text-align:center;padding:22px 10px 10px}
+.pb-hero-kicker{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--green-600);background:var(--green-100);padding:6px 14px;border-radius:999px}
+[data-theme="dark"] .pb-hero-kicker{color:var(--green-400)}
+.pb-hero-title{font-size:clamp(28px,5vw,46px);font-weight:800;letter-spacing:-.02em;line-height:1.04;margin:14px 0 10px;color:var(--ink)}
+.pb-hero-sub{font-size:15px;color:var(--muted);max-width:640px;margin:0 auto;line-height:1.6}
+
+/* Table of contents */
+.pb-toc{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:22px 0 10px;padding-bottom:4px}
+.pb-toc a{flex:0 0 auto;white-space:nowrap;font-size:12.5px;font-weight:700;color:var(--ink);background:var(--card-2);border:1.5px solid var(--line);
+  padding:7px 13px;border-radius:999px;text-decoration:none;transition:all .15s ease}
+.pb-toc a:hover{border-color:var(--green-500);color:var(--green-700)}
+[data-theme="dark"] .pb-toc a:hover{color:var(--green-400)}
+
+/* Chapters */
+.pb-chapter{margin-top:30px;scroll-margin-top:76px}
+.pb-h2{display:flex;align-items:center;gap:11px;font-size:clamp(19px,2.6vw,24px);font-weight:800;letter-spacing:-.01em;
+  color:var(--ink);margin:0 0 14px;padding-bottom:12px;border-bottom:2px solid var(--line)}
+.pb-ic{font-size:1.1em;line-height:1}
+.pb-h3{font-size:15px;font-weight:800;color:var(--ink);margin:0 0 10px}
+.pb-card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+.pb-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.pb-grid-2{grid-template-columns:1fr}}
+.pb-list{margin:6px 0 0;padding-left:20px;line-height:1.7;color:var(--ink)}
+.pb-list li{margin:2px 0}
+.pb-muted{color:var(--muted);font-size:13px;margin-top:10px;line-height:1.55}
+.pb-card p{color:var(--ink);line-height:1.6}
+.pb-card code{font-size:12px;background:var(--card-2);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+
+/* Highlight / rule boxes */
+.pb-highlight{border-left:5px solid var(--green-500)}
+.pb-rulebox{display:flex;align-items:center;gap:12px;background:var(--card-2);border:1px solid var(--line);
+  border-radius:12px;padding:12px 14px;margin-top:12px;font-size:13.5px;color:var(--ink);line-height:1.5}
+.pb-rulebox-gold{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,var(--card-2))}
+.pb-rulebox-green{border-color:var(--green-500);background:color-mix(in srgb,var(--green-500) 10%,var(--card-2))}
+.pb-vote{flex:0 0 auto;font-size:16px;font-weight:800;color:#fff;background:var(--green-600);border-radius:10px;padding:7px 11px;letter-spacing:.02em}
+.pb-rulebox-gold .pb-vote{background:var(--gold);color:#3a2f05}
+
+/* Timeline (Island Masters) */
+.pb-timeline{display:flex;align-items:stretch;gap:14px;margin-top:16px;flex-wrap:wrap}
+.pb-tl-track{flex:1 1 240px;border-radius:14px;padding:14px;border:1px solid var(--line)}
+.pb-tl-old{background:color-mix(in srgb,var(--gold) 10%,var(--card-2))}
+.pb-tl-new{background:color-mix(in srgb,var(--green-500) 10%,var(--card-2))}
+.pb-tl-label{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.pb-tl-step{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.pb-tl-day{display:block;font-weight:800;color:var(--ink)}
+.pb-tl-txt{font-size:12.5px;color:var(--muted)}
+.pb-tl-final{border-color:var(--gold)}
+.pb-tl-steps{display:flex;gap:8px;flex-wrap:wrap}
+.pb-tl-steps .pb-tl-step{flex:1;text-align:center;margin-bottom:8px}
+.pb-tl-arrow{display:flex;align-items:center;font-size:22px;color:var(--muted)}
+@media(max-width:600px){.pb-tl-arrow{transform:rotate(90deg)}}
+
+/* Formats */
+.pb-format{text-align:center}
+.pb-format-ic{font-size:34px;margin-bottom:6px}
+
+/* Calc formula */
+.pb-formula,.pb-maxday-eq{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:6px 0 4px}
+.pb-f-item{background:var(--card-2);border:1px solid var(--line);border-radius:10px;padding:9px 13px;font-size:14px;color:var(--ink)}
+.pb-f-item b{color:var(--green-700)}
+[data-theme="dark"] .pb-f-item b{color:var(--green-400)}
+.pb-f-op{font-size:18px;font-weight:800;color:var(--muted)}
+.pb-f-res{border-color:var(--green-500);background:color-mix(in srgb,var(--green-500) 12%,var(--card-2))}
+
+/* Pills */
+.pb-pill{display:inline-block;font-size:12.5px;font-weight:800;border-radius:999px;padding:4px 11px;
+  background:var(--card-2);border:1.5px solid var(--line);color:var(--ink)}
+.pb-pill-pts{background:var(--green-100);border-color:var(--green-500);color:var(--green-700)}
+[data-theme="dark"] .pb-pill-pts{background:color-mix(in srgb,var(--green-500) 26%,transparent);color:#fff}
+.pb-pill-eur{background:color-mix(in srgb,var(--gold) 16%,var(--card-2));border-color:var(--gold);color:#7a5f12}
+[data-theme="dark"] .pb-pill-eur{color:var(--gold-2)}
+.pb-pill-gold{background:var(--gold);border-color:var(--gold);color:#3a2f05}
+
+/* Stages */
+.pb-stages{display:flex;gap:10px;margin:14px 0 4px;flex-wrap:wrap}
+.pb-stage{flex:1 1 120px;display:flex;align-items:center;gap:9px;background:var(--card-2);border:1px solid var(--line);
+  border-radius:12px;padding:12px 14px;font-weight:700;color:var(--ink)}
+.pb-stage-n{width:26px;height:26px;border-radius:50%;background:var(--green-600);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex:none}
+
+/* Tables */
+.pb-table{width:100%;border-collapse:collapse;margin-top:4px;font-size:13.5px}
+.pb-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800;padding:8px 10px;border-bottom:1.5px solid var(--line)}
+.pb-table td{padding:9px 10px;border-bottom:1px solid var(--line);color:var(--ink)}
+.pb-table tr:last-child td{border-bottom:none}
+
+/* Awards vs */
+.pb-vs{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.pb-vs{grid-template-columns:1fr}}
+.pb-vs-ic{font-size:34px;margin-bottom:4px}
+.pb-champ{border-top:4px solid var(--gold)}
+.pb-last{border-top:4px solid #e3679b}
+
+.pb-foot{text-align:center;color:var(--muted);font-size:12.5px;margin-top:34px;font-style:italic}
+
+
+/* Equal-width cards inside Playbook two-column grids (prevents content-driven imbalance) */
+.pb-grid-2{align-items:stretch}
+.pb-grid-2 > .pb-card{min-width:0}
+.pb-grid-2 > .pb-card .pb-table{width:calc(100% - 16px);margin:4px 8px 0;table-layout:auto}
+
+
+/* Expandable Playbook detail sections (3a / 3b) */
+.pb-details{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
+  margin-top:16px;overflow:hidden}
+.pb-details>.pb-summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:11px;
+  padding:18px 20px;font-weight:800;color:var(--ink);font-size:clamp(16px,2.4vw,20px);user-select:none}
+.pb-details>.pb-summary::-webkit-details-marker{display:none}
+.pb-summary .pb-sum-title{flex:1}
+.pb-summary .pb-sum-hint{font-size:12px;font-weight:700;color:var(--muted);background:var(--card-2);
+  border:1px solid var(--line);border-radius:999px;padding:4px 11px;white-space:nowrap}
+.pb-summary .pb-chev{font-size:16px;color:var(--muted);transition:transform .25s ease}
+.pb-details[open] .pb-summary .pb-chev{transform:rotate(180deg)}
+.pb-details[open] .pb-summary .pb-sum-hint{color:var(--green-700)}
+.pb-details-body{padding:0 20px 20px;animation:pbReveal .28s ease}
+@keyframes pbReveal{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.pb-details-body .pb-card:first-child{margin-top:4px}
+
+
+/* Equal-height governance boxes: align trailing rule boxes to the card bottom */
+.pb-grid-2 > .pb-card{display:flex;flex-direction:column}
+.pb-grid-2 > .pb-card > .pb-rulebox:last-child{margin-top:auto}
+
+
+/* Island Masters timeline — summary box + overlap cues */
+.pb-tl-shots{display:block;margin-top:8px;font-size:12px;font-weight:700;color:var(--gold);
+  background:color-mix(in srgb,var(--gold) 14%,var(--card));border:1px solid var(--gold);border-radius:9px;padding:7px 9px;line-height:1.4}
+[data-theme="dark"] .pb-tl-shots{color:var(--gold-2)}
+.pb-tl-summary{display:flex;align-items:flex-start;gap:12px;margin-top:14px;padding:14px 16px;
+  border-radius:14px;border:1px dashed var(--green-500);background:color-mix(in srgb,var(--green-500) 8%,var(--card-2));color:var(--ink);font-size:13.5px;line-height:1.5}
+.pb-tl-sum-ic{font-size:24px;line-height:1;flex:none}
+
+
+/* Dynamic handicap list in Playbook 3a */
+.pb-hcp-list{display:flex;flex-direction:column;gap:8px;width:100%}
+.pb-hcp-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pb-hcp-name{font-weight:800;color:var(--ink)}
+.pb-hcp-badge{font-size:12.5px;font-weight:600;color:var(--ink);background:var(--card);
+  border:1px solid var(--line);border-radius:999px;padding:4px 11px}
+.pb-hcp-badge.pb-hcp-ref{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 16%,var(--card))}
+
+
+/* Playbook tables: only horizontal row separators – never vertical lines or clipping */
+.pb-table,.pb-table thead,.pb-table tbody,.pb-table tr,.pb-table th,.pb-table td{
+  border-left:0!important;border-right:0!important;background:transparent}
+.pb-table{border-collapse:collapse}
+.pb-table th,.pb-table td{overflow:visible;text-overflow:clip;white-space:normal}
+
+
+/* ===== Island Masters tournament block (spans all 4 days) ===== */
+.pb-im{margin-top:16px;border:1px solid var(--gold);border-radius:16px;overflow:hidden}
+.pb-im-band{padding:10px 14px;text-align:center;font-size:13px;font-weight:800;letter-spacing:.02em;color:#3a2f05;
+  background:linear-gradient(90deg,var(--gold-2),var(--gold))}
+.pb-im-days{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px;
+  background:color-mix(in srgb,var(--gold) 8%,var(--card))}
+.pb-im-day{display:flex;flex-direction:column;gap:4px;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:12px 11px;min-width:0}
+.pb-im-day1{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 25%,transparent) inset}
+.pb-im-dn{font-weight:800;color:var(--ink);font-size:14px}
+.pb-im-dt{font-size:12px;color:var(--muted);line-height:1.35}
+.pb-im-shots{margin-top:6px;font-size:11px;font-weight:700;color:var(--gold);
+  background:color-mix(in srgb,var(--gold) 14%,var(--card));border:1px solid var(--gold);border-radius:8px;padding:5px 7px;line-height:1.35}
+[data-theme="dark"] .pb-im-shots{color:var(--gold-2)}
+
+
+
+
+
+
+/* Island Masters season-flow narrow boxes (aligned under the 4 day cards) */
+.pb-im-flow2{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 14px 12px;
+  background:color-mix(in srgb,var(--gold) 8%,var(--card))}
+.pb-im-fbox{border-radius:10px;padding:8px 10px;font-size:11.5px;font-weight:800;text-align:center;line-height:1.3}
+.pb-im-fold{grid-column:1 / 2;background:color-mix(in srgb,var(--gold) 16%,var(--card));border:1px solid var(--gold);color:#7a5f12}
+[data-theme="dark"] .pb-im-fold{color:var(--gold-2)}
+.pb-im-fnew{grid-column:2 / 5;background:color-mix(in srgb,var(--green-500) 12%,var(--card));border:1px solid var(--green-500);color:var(--green-700)}
+[data-theme="dark"] .pb-im-fnew{color:var(--green-400)}
+.pb-im-champ{text-align:center;padding:10px 14px;font-size:12px;font-weight:800;color:var(--green-700);
+  background:var(--card-2);border-top:1px solid var(--line)}
+[data-theme="dark"] .pb-im-champ{color:var(--green-400)}
+@media(max-width:600px){
+  .pb-im-flow2{grid-template-columns:1fr 1fr}
+  .pb-im-fold{grid-column:1 / 2}
+  .pb-im-fnew{grid-column:2 / 3}
+}
+
+
+/* El Clásico face-off */
+.pb-classico .pb-cl-vs{display:flex;align-items:center;justify-content:center;gap:14px;margin:14px 0 4px;flex-wrap:wrap}
+.pb-cl-team{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1 1 0;min-width:120px}
+.pb-cl-faces{display:flex}
+.pb-cl-faces img{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--card);box-shadow:0 2px 8px rgba(0,0,0,.25);margin-left:-10px}
+.pb-cl-faces img:first-child{margin-left:0}
+.pb-cl-faces .pb-cl-ini{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;border:2px solid var(--card);box-shadow:0 2px 8px rgba(0,0,0,.25);margin-left:-10px}
+.pb-cl-faces .pb-cl-ini:first-child{margin-left:0}
+.pb-cl-names{font-size:12.5px;font-weight:800;color:var(--ink);text-align:center;line-height:1.35}
+.pb-cl-mid{flex:0 0 auto}
+.pb-cl-vs-badge{display:inline-block;font-size:13px;font-weight:800;color:#fff;background:var(--green-600);border-radius:999px;padding:7px 13px;box-shadow:var(--shadow)}
+@media(max-width:600px){.pb-cl-vs{gap:10px}.pb-cl-team{min-width:0}}
 
 </style>
 </head>
@@ -833,6 +1059,7 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 </div>
 
 <nav class="mnav" id="mnav">
+  <a href="#" id="mnavPlaybook" onclick="pbOpenOverlay();return false;"><span class="mi">📖</span>Rules</a>
   <a href="#" id="mnavPlayers" onclick="plOpenOverlay();return false;"><span class="mi">👤</span>Players</a>
   <a href="#sec-summary"><span class="mi">📊</span>Summary</a>
   <a href="#sec-leaderboard"><span class="mi">🥇</span>Table</a>
@@ -841,6 +1068,9 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
   <a href="#sec-next"><span class="mi">🗓️</span>Next</a>
 </nav>
 
+<button class="fab-playbook" id="fabPlaybook" type="button" aria-label="Open Swing Bros Playbook" title="Playbook / Rules">
+  <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h7v16H6a2 2 0 0 0-2 2V5z"></path><path d="M20 5a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2V5z"></path><path d="M8 7h2M8 10h2"></path></svg>
+</button>
 <button class="fab-players" id="fabPlayers" type="button" aria-label="Open player profiles" title="Player profiles">
   <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"></path></svg>
 </button>
@@ -916,6 +1146,350 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 
 <div class="toast" id="toast"></div>
 
+
+
+<!-- ===================== SWING BROS PLAYBOOK ===================== -->
+<div id="playbookOverlay" class="pb-overlay" aria-hidden="true">
+  <div class="pb-topbar">
+    <button class="pl-btn" id="pbBackDash" type="button">← Zurück zum Dashboard</button>
+    <div class="pb-brand">📖 Swing Bros · Playbook</div>
+    <span class="pb-topbar-spacer" aria-hidden="true"></span>
+  </div>
+
+  <div class="pb-wrap">
+    <header class="pb-hero">
+      <div class="pb-hero-kicker">Offizielles Regelwerk</div>
+      <h1 class="pb-hero-title">Das Swing Bros Playbook</h1>
+      <p class="pb-hero-sub">Regeln, Formate, Punktesystem &amp; Finanzordnung – die verbindliche Grundlage für jeden offiziellen Swing-Bros-Zock.</p>
+    </header>
+
+    <!-- Table of contents -->
+    <nav class="pb-toc" id="pbToc" aria-label="Kapitelübersicht"></nav>
+
+    <!-- ===== 1. Overview & Governance ===== -->
+    <section class="pb-chapter" id="pb-ch1">
+      <h2 class="pb-h2"><span class="pb-ic">⚖️</span> 1 · Grundlagen &amp; Governance</h2>
+
+      <div class="pb-card pb-highlight">
+        <h3 class="pb-h3">Offizieller Swing-Bros-Zock</h3>
+        <p>Ein <b>offizieller Swing-Bros-Zock</b> ist jede Golfrunde, an der <b>alle vier</b> Swing-Bros-Mitglieder teilnehmen und für die <b>vor Rundenbeginn</b> ein offizieller Einsatz vereinbart wurde.</p>
+      </div>
+
+      <div class="pb-grid-2">
+        <div class="pb-card">
+          <h3 class="pb-h3">🏦 Swing-Bros-Fonds</h3>
+          <p>Der Fonds ist die gemeinsame Kasse der Gruppe. Verwendung insbesondere für:</p>
+          <ul class="pb-list">
+            <li>Preisgelder &amp; Auszeichnungen</li>
+            <li>Gemeinsame Anschaffungen</li>
+            <li>Gemeinsame Essen</li>
+            <li>Events &amp; Ausflüge</li>
+            <li>Saisonhöhepunkte</li>
+            <li>Besondere Golfplätze oder Turniere</li>
+          </ul>
+          <div class="pb-rulebox pb-rulebox-gold">
+            <span class="pb-vote">4 / 4</span>
+            <span>Jede Ausgabe aus dem Fonds erfordert <b>Einstimmigkeit</b> – alle vier Mitglieder müssen zustimmen.</span>
+          </div>
+        </div>
+
+        <div class="pb-card">
+          <h3 class="pb-h3">🗳️ Demokratische Entscheidungen</h3>
+          <p>Für Entscheidungen <b>außerhalb</b> des Fonds gilt das Mehrheitsprinzip.</p>
+          <div class="pb-rulebox pb-rulebox-green">
+            <span class="pb-vote">3 / 4</span>
+            <span>Eine Entscheidung ist angenommen, wenn <b>mindestens drei</b> der vier Mitglieder zustimmen (Dreiviertelmehrheit).</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 2. Season calendar / Island Masters ===== -->
+    <section class="pb-chapter" id="pb-ch2">
+      <h2 class="pb-h2"><span class="pb-ic">🏝️</span> 2 · Saisonkalender &amp; Island Masters</h2>
+      <div class="pb-card">
+        <p>Die <b>Island Masters</b> sind das prestigeträchtigste Event im Swing Bros Kalender. Über vier Turniertage wird ein eigenständiger Champion ermittelt, während das Turnier gleichzeitig die Brücke zwischen zwei Swing Bros Saisons schlägt. <b>Tag 1</b> bildet das offizielle Saisonfinale der alten Saison (inklusive Play-off-Shots), die <b>Tage 2 bis 4</b> eröffnen die neue Saison. Da sämtliche vier Runden in die Swing Bros Championship einfließen, besitzen die Island Masters eine außergewöhnliche sportliche Relevanz und nehmen eine Sonderstellung im gesamten Wettbewerbskalender ein.</p>
+
+        <!-- Island Masters tournament spanning all 4 days -->
+        <div class="pb-im">
+          <div class="pb-im-band">🏝️ Island Masters · ein Turnier über 4 Tage · eigener Titel &amp; Champion</div>
+          <div class="pb-im-days">
+            <div class="pb-im-day pb-im-day1">
+              <span class="pb-im-dn">Tag 1</span>
+              <span class="pb-im-dt">Saisonfinale der alten Saison</span>
+              <span class="pb-im-shots">🎯 Play-off-Shots gemäß Tabelle vor dem Spieltag</span>
+            </div>
+            <div class="pb-im-day">
+              <span class="pb-im-dn">Tag 2</span>
+              <span class="pb-im-dt">Start neue Saison</span>
+            </div>
+            <div class="pb-im-day">
+              <span class="pb-im-dn">Tag 3</span>
+              <span class="pb-im-dt">neue Saison</span>
+            </div>
+            <div class="pb-im-day">
+              <span class="pb-im-dn">Tag 4</span>
+              <span class="pb-im-dt">neue Saison</span>
+            </div>
+          </div>
+          <div class="pb-im-flow2">
+            <div class="pb-im-fbox pb-im-fold">⟵ Alte Saison endet mit Tag 1</div>
+            <div class="pb-im-fbox pb-im-fnew">Neue Saison ab Tag 2 ⟶</div>
+          </div>
+          <div class="pb-im-champ">🏆 Island-Masters-Champion wird über alle 4 Tage ermittelt</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 3. Formats overview (Königsdisziplinen) ===== -->
+    <section class="pb-chapter" id="pb-ch3">
+      <h2 class="pb-h2"><span class="pb-ic">👑</span> 3 · Die Königsdisziplinen</h2>
+      <div class="pb-grid-2">
+        <div class="pb-card pb-format"><div class="pb-format-ic">🎯</div><h3 class="pb-h3">Einzelwertung</h3><p>Jeder spielt seinen eigenen Ball – gewertet wird das Netto relativ zu Par.</p></div>
+        <div class="pb-card pb-format"><div class="pb-format-ic">🔄</div><h3 class="pb-h3">Rotating Threesome</h3><p>Drei Sechs-Loch-Abschnitte mit rotierenden Zweier-Teams.</p></div>
+      </div>
+      <div class="pb-rulebox pb-rulebox-green">
+        <span class="pb-vote">3 / 4</span>
+        <span>Andere Formate (z. B. Scramble, Shamble) sind möglich. Die Wahl erfolgt <b>vor dem Start an Tee 1</b> und benötigt eine Dreiviertelmehrheit.</span>
+      </div>
+    <p class="pb-muted">Details zu beiden Königsdisziplinen findest du direkt darunter – zum Aufklappen auf <b>3a</b> bzw. <b>3b</b> tippen.</p></section>
+
+    <!-- ===== 4. Individual format ===== -->
+    <details class="pb-details pb-chapter" id="pb-ch4"><summary class="pb-summary"><span class="pb-ic">🎯</span><span class="pb-sum-title">3a · Regeln der Einzelwertung</span><span class="pb-sum-hint">Details</span><span class="pb-chev">▾</span></summary><div class="pb-details-body">
+
+      <div class="pb-card">
+        <h3 class="pb-h3">Grundformat</h3>
+        <p>Jeder Spieler spielt seinen eigenen Ball vom Abschlag bis zum Loch. Für die Wertung zählt ausschließlich das <b>Nettoergebnis relativ zu Par</b>.</p>
+      </div>
+
+      <div class="pb-card pb-calc">
+        <h3 class="pb-h3">Berechnung des Nettoergebnisses</h3>
+        <div class="pb-formula">
+          <span class="pb-f-item">Brutto <b>74</b></span><span class="pb-f-op">−</span>
+          <span class="pb-f-item">Course HCP <b>2</b></span><span class="pb-f-op">=</span>
+          <span class="pb-f-item pb-f-res">Netto <b>72</b></span>
+        </div>
+        <p class="pb-muted">Platzstandard Par 72 → Netto 72 → <b>Even Par (0)</b>.</p>
+      </div>
+
+      <div class="pb-grid-2">
+        <div class="pb-card">
+          <h3 class="pb-h3">Maximalergebnis pro Loch</h3>
+          <p>Das schlechteste anrechenbare Ergebnis pro Loch ist <b>Doppelpar</b>.</p>
+          <table class="pb-table">
+            <thead><tr><th>Loch</th><th>Maximum</th></tr></thead>
+            <tbody>
+              <tr><td>Par 3</td><td>6 Schläge</td></tr>
+              <tr><td>Par 4</td><td>8 Schläge</td></tr>
+              <tr><td>Par 5</td><td>10 Schläge</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pb-card">
+          <h3 class="pb-h3">Gleichstand</h3>
+          <p>Bei Gleichstand werden die Platzierungspunkte der betroffenen Positionen <b>addiert</b> und durch die Anzahl der beteiligten Spieler <b>geteilt</b>. Alle erhalten denselben Wert.</p>
+          <div class="pb-rulebox">
+            <span>Beispiel: Zwei Spieler teilen sich Platz 2 → Punkte für Platz 2 und Platz 3 werden addiert und durch zwei geteilt.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pb-card pb-highlight" id="pbHcpConfig">
+        <h3 class="pb-h3">⚙️ Handicap &amp; aktuelle Vorgabe</h3>
+        <p>Grundsätzlich gilt das am Tag der Runde gültige Handicap. <b id="pbHcpRef">Marco Preis</b> wird als Referenz auf <b>0</b> gesetzt; alle anderen erhalten als Vorgabe die Differenz <b>eigenes Handicap − Handicap von Marco Preis</b>.</p>
+        <div class="pb-rulebox pb-rulebox-gold">
+          <div id="pbHcpList" class="pb-hcp-list"></div>
+        </div>
+        <p class="pb-muted">Die Vorgabe ergibt sich aus <b>eigenes Handicap − Handicap Marco Preis</b> und wird kaufmännisch auf <b>volle Schläge</b> gerundet (z. B. 9,5 → 10, 9,4 → 9, 6,5 → 7, 6,4 → 6). Beispiel: Marco Preis HCP 3, Dominik Busch HCP 10 → <b>+7 Schläge</b>: An den 7 schwersten Löchern wird Dominiks Brutto-Ergebnis am jeweiligen Loch um −1 gewertet. Werte aktualisieren sich automatisch aus den im Dashboard gepflegten Handicaps.</p>
+      </div>
+    </div></details>
+
+    <!-- ===== 5. Rotating Threesome ===== -->
+    <details class="pb-details pb-chapter" id="pb-ch5"><summary class="pb-summary"><span class="pb-ic">🔄</span><span class="pb-sum-title">3b · Rotating Threesome</span><span class="pb-sum-hint">Details</span><span class="pb-chev">▾</span></summary><div class="pb-details-body">
+      <div class="pb-card">
+        <p>Drei Abschnitte mit je sechs Löchern. Die Teamzusammensetzung rotiert, sodass unterschiedliche Zweier-Teams gegeneinander antreten.</p>
+        <div class="pb-stages">
+          <div class="pb-stage"><span class="pb-stage-n">1</span>Loch 1–6</div>
+          <div class="pb-stage"><span class="pb-stage-n">2</span>Loch 7–12</div>
+          <div class="pb-stage"><span class="pb-stage-n">3</span>Loch 13–18</div>
+        </div>
+        <p class="pb-muted">Jeder Sechs-Loch-Abschnitt kann nach einer der folgenden Varianten gespielt werden.</p>
+      </div>
+
+      <div class="pb-grid-2">
+        <div class="pb-card">
+          <h3 class="pb-h3">Variante A · Scramble (Zählspiel)</h3>
+          <p>Jedes Team spielt gemeinsam einen Ball: Nach jedem Schlag entscheidet das Team, welcher Ball weitergespielt wird; von dort spielen beide den nächsten Schlag. Gewertet wird das <b>Gesamtergebnis als Zählspiel</b>.</p>
+          <div class="pb-rulebox pb-rulebox-gold"><span>Vorgabe: Spielt ein Team gegen Preisi, erhält das <b>gegnerische Team einen Schlag Vorgabe pro Sechs-Loch-Abschnitt</b>.</span></div>
+        </div>
+        <div class="pb-card">
+          <h3 class="pb-h3">Variante B · Bestball &amp; Aggregat</h3>
+          <p>Zwei getrennte Wertungen, je ein Punkt:</p>
+          <ul class="pb-list">
+            <li><b>Bestball:</b> das bessere Einzelergebnis je Team wird verglichen → Gewinner erhält <b>1 Punkt</b>.</li>
+            <li><b>Aggregat:</b> die beiden Einzelergebnisse je Team werden addiert und verglichen → Gewinner erhält <b>1 Punkt</b>.</li>
+          </ul>
+          <div class="pb-rulebox pb-rulebox-gold"><span>Vorgabe: <b>Preisi wird mit Handicap 0</b> gewertet; die drei anderen mit ihrem am Spieltag gültigen Handicap. Diese Vorgabe wirkt auf die Einzelergebnisse und damit auf Bestball <b>und</b> Aggregat.</span></div>
+        </div>
+      </div>
+    </div></details>
+
+    <!-- ===== 6. Annual championship / scoring ===== -->
+    <section class="pb-chapter" id="pb-ch6">
+      <h2 class="pb-h2"><span class="pb-ic">📊</span> 4 · Jahreswertung &amp; Punkte</h2>
+
+      <div class="pb-card">
+        <p>Die Jahreswertung kann sich aus mehreren offiziellen Formaten zusammensetzen: Einzelwertungen, Rotating-Threesome-Wertungen, 2-vs-2-Matches, weitere vorher vereinbarte Formate sowie Ergebnisse aus Wettbewerben wie der Hacker Tour, sofern diese gemäß den geltenden Regeln aufgenommen werden.</p>
+      </div>
+
+      <div class="pb-card pb-maxday">
+        <h3 class="pb-h3">Maximale Tagesausbeute</h3>
+        <div class="pb-maxday-eq">
+          <span class="pb-pill pb-pill-pts">Einzel · max 0,75</span>
+          <span class="pb-f-op">+</span>
+          <span class="pb-pill pb-pill-pts">Rotating · max 0,75</span>
+          <span class="pb-f-op">=</span>
+          <span class="pb-pill pb-pill-gold">max 1,50 Punkte / Tag</span>
+        </div>
+        <p class="pb-muted">Nur wer beide Formate an einem Spieltag spielt, kann 1,50 Punkte erreichen.</p>
+      </div>
+
+      <div class="pb-grid-2">
+        <div class="pb-card">
+          <h3 class="pb-h3">Punkte · Einzelwertung</h3>
+          <table class="pb-table">
+            <thead><tr><th>Platz</th><th>Punkte</th></tr></thead>
+            <tbody>
+              <tr><td>Platz 1</td><td><span class="pb-pill pb-pill-pts">0,75</span></td></tr>
+              <tr><td>Platz 2</td><td><span class="pb-pill pb-pill-pts">0,50</span></td></tr>
+              <tr><td>Platz 3</td><td><span class="pb-pill pb-pill-pts">0,25</span></td></tr>
+              <tr><td>Platz 4</td><td><span class="pb-pill">0,00</span></td></tr>
+            </tbody>
+          </table>
+          <p class="pb-muted">Bei Gleichstand gilt die Teilungsregel aus Kapitel 3a.</p>
+        </div>
+        <div class="pb-card">
+          <h3 class="pb-h3">Punkte · Rotating Threesome</h3>
+          <p>Maximal <b>0,75 Punkte</b> pro Spieltag. Je Sechs-Loch-Abschnitt:</p>
+          <ul class="pb-list">
+            <li>Gewinnerteam: je Spieler <span class="pb-pill pb-pill-pts">0,25</span></li>
+            <li>Unentschieden: alle vier Spieler je <span class="pb-pill pb-pill-pts">0,125</span></li>
+          </ul>
+          <p class="pb-muted">Drei gewonnene Abschnitte → max 0,75 Punkte je Spieler.</p>
+        </div>
+      </div>
+
+      
+    </section>
+
+    <!-- ===== 7. 2v2 ===== -->
+    <section class="pb-chapter" id="pb-ch7">
+      <h2 class="pb-h2"><span class="pb-ic">🤝</span> 5 · 2-vs-2-Matches (18 Löcher)</h2>
+      <div class="pb-card">
+        <p>2-vs-2-Matches zählen wie ein regulärer Spieltag. Das konkrete Format wird vor Rundenbeginn gewählt. Die maximale Gesamtpunktzahl bleibt <b>1,50 Punkte pro Spieltag</b>.</p>
+        <div class="pb-grid-2">
+          <div class="pb-rulebox pb-rulebox-green"><span><b>Teamwertung:</b> Gewinnerteam je Spieler <span class="pb-pill pb-pill-pts">0,75</span>, Verliererteam je <span class="pb-pill">0,00</span>.</span></div>
+          <div class="pb-rulebox"><div style="width:100%"><div style="margin-bottom:8px">Zusätzlich wird das <b>individuelle Nettoergebnis</b> nach den Regeln der Einzelwertung gewertet:</div><div class="pb-maxday-eq" style="margin:0"><span class="pb-pill pb-pill-pts">1. · 0,75</span><span class="pb-pill pb-pill-pts">2. · 0,50</span><span class="pb-pill pb-pill-pts">3. · 0,25</span><span class="pb-pill">4. · 0,00</span></div></div></div>
+        </div>
+        
+      </div>
+    
+      <div class="pb-card pb-highlight pb-classico" id="pbClassico">
+        <h3 class="pb-h3">⚔️ El Clásico</h3>
+        <p>Der prestigeträchtige Klassiker in fester Konstellation: <b>Julian Glatter &amp; Lukas Breuer</b> gegen <b>Dominik Busch &amp; Marco Preis</b>. Zählt punktemäßig wie ein reguläres 2-vs-2-Match – aber mit maximalem Prestige.</p>
+        <div class="pb-cl-vs">
+          <div class="pb-cl-team">
+            <div class="pb-cl-faces" data-cl="Julian Glatter|Lukas Breuer"></div>
+            <div class="pb-cl-names">Julian Glatter<br>Lukas Breuer</div>
+          </div>
+          <div class="pb-cl-mid"><span class="pb-cl-vs-badge">VS</span></div>
+          <div class="pb-cl-team">
+            <div class="pb-cl-faces" data-cl="Dominik Busch|Marco Preis"></div>
+            <div class="pb-cl-names">Dominik Busch<br>Marco Preis</div>
+          </div>
+        </div>
+        <div class="pb-rulebox pb-rulebox-gold"><span>Punktewertung identisch zum regulären 2-vs-2-Match (Teamwertung je Spieler <b>0,75</b> + individuelle Einzelwertung).</span></div>
+      </div>
+    </section>
+
+    <!-- ===== 8. Awards & consequences ===== -->
+    <section class="pb-chapter" id="pb-ch8">
+      <h2 class="pb-h2"><span class="pb-ic">🏆</span> 6 · Season Championship &amp; Konsequenzen</h2>
+      <div class="pb-vs">
+        <div class="pb-card pb-champ">
+          <div class="pb-vs-ic">🏆</div>
+          <h3 class="pb-h3">Season Champion</h3>
+          <p>Meiste Gesamtpunkte am Saisonende.</p>
+          <ul class="pb-list">
+            <li>Titel „Swing Bros Season Champion“</li>
+            <li>Namensgravur auf dem Wanderpokal</li>
+            <li>Champions Dinner – eingeladen von den drei anderen</li>
+            <li>Highlight-Golfplatz (z. B. Bernardus oder vergleichbarer Saisonhöhepunkt auf Sylt)</li>
+          </ul>
+        </div>
+        <div class="pb-card pb-last">
+          <div class="pb-vs-ic">🩷</div>
+          <h3 class="pb-h3">Letzter Platz</h3>
+          <p>Wenigste Punkte am Saisonende.</p>
+          <ul class="pb-list">
+            <li>Pinke „Good“-Putterhaube</li>
+            <li>Tragepflicht die gesamte Folgesaison – sobald mindestens ein weiteres Mitglied im selben Flight ist</li>
+          </ul>
+        </div>
+      </div>
+      <div class="pb-rulebox"><span>Bei Gleichstand um die Championship oder den letzten Platz entscheidet ein oder mehrere Folgematches.</span></div>
+    </section>
+
+    <!-- ===== 9. Financial rules ===== -->
+    <section class="pb-chapter" id="pb-ch9">
+      <h2 class="pb-h2"><span class="pb-ic">💶</span> 7 · Finanzielle Regeln</h2>
+      <p class="pb-muted">Alle Einzahlungen fließen in den Swing-Bros-Fonds.</p>
+      <div class="pb-grid-2">
+        <div class="pb-card">
+          <h3 class="pb-h3">Einzahlungen · Einzelwertung</h3>
+          <table class="pb-table">
+            <thead><tr><th>Platz</th><th>Einzahlung</th></tr></thead>
+            <tbody>
+              <tr><td>Platz 1</td><td><span class="pb-pill">0,00 €</span></td></tr>
+              <tr><td>Platz 2</td><td><span class="pb-pill pb-pill-eur">5,00 €</span></td></tr>
+              <tr><td>Platz 3</td><td><span class="pb-pill pb-pill-eur">7,50 €</span></td></tr>
+              <tr><td>Platz 4</td><td><span class="pb-pill pb-pill-eur">10,00 €</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pb-card">
+          <h3 class="pb-h3">Einzahlungen · Rotating Threesome</h3>
+          <ul class="pb-list">
+            <li>Je Abschnitt zahlt <b>jeder Spieler des Verliererteams 5,00 €</b> in den Fonds.</li>
+            <li>Bei Unentschieden: <b>keine Einzahlung</b>.</li>
+          </ul>
+          <div class="pb-maxday-eq">
+            <span class="pb-pill pb-pill-eur">3 Abschnitte × 5,00 €</span>
+            <span class="pb-f-op">=</span>
+            <span class="pb-pill pb-pill-gold">max 15,00 € / Spieler</span>
+          </div>
+        </div>
+      </div>
+      <div class="pb-card pb-highlight">
+        <h3 class="pb-h3">💰 Maximaler Cash-in pro Spieltag</h3>
+        <div class="pb-maxday-eq">
+          <span class="pb-pill pb-pill-eur">Rotating · max 15,00 €</span>
+          <span class="pb-f-op">+</span>
+          <span class="pb-pill pb-pill-eur">Einzelwertung · max 10,00 €</span>
+          <span class="pb-f-op">=</span>
+          <span class="pb-pill pb-pill-gold">max 25,00 € / Spieltag</span>
+        </div>
+        <p class="pb-muted">15,00 € aus drei verlorenen Rotating-Abschnitten (3 × 5,00 €) zuzüglich 10,00 € für das schlechteste Einzelergebnis (Platz 4).</p>
+      </div>
+      <div class="pb-card">
+        <h3 class="pb-h3">Side Bets</h3>
+        <div class="pb-rulebox"><span>Side Bets sind jederzeit möglich, sofern alle unmittelbar beteiligten Spieler den Bedingungen <b>vor Beginn</b> der jeweiligen Wette zustimmen. Sie sind unabhängig von der offiziellen Jahreswertung und den regulären Fonds-Einzahlungen, sofern nicht vorab ausdrücklich anders vereinbart.</span></div>
+      </div>
+    </section>
+
+    <footer class="pb-foot">Swing Bros Playbook · verbindliche Grundlage für jeden offiziellen Zock</footer>
+  </div>
+</div>
 
 <!-- ===================== SWING BROS PLAYER PROFILES ===================== -->
 <div id="playersOverlay" class="pl-overlay" aria-hidden="true">
@@ -1803,6 +2377,107 @@ function wirePlayersUI(){
   });
 }
 
+
+/* ===================== SWING BROS PLAYBOOK ===================== */
+/* Central, single-point config for the current group handicap rule shown in the
+   Playbook (Chapter 4). Adjust here only. */
+var PB_HCP_STROKES = 6;
+var PB_HCP_RECEIVERS = ["Buschi", "Glatter", "Breuer"];
+var PB_HCP_REFERENCE = "Preisi";
+
+var PB_CHAPTERS = [
+  ["pb-ch1","1 · Grundlagen"],
+  ["pb-ch2","2 · Island Masters"],
+  ["pb-ch3","3 · Formate"],
+  ["pb-ch4","3a · Einzel"],
+  ["pb-ch5","3b · Rotating"],
+  ["pb-ch6","4 · Punkte"],
+  ["pb-ch7","5 · 2 vs 2"],
+  ["pb-ch8","6 · Championship"],
+  ["pb-ch9","7 · Finanzen"]
+];
+function pbBuildToc(){
+  var toc=document.getElementById("pbToc"); if(!toc||toc.__built) return; toc.__built=true;
+  toc.innerHTML=PB_CHAPTERS.map(function(c){return '<a href="#'+c[0]+'">'+c[1]+'</a>';}).join("");
+  // smooth in-overlay scrolling (the overlay element scrolls, not the window)
+  toc.addEventListener("click",function(e){
+    var a=e.target.closest("a"); if(!a) return; e.preventDefault();
+    var id=a.getAttribute("href").slice(1); var el=document.getElementById(id);
+    var ov=document.getElementById("playbookOverlay");
+    if(el){ if(el.tagName && el.tagName.toLowerCase()==="details"){ el.open=true; } }
+    if(el && ov){ requestAnimationFrame(function(){ ov.scrollTo({top:el.offsetTop-70, behavior:"smooth"}); }); }
+  });
+}
+function pbInitials(n){ return String(n||"").trim().split(/\s+/).map(function(w){return w[0]||"";}).slice(0,2).join("").toUpperCase(); }
+function pbPlayerColor(n){ try{ if(state&&state.players){ var p=state.players.find(function(x){return x.name===n;}); if(p&&p.color) return p.color; } }catch(e){} return "#2fb37c"; }
+function pbRenderClassico(){
+  var nodes=document.querySelectorAll(".pb-cl-faces"); if(!nodes.length) return;
+  nodes.forEach(function(box){
+    var names=(box.getAttribute("data-cl")||"").split("|").map(function(s){return s.trim();}).filter(Boolean);
+    box.innerHTML=names.map(function(n){
+      var photo=(typeof PLAYER_PHOTOS!=="undefined" && PLAYER_PHOTOS[n])?PLAYER_PHOTOS[n]:null;
+      if(photo){ return '<img src="'+photo+'" alt="'+n.replace(/"/g,'&quot;')+'" title="'+n.replace(/"/g,'&quot;')+'">'; }
+      return '<span class="pb-cl-ini" style="background:'+pbPlayerColor(n)+'" title="'+n.replace(/"/g,'&quot;')+'">'+pbInitials(n)+'</span>';
+    }).join("");
+  });
+}
+function pbApplyHcpConfig(){
+  var list=document.getElementById("pbHcpList"); if(!list) return;
+  var REF="Marco Preis";
+  try{
+    if(!state || !state.players || !state.players.length){ list.innerHTML='<span>Handicaps werden geladen…</span>'; return; }
+    function hcpOf(n){ return (typeof currentHdc==="function")?Number(currentHdc(n)):0; }
+    var refHcp=hcpOf(REF);
+    var refRound=Math.round(refHcp);
+    var players=state.players.filter(function(p){return p && p.name;});
+    var refArr=players.filter(function(p){return p.name===REF;}).map(function(p){
+      return {name:p.name, hcp:refHcp, give:0, isRef:true};
+    });
+    var others=players.filter(function(p){return p.name!==REF;}).map(function(p){
+      var h=hcpOf(p.name);
+      var give=Math.max(0, Math.round(h) - refRound);
+      return {name:p.name, hcp:h, give:give, isRef:false};
+    }).sort(function(a,b){ return a.hcp-b.hcp || a.name.localeCompare(b.name); });
+    var rows=refArr.concat(others);
+    var refEl=document.getElementById("pbHcpRef"); if(refEl) refEl.textContent=REF;
+    list.innerHTML=rows.map(function(r){
+      if(r.isRef){
+        return '<div class="pb-hcp-row"><span class="pb-hcp-name">'+r.name+'</span>'
+          +'<span class="pb-hcp-badge pb-hcp-ref">Referenz · HCP '+plNum(r.hcp,1)+' → 0 Schläge</span></div>';
+      }
+      return '<div class="pb-hcp-row"><span class="pb-hcp-name">'+r.name+'</span>'
+        +'<span class="pb-hcp-badge">HCP '+plNum(r.hcp,1)+' · '
+        +(r.give>0?('<b>+'+r.give+' Schläge</b>'):'<b>keine Vorgabe</b>')+'</span></div>';
+    }).join("");
+  }catch(e){ list.innerHTML='<span>Handicaps nicht verfügbar.</span>'; }
+}
+var PB_OPEN=false;
+function pbOpenOverlay(){
+  pbBuildToc(); pbApplyHcpConfig(); pbRenderClassico();
+  var ov=document.getElementById("playbookOverlay");
+  ov.scrollTop=0;
+  ov.setAttribute("aria-hidden","false");
+  requestAnimationFrame(function(){ ov.classList.add("show"); });
+  document.body.style.overflow="hidden";
+  PB_OPEN=true;
+}
+function pbCloseOverlay(){
+  var ov=document.getElementById("playbookOverlay");
+  ov.classList.remove("show"); ov.setAttribute("aria-hidden","true");
+  // Only release body scroll if the Players overlay is not also open.
+  if(!(typeof PL_OPEN!=="undefined" && PL_OPEN)) document.body.style.overflow="";
+  PB_OPEN=false;
+}
+function wirePlaybookUI(){
+  var btn=document.getElementById("fabPlaybook");
+  if(btn && !btn.__wired){ btn.__wired=true; btn.addEventListener("click",pbOpenOverlay); }
+  var bd=document.getElementById("pbBackDash");
+  if(bd && !bd.__wired){ bd.__wired=true; bd.addEventListener("click",pbCloseOverlay); }
+  if(!window.__pbEscBound){ window.__pbEscBound=true;
+    document.addEventListener("keydown",function(e){ if(e.key==="Escape" && PB_OPEN) pbCloseOverlay(); });
+  }
+}
+
 function renderAll(){const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();renderRankChart();decorateMobileTables();enableDragScroll();if(typeof PL_OPEN!=="undefined"&&PL_OPEN){try{var _pv=document.getElementById("plProfile");if(_pv&&_pv.getAttribute("aria-hidden")==="false"){/* keep current profile */}else{plRenderLanding();}}catch(e){}}}
 
 /* EXPORT */
@@ -1829,6 +2504,7 @@ function setTheme(t){document.documentElement.setAttribute("data-theme",t);$("#t
    INIT
    ================================================================= */
 function wireUI(){
+  wirePlaybookUI();
   wirePlayersUI();
   (function(){
     if(window.__syltTimer) return;
