@@ -784,7 +784,7 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
         <thead><tr><th>#</th><th>Player</th><th>Hdc</th><th>Points</th><th><span class="lbl-full">Projected shots for final round</span><span class="lbl-short">Proj. shots</span></th><th>Total strokes</th><th>Avg gross</th><th>Avg net</th><th>Best round</th><th>Worst round</th></tr></thead>
         <tbody></tbody></table></div></div>
       <div class="po-banner" id="poBanner" style="margin-top:16px;margin-bottom:0">🏝️ <span></span></div>
-      <p class="small-muted">“Projected shots for final round” = stroke bonus the current standings would give on the Island Masters final: <span id="shotRuleText">leader −5, 2nd −3, 3rd −1</span>. Scores are shown relative to par (e.g. +2 or −2). Avg net uses the handicap valid on each round's date.</p>
+      <p class="small-muted">“Projected shots for final round” = the stroke bonus the current standings would give on the Island Masters final (see above). Scores are shown relative to par (e.g. +2 or −2). Avg net uses the handicap valid on each round's date.</p>
     </div>
   
       <div class="rankhist">
@@ -1363,7 +1363,7 @@ function renderLeaderboard(stats){const arr=Object.values(stats).sort((a,b)=>b.p
     <td>${s.totalStrokes?fmtPar(s.totalStrokes):'–'}</td><td>${s.avgGross!==null?fmtPar(s.avgGross):'–'}</td><td>${s.avgNet!==null?fmtPar(s.avgNet):'–'}</td>
     <td>${s.best!==null?fmtPar(s.best)+(s.bestCourse?' · '+s.bestCourse:''):'–'}</td><td>${s.worst!==null?fmtPar(s.worst)+(s.worstCourse?' · '+s.worstCourse:''):'–'}</td></tr>`).join("");
   tb.classList.remove("flash");void tb.offsetWidth;tb.classList.add("flash");
-  const st=standingsBefore(null);const topN=Math.min(st.length,PLAYOFF_SHOTS.length);const alloc=[];for(let bi=0;bi<topN;bi++){const sh=num(PLAYOFF_SHOTS[bi]);if(sh>0)alloc.push(`${st[bi][0]} gets −${sh} shot${sh===1?'':'s'}`);}$("#poBanner").querySelector("span").innerHTML="<b>Projected shots for final round:</b> if the season ended today, "+(alloc.length?alloc.join(", "):"no bonus shots are configured")+" on the Island Masters final round.";{var _sr=document.getElementById("shotRuleText");if(_sr)_sr.textContent=shotRuleText();}}
+  const st=standingsBefore(null);const topN=Math.min(st.length,PLAYOFF_SHOTS.length);const alloc=[];for(let bi=0;bi<topN;bi++){const sh=num(PLAYOFF_SHOTS[bi]);if(sh>0)alloc.push(`${st[bi][0]} gets −${sh} shot${sh===1?'':'s'}`);}$("#poBanner").querySelector("span").innerHTML="<b>Projected shots for final round:</b> if the season ended today, "+(alloc.length?alloc.join(", "):"no bonus shots are configured")+" on the Island Masters final round.";}
 function renderHistory(){const tb=$("#history tbody");const sorted=state.gameDays.slice().sort((a,b)=>b.date.localeCompare(a.date));
   tb.innerHTML=sorted.length?sorted.map(g=>`<tr><td>${fmtDate(g.date)}</td><td><span class="pill ${g.isPlayoff?'po':''}">${g.isPlayoff?'🏝️ '+g.mode:g.mode}</span></td><td>${g.course||'–'}</td><td>${g.indivCounts?'✔ yes':'–'}</td>
     <td>${g.rows.map(r=>{const b=g.isPlayoff?playoffShotsFor(r.player,g.date):0;return `<div style="font-size:12.5px"><span class="player-dot" style="background:${playerColor(r.player)}"></span> ${r.player}: ${r.strokes!==null?fmtPar(r.strokes)+(b?` (−${b})`:'')+' · ':''}${fmtNum(r.points,2)} pts${r.money?' · '+fmtMoney(r.money):''}</div>`;}).join("")}</td>
