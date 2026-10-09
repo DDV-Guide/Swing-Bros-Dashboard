@@ -1632,21 +1632,24 @@ function plRenderLanding(){
 
 function plStatsFor(name){
   // Pull live golf stats from computeStats() when available (graceful fallback).
-  var out={standing:null,avgNet:null,best:null,seasons:null};
+  var out={standing:null,total:null,avgNet:null,avgGross:null,best:null,curHdc:null,seasons:null};
   try{
     var stats=computeStats();
     var arr=Object.values(stats).sort(function(a,b){return b.points-a.points||((a.avgNet==null?999:a.avgNet)-(b.avgNet==null?999:b.avgNet));});
     var ranks=competitionRanks(arr.map(function(a){return a.points;}));
+    out.total=arr.length;
     for(var i=0;i<arr.length;i++){ if(arr[i].name===name){
       var s=arr[i];
       out.standing=(s.points>0)?ranks[i]:null;
       out.avgNet=(s.avgNet!=null)?s.avgNet:null;
+      out.avgGross=(s.avgGross!=null)?s.avgGross:null;
       out.best=(s.best!=null)?s.best:null;
+      out.curHdc=(s.curHdc!=null)?s.curHdc:null;
       break;
     }}
-    // seasons played = seasons since the first Swing Bros season (2023), inclusive
+    // seasons played = COMPLETED Swing Bros seasons since 2023 (the ongoing year does not count yet)
     var SB_FIRST_SEASON=2023; var _cy=(new Date()).getFullYear();
-    out.seasons=Math.max(1,(_cy-SB_FIRST_SEASON+1));
+    out.seasons=Math.max(0,(_cy-1-SB_FIRST_SEASON+1));
   }catch(e){}
   return out;
 }
@@ -1690,7 +1693,9 @@ function plRenderProfile(idx){
 
   // optional facts (hide gracefully)
   var facts=[];
-  if(live.standing!=null) facts.push({v:"#"+live.standing,l:"Current standing"});
+  if(live.standing!=null) facts.push({v:"#"+live.standing+(live.total?" of "+live.total:""),l:"Current standing"});
+  if(live.curHdc!=null)   facts.push({v:plNum(live.curHdc,1),l:"Current handicap"});
+  if(live.avgGross!=null) facts.push({v:plPar(live.avgGross),l:"Avg gross (vs par)"});
   if(live.avgNet!=null)   facts.push({v:plPar(live.avgNet),l:"Avg net (vs par)"});
   if(live.best!=null)     facts.push({v:plPar(live.best),l:"Best round"});
   if(live.seasons!=null)  facts.push({v:live.seasons,l:"Seasons played"});
@@ -1737,6 +1742,7 @@ function plRenderProfile(idx){
     + achHtml
     + factsHtml;
 }
+function plNum(n,d){ try{ return (typeof fmtNum==="function")?fmtNum(n,(d==null?1:d)):String(n); }catch(e){ return String(n);} }
 function plPar(n){ try{ return (typeof fmtPar==="function")?fmtPar(n):String(Math.round(n)); }catch(e){ return String(n); } }
 function plEsc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
 
