@@ -986,11 +986,14 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
   .pb-maxday-eq,.pb-formula{flex-wrap:wrap}
   .pb-pill{white-space:normal}
 
-  /* ----- Tables fit the viewport as two clean columns; values always visible (Issues 1 & 4) ----- */
-  .pb-card .pb-table,.pb-grid-2 > .pb-card .pb-table{width:100%!important;margin:4px 0 0!important;table-layout:fixed}
-  .pb-table th,.pb-table td{padding:9px 8px;font-size:13px;overflow:visible;white-space:normal;word-break:normal;vertical-align:middle}
-  .pb-table th:first-child,.pb-table td:first-child{width:55%;text-align:left}
-  .pb-table th:last-child,.pb-table td:last-child{width:45%;text-align:right;white-space:nowrap}
+  /* ----- Tables as clean 2-column rows on mobile; values ALWAYS visible (Issues 1,2,3) ----- */
+  .pb-card .pb-table,.pb-grid-2 > .pb-card .pb-table{display:block;width:100%!important;margin:4px 0 0!important}
+  .pb-table thead{display:block}
+  .pb-table thead tr,.pb-table tbody tr{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%}
+  .pb-table th,.pb-table td{display:block;flex:1 1 0;min-width:0;padding:9px 4px;font-size:13px;
+    overflow:visible;white-space:normal;word-break:normal;border-left:0;border-right:0}
+  .pb-table th:first-child,.pb-table td:first-child{text-align:left}
+  .pb-table th:last-child,.pb-table td:last-child{text-align:right;white-space:nowrap}
   .pb-table td:last-child .pb-pill{display:inline-block;max-width:none}
 
   /* ----- Rotating Threesome stages: stack vertically (Issue 2) ----- */
@@ -1452,13 +1455,13 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
           <div class="pb-cl-team" id="pbClTeamA">
             <div class="pb-cl-faces" data-cl="Julian Glatter|Lukas Breuer"></div>
             <div class="pb-cl-names">Julian Glatter<br>Lukas Breuer</div>
-            <div class="pb-cl-score" id="pbClScoreA">0</div>
+            <div class="pb-cl-score" id="pbClScoreA">6,5</div>
           </div>
           <div class="pb-cl-mid"><span class="pb-cl-vs-badge">VS</span></div>
           <div class="pb-cl-team" id="pbClTeamB">
             <div class="pb-cl-faces" data-cl="Dominik Busch|Marco Preis"></div>
             <div class="pb-cl-names">Dominik Busch<br>Marco Preis</div>
-            <div class="pb-cl-score" id="pbClScoreB">0</div>
+            <div class="pb-cl-score" id="pbClScoreB">10,5</div>
           </div>
         </div>
         <div class="pb-cl-standing" id="pbClStanding"></div>
@@ -1896,27 +1899,31 @@ function pbRenderClassico(){
     else if(r.bPts>r.aPts) tB.classList.add("pb-cl-lead");
   }
   if(box){
-    if(!r.games){
-      box.innerHTML='<div class="pb-cl-empty">Noch keine El-Clásico-Matches erfasst. Markiere beim Anlegen eines Spieltags die Option „⚔️ El Clásico“.</div>';
-    }else{
-      var leadTxt;
-      if(r.aPts>r.bPts) leadTxt='<span class="pb-cl-leadtag">🏆 Glatter &amp; Breuer führen</span>';
-      else if(r.bPts>r.aPts) leadTxt='<span class="pb-cl-leadtag">🏆 Busch &amp; Preis führen</span>';
-      else leadTxt='<span class="pb-cl-leadtag pb-cl-draw">Unentschieden</span>';
-      var bar='';
-      var tot=r.aPts+r.bPts;
-      var aPct=tot>0?Math.round(r.aPts/tot*100):50;
-      bar='<div class="pb-cl-bar"><div class="pb-cl-bar-a" style="width:'+aPct+'%"></div><div class="pb-cl-bar-b" style="width:'+(100-aPct)+'%"></div></div>';
+    var leadTxt;
+    if(r.aPts>r.bPts) leadTxt='<span class="pb-cl-leadtag">🏆 Glatter &amp; Breuer führen</span>';
+    else if(r.bPts>r.aPts) leadTxt='<span class="pb-cl-leadtag">🏆 Busch &amp; Preis führen</span>';
+    else leadTxt='<span class="pb-cl-leadtag pb-cl-draw">Unentschieden</span>';
+    var tot=r.aPts+r.bPts;
+    var aPct=tot>0?Math.round(r.aPts/tot*100):50;
+    var bar='<div class="pb-cl-bar"><div class="pb-cl-bar-a" style="width:'+aPct+'%"></div><div class="pb-cl-bar-b" style="width:'+(100-aPct)+'%"></div></div>';
+    var count = r.games>0
+      ? (r.games+' Match'+(r.games===1?'':'es')+' seit Baseline')
+      : ('Stand per '+fmtDate(r.baseline.date));
+    var head='<div class="pb-cl-headline">'+leadTxt+'<span class="pb-cl-count">'+count+'</span></div>';
+    var logHtml='';
+    if(r.games>0){
       var log=r.log.slice().reverse().slice(0,8).map(function(e){
         var win=e.a>e.b?'A':(e.b>e.a?'B':'=');
         var cls=win==='A'?'win-a':(win==='B'?'win-b':'draw');
+        var res=win==='A'?'Glatter & Breuer +1':(win==='B'?'Busch & Preis +1':'Unentschieden · +0,5 / +0,5');
         return '<div class="pb-cl-logrow '+cls+'"><span class="pb-cl-logdate">'+fmtDate(e.date)+'</span>'
-          +'<span class="pb-cl-logscore">'+fmtNum(e.a,1)+' : '+fmtNum(e.b,1)+'</span></div>';
+          +'<span class="pb-cl-logscore">'+res+'</span></div>';
       }).join("");
-      box.innerHTML='<div class="pb-cl-headline">'+leadTxt+'<span class="pb-cl-count">'+r.games+' Match'+(r.games===1?'':'es')+'</span></div>'
-        +bar
-        +'<div class="pb-cl-log">'+log+'</div>';
+      logHtml='<div class="pb-cl-log">'+log+'</div>';
+    }else{
+      logHtml='<div class="pb-cl-empty">Historischer All-Time-Stand per '+fmtDate(r.baseline.date)+'. Neue El-Clásico-Matches (beim Anlegen eines Spieltags „⚔️ El Clásico“ markieren) werden automatisch dazugezählt: Sieg +1, Unentschieden +0,5 / +0,5.</div>';
     }
+    box.innerHTML=head+bar+logHtml;
   }
 }{const po=$("#gd_playoff").checked;const box=$("#poInfo");
   {var _psr=document.getElementById("poShotRule");if(_psr){var _lst=[];for(var _i=0;_i<PLAYOFF_SHOTS.length;_i++){if(num(PLAYOFF_SHOTS[_i])>0)_lst.push("−"+num(PLAYOFF_SHOTS[_i]));}_psr.textContent=_lst.length?_lst.join(" / "):"no bonus";}}
@@ -2513,12 +2520,20 @@ var EL_CLASSICO_TEAMS=[
   {key:"A", players:["Julian Glatter","Lukas Breuer"]},
   {key:"B", players:["Dominik Busch","Marco Preis"]}
 ];
+/* ---- El Clásico all-time baseline ----
+   Historical record carried over as of the baseline date. Team A = Glatter &
+   Breuer, Team B = Busch & Preis. Only El-Clásico games recorded AFTER the
+   baseline date are added on top, so the all-time total always starts here.
+   A win adds 1 point to the winning team; a tie adds 0.5 to each team. */
+var EL_CLASSICO_BASELINE = { date:"2026-10-09", aPts:6.5, bPts:10.5 };
+
 function computeClassico(){
   var A=EL_CLASSICO_TEAMS[0], B=EL_CLASSICO_TEAMS[1];
-  var res={aPts:0,bPts:0,games:0,log:[]};
+  var res={aPts:EL_CLASSICO_BASELINE.aPts, bPts:EL_CLASSICO_BASELINE.bPts, games:0, log:[], baseline:EL_CLASSICO_BASELINE};
   try{
-    var games=(state&&state.gameDays)?state.gameDays.filter(function(g){return g && g.isElClassico;}):[];
-    // chronological for the log
+    var games=(state&&state.gameDays)?state.gameDays.filter(function(g){
+      return g && g.isElClassico && String(g.date) > EL_CLASSICO_BASELINE.date;   // only matches after the baseline
+    }):[];
     games=games.slice().sort(function(a,b){return String(a.date).localeCompare(String(b.date));});
     games.forEach(function(g){
       var a=0,b=0;
@@ -2526,8 +2541,13 @@ function computeClassico(){
         if(A.players.indexOf(r.player)>-1) a+=num(r.points);
         else if(B.players.indexOf(r.player)>-1) b+=num(r.points);
       });
-      res.aPts+=a; res.bPts+=b; res.games++;
-      res.log.push({date:g.date, a:a, b:b});
+      // Win = +1 to the winner; tie = +0.5 each (independent of the raw point spread).
+      var ptA, ptB;
+      if(a>b){ ptA=1; ptB=0; }
+      else if(b>a){ ptA=0; ptB=1; }
+      else { ptA=0.5; ptB=0.5; }
+      res.aPts+=ptA; res.bPts+=ptB; res.games++;
+      res.log.push({date:g.date, a:ptA, b:ptB});
     });
   }catch(e){}
   return res;
@@ -2596,7 +2616,7 @@ function wirePlaybookUI(){
   }
 }
 
-function renderAll(){const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();renderRankChart();decorateMobileTables();enableDragScroll();if(typeof PL_OPEN!=="undefined"&&PL_OPEN){try{var _pv=document.getElementById("plProfile");if(_pv&&_pv.getAttribute("aria-hidden")==="false"){/* keep current profile */}else{plRenderLanding();}}catch(e){}}}
+function renderAll(){const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();renderRankChart();decorateMobileTables();enableDragScroll();if(typeof PL_OPEN!=="undefined"&&PL_OPEN){try{var _pv=document.getElementById("plProfile");if(_pv&&_pv.getAttribute("aria-hidden")==="false"){/* keep current profile */}else{plRenderLanding();}}catch(e){}}try{if(typeof pbRenderClassico==="function")pbRenderClassico();}catch(e){}}
 
 /* EXPORT */
 function exportCSV(){const stats=computeStats();const arr=Object.values(stats).sort((a,b)=>b.points-a.points);
