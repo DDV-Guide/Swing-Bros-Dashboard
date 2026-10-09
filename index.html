@@ -1695,8 +1695,8 @@ function plRenderProfile(idx){
   var facts=[];
   if(live.standing!=null) facts.push({v:"#"+live.standing+(live.total?" of "+live.total:""),l:"Current standing"});
   if(live.curHdc!=null)   facts.push({v:plNum(live.curHdc,1),l:"Current handicap"});
-  if(live.avgGross!=null) facts.push({v:plPar(live.avgGross),l:"Avg gross (vs par)"});
-  if(live.avgNet!=null)   facts.push({v:plPar(live.avgNet),l:"Avg net (vs par)"});
+  if(live.avgGross!=null) facts.push({v:plNum(live.avgGross,1),l:"Avg gross score"});
+  if(live.avgNet!=null)   facts.push({v:plNum(live.avgNet,1),l:"Avg net score"});
   if(live.best!=null)     facts.push({v:plPar(live.best),l:"Best round"});
   if(live.seasons!=null)  facts.push({v:live.seasons,l:"Seasons played"});
   var factsHtml = facts.length
