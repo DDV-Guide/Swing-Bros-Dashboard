@@ -979,18 +979,19 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
   #playbookOverlay *{max-width:100%}
   #playbookOverlay img{height:auto}
   .pb-wrap{max-width:100%;overflow-x:hidden;padding-left:14px;padding-right:14px}
-  .pb-card,.pb-details,.pb-timeline,.pb-im{max-width:100%;overflow:hidden;overflow-wrap:break-word}
+  .pb-card,.pb-details{max-width:100%;overflow:visible;overflow-wrap:break-word}
+  .pb-timeline,.pb-im{max-width:100%;overflow:hidden;overflow-wrap:break-word}
   .pb-card{padding:16px}
   /* any flex pill row must wrap, never overflow */
   .pb-maxday-eq,.pb-formula{flex-wrap:wrap}
   .pb-pill{white-space:normal}
 
-  /* ----- Tables fit the viewport, badges stay inside (Issues 1 & 4) ----- */
+  /* ----- Tables fit the viewport as two clean columns; values always visible (Issues 1 & 4) ----- */
   .pb-card .pb-table,.pb-grid-2 > .pb-card .pb-table{width:100%!important;margin:4px 0 0!important;table-layout:fixed}
-  .pb-table th,.pb-table td{padding:8px 6px;font-size:12.5px;overflow:visible;white-space:normal;word-break:normal}
-  .pb-table th:first-child,.pb-table td:first-child{width:58%}
-  .pb-table th:last-child,.pb-table td:last-child{width:42%;text-align:right}
-  .pb-table td:last-child .pb-pill{display:inline-block;max-width:100%}
+  .pb-table th,.pb-table td{padding:9px 8px;font-size:13px;overflow:visible;white-space:normal;word-break:normal;vertical-align:middle}
+  .pb-table th:first-child,.pb-table td:first-child{width:55%;text-align:left}
+  .pb-table th:last-child,.pb-table td:last-child{width:45%;text-align:right;white-space:nowrap}
+  .pb-table td:last-child .pb-pill{display:inline-block;max-width:none}
 
   /* ----- Rotating Threesome stages: stack vertically (Issue 2) ----- */
   .pb-stages{flex-direction:column}
