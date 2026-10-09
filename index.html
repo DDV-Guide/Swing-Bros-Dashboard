@@ -927,8 +927,7 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 .pb-im{margin-top:16px;border:1px solid var(--gold);border-radius:16px;overflow:hidden}
 .pb-im-band{padding:10px 14px;text-align:center;font-size:13px;font-weight:800;letter-spacing:.02em;color:#3a2f05;
   background:linear-gradient(90deg,var(--gold-2),var(--gold))}
-.pb-im-days{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px;
-  background:color-mix(in srgb,var(--gold) 8%,var(--card))}
+.pb-im-days{display:grid;grid-template-columns:1.2fr 1fr;gap:10px;padding:14px;background:color-mix(in srgb,var(--gold) 8%,var(--card))}
 .pb-im-day{display:flex;flex-direction:column;gap:4px;background:var(--card);border:1px solid var(--line);
   border-radius:12px;padding:12px 11px;min-width:0}
 .pb-im-day1{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 25%,transparent) inset}
@@ -944,18 +943,17 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 
 
 /* Island Masters season-flow narrow boxes (aligned under the 4 day cards) */
-.pb-im-flow2{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 14px 12px;
-  background:color-mix(in srgb,var(--gold) 8%,var(--card))}
+.pb-im-flow2{display:grid;grid-template-columns:1.2fr 1fr;gap:10px;padding:0 14px 12px;background:color-mix(in srgb,var(--gold) 8%,var(--card))}
 .pb-im-fbox{border-radius:10px;padding:8px 10px;font-size:11.5px;font-weight:800;text-align:center;line-height:1.3}
 .pb-im-fold{grid-column:1 / 2;background:color-mix(in srgb,var(--gold) 16%,var(--card));border:1px solid var(--gold);color:#7a5f12}
 [data-theme="dark"] .pb-im-fold{color:var(--gold-2)}
-.pb-im-fnew{grid-column:2 / 5;background:color-mix(in srgb,var(--green-500) 12%,var(--card));border:1px solid var(--green-500);color:var(--green-700)}
+.pb-im-fnew{grid-column:2 / 3;background:color-mix(in srgb,var(--green-500) 12%,var(--card));border:1px solid var(--green-500);color:var(--green-700)}
 [data-theme="dark"] .pb-im-fnew{color:var(--green-400)}
 .pb-im-champ{text-align:center;padding:10px 14px;font-size:12px;font-weight:800;color:var(--green-700);
   background:var(--card-2);border-top:1px solid var(--line)}
 [data-theme="dark"] .pb-im-champ{color:var(--green-400)}
 @media(max-width:600px){
-  .pb-im-flow2{grid-template-columns:1fr 1fr}
+  .pb-im-flow2{grid-template-columns:1.2fr 1fr}
   .pb-im-fold{grid-column:1 / 2}
   .pb-im-fnew{grid-column:2 / 3}
 }
@@ -973,6 +971,40 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 .pb-cl-mid{flex:0 0 auto}
 .pb-cl-vs-badge{display:inline-block;font-size:13px;font-weight:800;color:#fff;background:var(--green-600);border-radius:999px;padding:7px 13px;box-shadow:var(--shadow)}
 @media(max-width:600px){.pb-cl-vs{gap:10px}.pb-cl-team{min-width:0}}
+
+
+/* ===== Playbook MOBILE overflow containment & fixes (<=640px) ===== */
+@media (max-width:640px){
+  #playbookOverlay{overflow-x:hidden;max-width:100vw}
+  #playbookOverlay *{max-width:100%}
+  #playbookOverlay img{height:auto}
+  .pb-wrap{max-width:100%;overflow-x:hidden;padding-left:14px;padding-right:14px}
+  .pb-card,.pb-details,.pb-timeline,.pb-im{max-width:100%;overflow:hidden;overflow-wrap:break-word}
+  .pb-card{padding:16px}
+  /* any flex pill row must wrap, never overflow */
+  .pb-maxday-eq,.pb-formula{flex-wrap:wrap}
+  .pb-pill{white-space:normal}
+
+  /* ----- Tables fit the viewport, badges stay inside (Issues 1 & 4) ----- */
+  .pb-card .pb-table,.pb-grid-2 > .pb-card .pb-table{width:100%!important;margin:4px 0 0!important;table-layout:fixed}
+  .pb-table th,.pb-table td{padding:8px 6px;font-size:12.5px;overflow:visible;white-space:normal;word-break:normal}
+  .pb-table th:first-child,.pb-table td:first-child{width:58%}
+  .pb-table th:last-child,.pb-table td:last-child{width:42%;text-align:right}
+  .pb-table td:last-child .pb-pill{display:inline-block;max-width:100%}
+
+  /* ----- Rotating Threesome stages: stack vertically (Issue 2) ----- */
+  .pb-stages{flex-direction:column}
+  .pb-stage{flex:1 1 auto;width:100%}
+
+  /* ----- Handicap: compact single-row table look (Issue 3) ----- */
+  .pb-hcp-row{flex-wrap:nowrap;gap:8px;min-height:34px}
+  .pb-hcp-name{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1 1 auto;min-width:0}
+  .pb-hcp-badge{font-size:11.5px;padding:3px 8px;white-space:nowrap;flex:0 0 auto}
+
+  /* ----- Island Masters timeline: Tag 1 wide, Tag 2–4 combined (Issue 5) ----- */
+  .pb-im-days{grid-template-columns:1.2fr 1fr;gap:8px}
+  .pb-im-flow2{grid-template-columns:1.2fr 1fr}
+}
 
 </style>
 </head>
@@ -1219,17 +1251,9 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
               <span class="pb-im-dt">Saisonfinale der alten Saison</span>
               <span class="pb-im-shots">🎯 Play-off-Shots gemäß Tabelle vor dem Spieltag</span>
             </div>
-            <div class="pb-im-day">
-              <span class="pb-im-dn">Tag 2</span>
-              <span class="pb-im-dt">Start neue Saison</span>
-            </div>
-            <div class="pb-im-day">
-              <span class="pb-im-dn">Tag 3</span>
-              <span class="pb-im-dt">neue Saison</span>
-            </div>
-            <div class="pb-im-day">
-              <span class="pb-im-dn">Tag 4</span>
-              <span class="pb-im-dt">neue Saison</span>
+            <div class="pb-im-day pb-im-day234">
+              <span class="pb-im-dn">Tag 2 – 4</span>
+              <span class="pb-im-dt">Neue Saison</span>
             </div>
           </div>
           <div class="pb-im-flow2">
@@ -2435,19 +2459,15 @@ function pbApplyHcpConfig(){
     });
     var others=players.filter(function(p){return p.name!==REF;}).map(function(p){
       var h=hcpOf(p.name);
-      var give=Math.max(0, Math.round(h) - refRound);
-      return {name:p.name, hcp:h, give:give, isRef:false};
+      return {name:p.name, hcp:h, give:Math.max(0, Math.round(h) - refRound), isRef:false};
     }).sort(function(a,b){ return a.hcp-b.hcp || a.name.localeCompare(b.name); });
     var rows=refArr.concat(others);
     var refEl=document.getElementById("pbHcpRef"); if(refEl) refEl.textContent=REF;
     list.innerHTML=rows.map(function(r){
-      if(r.isRef){
-        return '<div class="pb-hcp-row"><span class="pb-hcp-name">'+r.name+'</span>'
-          +'<span class="pb-hcp-badge pb-hcp-ref">Referenz · HCP '+plNum(r.hcp,1)+' → 0 Schläge</span></div>';
-      }
+      var shots=r.isRef?"0 Shots":("+"+r.give+" Shots");
+      var cls=r.isRef?" pb-hcp-ref":"";
       return '<div class="pb-hcp-row"><span class="pb-hcp-name">'+r.name+'</span>'
-        +'<span class="pb-hcp-badge">HCP '+plNum(r.hcp,1)+' · '
-        +(r.give>0?('<b>+'+r.give+' Schläge</b>'):'<b>keine Vorgabe</b>')+'</span></div>';
+        +'<span class="pb-hcp-badge'+cls+'">HCP '+plNum(r.hcp,1)+' | '+shots+'</span></div>';
     }).join("");
   }catch(e){ list.innerHTML='<span>Handicaps nicht verfügbar.</span>'; }
 }
