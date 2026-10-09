@@ -1007,6 +1007,31 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
   .pb-im-flow2{grid-template-columns:1.2fr 1fr}
 }
 
+
+/* El Clásico all-time standing */
+.pb-cl-score{margin-top:8px;font-size:26px;font-weight:800;color:var(--ink);line-height:1}
+.pb-cl-team{position:relative;border-radius:14px;padding:10px 8px;transition:all .2s ease}
+.pb-cl-team.pb-cl-lead{background:color-mix(in srgb,var(--gold) 16%,var(--card));box-shadow:0 0 0 2px var(--gold) inset}
+.pb-cl-team.pb-cl-lead .pb-cl-score{color:#7a5f12}
+[data-theme="dark"] .pb-cl-team.pb-cl-lead .pb-cl-score{color:var(--gold-2)}
+.pb-cl-standing{margin:14px 0 4px}
+.pb-cl-headline{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.pb-cl-leadtag{font-size:13px;font-weight:800;color:var(--ink)}
+.pb-cl-leadtag.pb-cl-draw{color:var(--muted)}
+.pb-cl-count{font-size:11.5px;font-weight:700;color:var(--muted);background:var(--card-2);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+.pb-cl-bar{display:flex;height:12px;border-radius:999px;overflow:hidden;border:1px solid var(--line);background:var(--card-2)}
+.pb-cl-bar-a{background:var(--green-500)}
+.pb-cl-bar-b{background:var(--gold)}
+.pb-cl-log{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.pb-cl-logrow{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;
+  background:var(--card-2);border:1px solid var(--line);border-radius:10px;padding:7px 11px}
+.pb-cl-logrow .pb-cl-logdate{color:var(--muted);font-weight:600}
+.pb-cl-logrow .pb-cl-logscore{font-weight:800;color:var(--ink)}
+.pb-cl-logrow.win-a{border-left:4px solid var(--green-500)}
+.pb-cl-logrow.win-b{border-left:4px solid var(--gold)}
+.pb-cl-logrow.draw{border-left:4px solid var(--muted)}
+.pb-cl-empty{font-size:13px;color:var(--muted);line-height:1.5}
+
 </style>
 </head>
 <body>
@@ -1123,6 +1148,7 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
     <div class="field"><label>Course name (optional)</label><input type="text" id="gd_course" placeholder="e.g. Son Muntaner"></div></div>
   <div class="checkbox-row"><input type="checkbox" id="gd_playoff"><label for="gd_playoff" style="margin:0"><b>🏝️ Play-off / Final Day</b> — auto-apply standings bonus shots (<span id="poShotRule">−5 / −3 / −1</span>) to net</label></div>
   <div class="info-box hidden" id="poInfo"></div>
+  <div class="checkbox-row"><input type="checkbox" id="gd_elclassico"><label for="gd_elclassico" style="margin:0"><b>⚔️ El Clásico</b> — festes Duell Glatter &amp; Breuer vs. Busch &amp; Preis (eigene All-Time-Wertung)</label></div>
   <div class="checkbox-row"><input type="checkbox" id="gd_indivCounts"><label for="gd_indivCounts" style="margin:0">Individual stroke score counts (e.g. Rotating Threesome)</label></div>
   <p class="small-muted" id="scoringNote"></p>
   <div id="playersForm"></div>
@@ -1423,17 +1449,20 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
         <h3 class="pb-h3">⚔️ El Clásico</h3>
         <p>Der prestigeträchtige Klassiker in fester Konstellation: <b>Julian Glatter &amp; Lukas Breuer</b> gegen <b>Dominik Busch &amp; Marco Preis</b>. Zählt punktemäßig wie ein reguläres 2-vs-2-Match – aber mit maximalem Prestige.</p>
         <div class="pb-cl-vs">
-          <div class="pb-cl-team">
+          <div class="pb-cl-team" id="pbClTeamA">
             <div class="pb-cl-faces" data-cl="Julian Glatter|Lukas Breuer"></div>
             <div class="pb-cl-names">Julian Glatter<br>Lukas Breuer</div>
+            <div class="pb-cl-score" id="pbClScoreA">0</div>
           </div>
           <div class="pb-cl-mid"><span class="pb-cl-vs-badge">VS</span></div>
-          <div class="pb-cl-team">
+          <div class="pb-cl-team" id="pbClTeamB">
             <div class="pb-cl-faces" data-cl="Dominik Busch|Marco Preis"></div>
             <div class="pb-cl-names">Dominik Busch<br>Marco Preis</div>
+            <div class="pb-cl-score" id="pbClScoreB">0</div>
           </div>
         </div>
-        <div class="pb-rulebox pb-rulebox-gold"><span>Punktewertung identisch zum regulären 2-vs-2-Match (Teamwertung je Spieler <b>0,75</b> + individuelle Einzelwertung).</span></div>
+        <div class="pb-cl-standing" id="pbClStanding"></div>
+        <div class="pb-rulebox pb-rulebox-gold"><span>All-Time-Wertung: Summe der Team-Punkte aus allen als <b>El Clásico</b> markierten Spieltagen. Aktualisiert sich automatisch mit jedem neuen Match.</span></div>
       </div>
     </section>
 
@@ -1632,7 +1661,7 @@ function fromSheet(data){
   const games={};
   (data.GameDays||[]).forEach(r=>{const id=String(r.GameID||"").trim();if(!id||!r.Player)return;
     if(!games[id])games[id]={id,date:dstr(r["Date(YYYY-MM-DD)"]||r.Date),mode:String(r.Mode||""),course:String(r.Course||""),
-      indivCounts:B(r.IndivCounts),isPlayoff:B(r.IsPlayoff),rows:[]};
+      indivCounts:B(r.IndivCounts),isPlayoff:B(r.IsPlayoff),isElClassico:B(r.IsElClassico),rows:[]};
     const strokes=(r.Strokes===""||r.Strokes===null||r.Strokes===undefined)?null:num(r.Strokes);
     games[id].rows.push({player:String(r.Player).trim(),strokes:(strokes===null||isNaN(strokes))?null:strokes,
       points:num(r.Points),money:num(r.Money),paid:B(r.Paid)});});
@@ -1660,7 +1689,7 @@ function toSheet(){
   const Players=state.players.map(p=>{var raw=(p&&p._raw)||{};var o={};for(var k in raw){ if(Object.prototype.hasOwnProperty.call(raw,k) && k!=="_raw") o[k]=raw[k]; }o.Name=p.name;o.Color=p.color;o["Active(TRUE/FALSE)"]=(p.active===false?"FALSE":"TRUE");if(p.nickname!==undefined && raw.Nickname===undefined) o.Nickname=p.nickname;if(p.country!==undefined && raw.Country===undefined) o.Country=p.country;if(p.golfclub!==undefined && raw["Golf Club"]===undefined) o["Golf Club"]=p.golfclub;if(p.golferSince!==undefined && raw["Golfer Since"]===undefined) o["Golfer Since"]=p.golferSince;if(p.bio!==undefined && raw.Bio===undefined) o.Bio=p.bio;if(p.trophies){if(raw["Swing Bros Championship"]===undefined) o["Swing Bros Championship"]=p.trophies["Swing Bros Championship"]||"";if(raw["Hacker Tour Champion"]===undefined) o["Hacker Tour Champion"]=p.trophies["Hacker Tour"]||"";if(raw["Live Golf Champion"]===undefined) o["Live Golf Champion"]=p.trophies["Live Golf"]||"";if(raw["Island Master"]===undefined) o["Island Master"]=p.trophies["Island Master"]||"";}return o;});
   const Handicaps=[];Object.keys(state.hdcHistory).forEach(n=>state.hdcHistory[n].forEach(e=>Handicaps.push({Player:n,"EffectiveDate(YYYY-MM-DD)":e.date,Hdc:e.hdc})));
   const GameDays=[];state.gameDays.forEach(g=>g.rows.forEach(r=>GameDays.push({GameID:g.id,"Date(YYYY-MM-DD)":g.date,Mode:g.mode,Course:g.course,
-    IndivCounts:g.indivCounts?"TRUE":"FALSE",IsPlayoff:g.isPlayoff?"TRUE":"FALSE",Player:r.player,
+    IndivCounts:g.indivCounts?"TRUE":"FALSE",IsPlayoff:g.isPlayoff?"TRUE":"FALSE",IsElClassico:g.isElClassico?"TRUE":"FALSE",Player:r.player,
     Strokes:(r.strokes===null?"":r.strokes),Points:r.points,Money:r.money,Paid:(r.paid?"TRUE":"FALSE")})));
   const Cash=[];
   state.cashIns.forEach(c=>Cash.push({EntryID:c.id,"Date(YYYY-MM-DD)":c.date,"Flow(In/Out)":"In",Category:c.type,Name:c.name,Player:c.payer,Amount:c.amount,CountInRanking:c.count?"TRUE":"FALSE",Paid:(c.paid?"TRUE":"FALSE")}));
@@ -1844,7 +1873,52 @@ function buildPlayersForm(){
 function updateScoringNote(){$("#scoringNote").innerHTML=$("#gd_indivCounts").checked
   ?"📌 <b>Rotating Threesome / indiv counts:</b> Team 0,25 pts per 6 holes (max 0,75; tie → 0,125 each). Individual net: best 0,75 · 2nd 0,50 · 3rd 0,25 · 4th 0. Enter the combined <i>Points won</i> per player."
   :"📌 <b>Scramble / team modes:</b> only the day result counts. Enter the points each player earned.";}
-function updatePlayoffInfo(){const po=$("#gd_playoff").checked;const box=$("#poInfo");
+function pbRenderClassico(){
+  var nodes=document.querySelectorAll(".pb-cl-faces"); 
+  nodes.forEach(function(box){
+    var names=(box.getAttribute("data-cl")||"").split("|").map(function(s){return s.trim();}).filter(Boolean);
+    box.innerHTML=names.map(function(n){
+      var photo=(typeof PLAYER_PHOTOS!=="undefined" && PLAYER_PHOTOS[n])?PLAYER_PHOTOS[n]:null;
+      if(photo){ return '<img src="'+photo+'" alt="'+n.replace(/"/g,'&quot;')+'" title="'+n.replace(/"/g,'&quot;')+'">'; }
+      return '<span class="pb-cl-ini" style="background:'+pbPlayerColor(n)+'" title="'+n.replace(/"/g,'&quot;')+'">'+pbInitials(n)+'</span>';
+    }).join("");
+  });
+  // ----- All-time standing -----
+  var r=(typeof computeClassico==="function")?computeClassico():null;
+  var sA=document.getElementById("pbClScoreA"), sB=document.getElementById("pbClScoreB");
+  var tA=document.getElementById("pbClTeamA"), tB=document.getElementById("pbClTeamB");
+  var box=document.getElementById("pbClStanding");
+  if(!r || !sA || !sB){ return; }
+  sA.textContent=fmtNum(r.aPts,1);
+  sB.textContent=fmtNum(r.bPts,1);
+  if(tA&&tB){ tA.classList.remove("pb-cl-lead"); tB.classList.remove("pb-cl-lead"); 
+    if(r.aPts>r.bPts) tA.classList.add("pb-cl-lead");
+    else if(r.bPts>r.aPts) tB.classList.add("pb-cl-lead");
+  }
+  if(box){
+    if(!r.games){
+      box.innerHTML='<div class="pb-cl-empty">Noch keine El-Clásico-Matches erfasst. Markiere beim Anlegen eines Spieltags die Option „⚔️ El Clásico“.</div>';
+    }else{
+      var leadTxt;
+      if(r.aPts>r.bPts) leadTxt='<span class="pb-cl-leadtag">🏆 Glatter &amp; Breuer führen</span>';
+      else if(r.bPts>r.aPts) leadTxt='<span class="pb-cl-leadtag">🏆 Busch &amp; Preis führen</span>';
+      else leadTxt='<span class="pb-cl-leadtag pb-cl-draw">Unentschieden</span>';
+      var bar='';
+      var tot=r.aPts+r.bPts;
+      var aPct=tot>0?Math.round(r.aPts/tot*100):50;
+      bar='<div class="pb-cl-bar"><div class="pb-cl-bar-a" style="width:'+aPct+'%"></div><div class="pb-cl-bar-b" style="width:'+(100-aPct)+'%"></div></div>';
+      var log=r.log.slice().reverse().slice(0,8).map(function(e){
+        var win=e.a>e.b?'A':(e.b>e.a?'B':'=');
+        var cls=win==='A'?'win-a':(win==='B'?'win-b':'draw');
+        return '<div class="pb-cl-logrow '+cls+'"><span class="pb-cl-logdate">'+fmtDate(e.date)+'</span>'
+          +'<span class="pb-cl-logscore">'+fmtNum(e.a,1)+' : '+fmtNum(e.b,1)+'</span></div>';
+      }).join("");
+      box.innerHTML='<div class="pb-cl-headline">'+leadTxt+'<span class="pb-cl-count">'+r.games+' Match'+(r.games===1?'':'es')+'</span></div>'
+        +bar
+        +'<div class="pb-cl-log">'+log+'</div>';
+    }
+  }
+}{const po=$("#gd_playoff").checked;const box=$("#poInfo");
   {var _psr=document.getElementById("poShotRule");if(_psr){var _lst=[];for(var _i=0;_i<PLAYOFF_SHOTS.length;_i++){if(num(PLAYOFF_SHOTS[_i])>0)_lst.push("−"+num(PLAYOFF_SHOTS[_i]));}_psr.textContent=_lst.length?_lst.join(" / "):"no bonus";}}
   if(po){box.classList.remove("hidden");const date=$("#gd_date").value||new Date().toISOString().slice(0,10);const st=standingsBefore(date);
     box.innerHTML="🏝️ <b>Play-off seeding (standings before this day):</b> "+st.map((e,i)=>`${i+1}. ${e[0]} (${fmtNum(e[1],2)} pts, −${num(PLAYOFF_SHOTS[i])||0})`).join(" · ")+". Allocation rule: <b>"+shotRuleText()+"</b>. Bonus shots are subtracted from net automatically.";
@@ -1854,24 +1928,24 @@ function updatePlayoffInfo(){const po=$("#gd_playoff").checked;const box=$("#poI
 /* =================================================================
    GAME CRUD
    ================================================================= */
-function readGameForm(){const date=$("#gd_date").value,mode=$("#gd_mode").value,course=$("#gd_course").value.trim(),indiv=$("#gd_indivCounts").checked,po=$("#gd_playoff").checked;
+function readGameForm(){const date=$("#gd_date").value,mode=$("#gd_mode").value,course=$("#gd_course").value.trim(),indiv=$("#gd_indivCounts").checked,po=$("#gd_playoff").checked,elc=(function(){var e=document.getElementById("gd_elclassico");return e?e.checked:false;})();
   const rows=[],names=new Set();for(let i=0;i<state.players.length;i++){const name=$(`.pf-player[data-slot="${i}"]`).value;
     const points=parseFloat($(`.pf-points[data-slot="${i}"]`).value)||0;const money=parseFloat($(`.pf-money[data-slot="${i}"]`).value)||0;
     const sr=$(`.pf-strokes[data-slot="${i}"]`).value;const strokes=sr!==""?Number(sr):null;names.add(name);
-    rows.push({player:name,strokes:(strokes===null||isNaN(strokes))?null:strokes,points,money});}return{date,mode,course,indiv,po,rows,uniq:names.size};}
+    rows.push({player:name,strokes:(strokes===null||isNaN(strokes))?null:strokes,points,money});}return{date,mode,course,indiv,po,elc,rows,uniq:names.size};}
 function addOrSaveGame(){const g=readGameForm();
   if(!g.date)return toast("Please pick a date.","err");if(g.uniq!==state.players.length)return toast("Each slot must have a different player.","err");
   if(g.indiv&&g.rows.some(r=>r.strokes===null))return toast("Individual counts: enter strokes for all 4 players.","err");
   if(editingGameId){const prev=state.gameDays.find(x=>x.id===editingGameId);if(prev){g.rows.forEach(r=>{const pr=prev.rows.find(p=>p.player===r.player);if(pr&&pr.paid)r.paid=true;});}}
-  const entry={id:editingGameId||("G"+uid()),date:g.date,mode:g.mode,course:g.course,indivCounts:g.indiv,isPlayoff:g.po,rows:g.rows};
+  const entry={id:editingGameId||("G"+uid()),date:g.date,mode:g.mode,course:g.course,indivCounts:g.indiv,isPlayoff:g.po,isElClassico:g.elc,rows:g.rows};
   if(editingGameId){state.gameDays[state.gameDays.findIndex(x=>x.id===editingGameId)]=entry;toast("Game day updated ✔");exitEdit();}
   else{state.gameDays.push(entry);toast(g.po?"🏝️ Play-off day added ✔":"Game day added ✔");}
   syncGameCashIns(entry);
   save();renderAll();resetGameFormValues();closeModal();}
-function resetGameFormValues(){$("#gd_course").value="";$("#gd_playoff").checked=false;$$(".pf-points,.pf-money,.pf-strokes,.pf-net").forEach(i=>i.value="");}
+function resetGameFormValues(){$("#gd_course").value="";$("#gd_playoff").checked=false;{var _ec=document.getElementById("gd_elclassico");if(_ec)_ec.checked=false;}$$(".pf-points,.pf-money,.pf-strokes,.pf-net").forEach(i=>i.value="");}
 function editGame(id){const g=state.gameDays.find(x=>x.id===id);if(!g)return;editingGameId=id;openModal("game");
   $("#gameModalTitle").textContent="Edit Game Day";$("#gd_date").value=g.date;$("#gd_mode").value=g.mode;$("#gd_course").value=g.course||"";
-  $("#gd_indivCounts").checked=!!g.indivCounts;$("#gd_playoff").checked=!!g.isPlayoff;updateScoringNote();updatePlayoffInfo();buildPlayersForm();
+  $("#gd_indivCounts").checked=!!g.indivCounts;$("#gd_playoff").checked=!!g.isPlayoff;{var _ec=document.getElementById("gd_elclassico");if(_ec)_ec.checked=!!g.isElClassico;}updateScoringNote();updatePlayoffInfo();buildPlayersForm();
   g.rows.forEach((r,i)=>{$(`.pf-player[data-slot="${i}"]`).value=r.player;$(`.pf-points[data-slot="${i}"]`).value=r.points;$(`.pf-money[data-slot="${i}"]`).value=r.money;const st=$(`.pf-strokes[data-slot="${i}"]`);if(r.strokes!==null){st.value=r.strokes;st.dispatchEvent(new Event("input"));}});
   $("#addGameBtn").textContent="💾 Save changes";$("#cancelEditBtn").classList.remove("hidden");$("#gameFormCard").classList.add("editing");}
 function exitEdit(){editingGameId=null;$("#gameModalTitle").textContent="Add a Game Day";$("#addGameBtn").textContent="➕ Add Game Day";$("#cancelEditBtn").classList.add("hidden");$("#gameFormCard").classList.remove("editing");}
@@ -2435,6 +2509,29 @@ function pbBuildToc(){
 }
 function pbInitials(n){ return String(n||"").trim().split(/\s+/).map(function(w){return w[0]||"";}).slice(0,2).join("").toUpperCase(); }
 function pbPlayerColor(n){ try{ if(state&&state.players){ var p=state.players.find(function(x){return x.name===n;}); if(p&&p.color) return p.color; } }catch(e){} return "#2fb37c"; }
+var EL_CLASSICO_TEAMS=[
+  {key:"A", players:["Julian Glatter","Lukas Breuer"]},
+  {key:"B", players:["Dominik Busch","Marco Preis"]}
+];
+function computeClassico(){
+  var A=EL_CLASSICO_TEAMS[0], B=EL_CLASSICO_TEAMS[1];
+  var res={aPts:0,bPts:0,games:0,log:[]};
+  try{
+    var games=(state&&state.gameDays)?state.gameDays.filter(function(g){return g && g.isElClassico;}):[];
+    // chronological for the log
+    games=games.slice().sort(function(a,b){return String(a.date).localeCompare(String(b.date));});
+    games.forEach(function(g){
+      var a=0,b=0;
+      (g.rows||[]).forEach(function(r){
+        if(A.players.indexOf(r.player)>-1) a+=num(r.points);
+        else if(B.players.indexOf(r.player)>-1) b+=num(r.points);
+      });
+      res.aPts+=a; res.bPts+=b; res.games++;
+      res.log.push({date:g.date, a:a, b:b});
+    });
+  }catch(e){}
+  return res;
+}
 function pbRenderClassico(){
   var nodes=document.querySelectorAll(".pb-cl-faces"); if(!nodes.length) return;
   nodes.forEach(function(box){
