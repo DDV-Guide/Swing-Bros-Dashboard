@@ -223,7 +223,7 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:var(--ring);ba
   display:flex;align-items:center;gap:10px;border:1px solid var(--line)}
 
 /* ---------------- FAB ---------------- */
-.fab{position:fixed;right:30px;bottom:calc(30px + env(safe-area-inset-bottom,0px));z-index:800}
+.fab{position:fixed;right:30px;bottom:calc(30px + 64px + 18px + env(safe-area-inset-bottom,0px));z-index:800}
 .fab-main{width:64px;height:64px;border-radius:50%;background:var(--grad-gold);color:#3a2f05;font-size:30px;
   font-weight:700;box-shadow:0 14px 34px rgba(202,164,58,.5);display:flex;align-items:center;justify-content:center;
   transition:var(--t);border:1px solid rgba(255,255,255,.4)}
@@ -348,7 +348,7 @@ input:focus,select:focus{border-color:var(--green-500);box-shadow:var(--ring);ba
   .checkbox-row{align-items:flex-start}.checkbox-row input{width:22px;height:22px;margin-top:2px;flex:none}
   #sec-actions .toolbar{flex-direction:column}#sec-actions .toolbar button{width:100%}
   .appt{flex-direction:column;align-items:flex-start;gap:6px}.appt .when{align-self:flex-start}
-  .fab{right:18px;bottom:calc(20px + env(safe-area-inset-bottom,0px))}.fab-main{width:56px;height:56px;font-size:27px}.fab-players{right:18px;bottom:calc(20px + 56px + 26px + env(safe-area-inset-bottom,0px));width:56px;height:56px}
+  .fab{right:18px;bottom:calc(20px + 56px + 26px + env(safe-area-inset-bottom,0px))}.fab-main{width:56px;height:56px;font-size:27px}.fab-players{right:18px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:56px;height:56px}
   .scrollhint{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);margin:4px 0 16px;line-height:1.5;flex-wrap:wrap}
   .mnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:850;background:var(--glass);
     backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);
@@ -623,13 +623,13 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 
 
 /* ============ Players floating button (above the +) ============ */
-.fab-players{position:fixed;right:30px;bottom:calc(30px + 64px + 18px + env(safe-area-inset-bottom,0px));z-index:801;width:64px;height:64px;border-radius:50%;
+.fab-players{position:fixed;right:30px;bottom:calc(30px + env(safe-area-inset-bottom,0px));z-index:801;width:64px;height:64px;border-radius:50%;
   background:var(--card);color:var(--green-700);border:1px solid var(--line);
   box-shadow:0 12px 30px rgba(16,40,30,.22);display:flex;align-items:center;justify-content:center;
   cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
 .fab-players:hover{transform:scale(1.07);box-shadow:0 16px 38px rgba(16,40,30,.30);background:var(--green-50)}
 [data-theme="dark"] .fab-players{background:var(--card);color:var(--green-400);border-color:var(--line)}
-@media(max-width:600px){.fab{right:18px;bottom:calc(20px + env(safe-area-inset-bottom,0px))}.fab-main{width:56px;height:56px}.fab-players{right:18px;bottom:calc(20px + 56px + 26px + env(safe-area-inset-bottom,0px));width:56px;height:56px}}
+@media(max-width:600px){.fab{right:18px;bottom:calc(20px + 56px + 26px + env(safe-area-inset-bottom,0px))}.fab-main{width:56px;height:56px}.fab-players{right:18px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:56px;height:56px}}
 
 /* ============ Overlay shell ============ */
 .pl-overlay{position:fixed;inset:0;z-index:3000;background:var(--bg);
@@ -731,9 +731,9 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 
 /* FABs: keep clear separation on short/landscape viewports and respect safe-area */
 @media (max-height:520px){
-  .fab{right:16px;bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+  .fab{right:16px;bottom:calc(12px + 50px + 22px + env(safe-area-inset-bottom,0px))}
   .fab-main{width:50px;height:50px}
-  .fab-players{right:16px;bottom:calc(12px + 50px + 22px + env(safe-area-inset-bottom,0px));width:50px;height:50px}
+  .fab-players{right:16px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:50px;height:50px}
 }
 
 
@@ -759,7 +759,7 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
     <div class="h-main">
       <h1><span class="edit-title" id="titleInput">Swing Bros</span></h1>
       <div class="subtitle">Championship and Budget Dashboard</div>
-      <div class="sub">Live-synced to Google Sheets · use the <b>＋</b> button (bottom-right) to add data</div><div class="credit credit-head">Designed in Gnadental</div>
+      <div class="sub">Live-synced to Google Sheets · use the <b>＋</b> button (bottom-right) to add data</div><div class="credit credit-head">Designed in Gnadental. Produced in Silicon Valley.</div>
     </div>
     <div class="h-controls">
       <div class="season-kpi"><span class="y" id="yearInput">2026</span><span class="s">Season</span></div>
@@ -829,7 +829,7 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
     <button class="btn-red" id="resetBtn">🗑️ Reset Season</button>
   </div></div></section>
   <p class="small-muted" style="text-align:center;margin:24px 0">Swing Bros · live-synced to Google Sheets.</p>
-  <p class="credit credit-foot">Designed in Gnadental</p>
+  <p class="credit credit-foot">Designed in Gnadental. Produced in Silicon Valley.</p>
 </div>
 
 <nav class="mnav" id="mnav">
