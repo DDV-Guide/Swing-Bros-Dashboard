@@ -1055,6 +1055,14 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
   -webkit-appearance:checkbox;appearance:checkbox;margin:0 auto;display:inline-block}
 #settleTable td:last-child,#ngHistory td:last-child{position:relative;z-index:5}
 .tablebox::after{pointer-events:none !important;z-index:0}
+
+/* Outstanding Payments confirmation control */
+.paid-select{appearance:auto;-webkit-appearance:menulist;font-size:13px;padding:7px 10px;border-radius:10px;
+  border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;min-width:112px;
+  position:relative;z-index:5;pointer-events:auto}
+.paid-select:focus{outline:2px solid var(--green-500);outline-offset:1px}
+#settleTable td:last-child{position:relative;z-index:5;min-width:124px}
+.tablebox::after{pointer-events:none !important;z-index:0}
 </style>
 </head>
 <body>
@@ -2095,37 +2103,79 @@ function isOpenPayment(c){
 function renderSettlement(){
   const tb=$("#settleTable tbody");
   const items=[];
-  let headerTxt="";
-  if(state.gameDays.length){
-    const last=state.gameDays.slice().sort((a,b)=>b.date.localeCompare(a.date))[0];
-    headerTxt=`Latest match day: <b>${fmtDate(last.date)}</b>${last.course?' · '+last.course:''} · <span class="pill ${last.isPlayoff?'po':''}">${last.mode}</span>`;
-    last.rows.filter(r=>num(r.money)>0 && !r.paid).forEach(r=>{
-      items.push({kind:"golf",gameId:last.id,player:r.player,
-        what:`⛳ Golf · ${fmtDate(last.date)}${last.course?' · '+last.course:''}`,amount:num(r.money)});
+  // --- Golf-related outstanding payments: scan EVERY game day, not just the latest. ---
+  // A payment stays listed until its row is explicitly marked paid. A stable id is built
+  // from the game id + player so confirming one can never touch another.
+  (state.gameDays||[]).slice()
+    .sort((a,b)=>String(b.date).localeCompare(String(a.date)))
+    .forEach(g=>{
+      (g.rows||[]).filter(r=>num(r.money)>0 && !r.paid).forEach(r=>{
+        items.push({
+          uid:"golf::"+g.id+"::"+r.player,
+          kind:"golf", gameId:g.id, player:r.player,
+          what:`⛳ Golf · ${fmtDate(g.date)}${g.course?' · '+g.course:''}`,
+          amount:num(r.money)
+        });
+      });
     });
-  }
-  // Every unconfirmed cash-in (any category) is an outstanding payment.
-  state.cashIns.filter(c=>isOpenPayment(c) && !c.paid).forEach(c=>{
-    items.push({kind:"cash",cashId:c.id,player:c.payer,
-      what:`${c.type?c.type+" · ":""}${c.name||""} (${fmtDate(c.date)})`,amount:num(c.amount)});
+  // --- Non-golf outstanding payments: every unconfirmed manual cash-in (any category). ---
+  (state.cashIns||[]).filter(c=>isOpenPayment(c) && !c.paid).forEach(c=>{
+    items.push({
+      uid:"cash::"+c.id,
+      kind:"cash", cashId:c.id, player:c.payer,
+      what:`${c.type?c.type+" · ":""}${c.name||""} (${fmtDate(c.date)})`,
+      amount:num(c.amount)
+    });
   });
-  $("#settleHeader").innerHTML = headerTxt || "Outstanding payments across golf &amp; non-golf.";
+  // Header: show a count instead of only the latest match day, so it reflects ALL days.
+  const openCount=items.length;
+  $("#settleHeader").innerHTML = openCount
+    ? `<b>${openCount}</b> outstanding payment${openCount>1?"s":""} across all game days &amp; non-golf entries.`
+    : "Outstanding payments across golf &amp; non-golf.";
   if(!items.length){
     tb.innerHTML=`<tr><td colspan="4" style="color:var(--green-pos);font-weight:600">✅ No outstanding payments — everyone is settled!</td></tr>`;
     return;
   }
   tb.innerHTML=items.map(it=>{
-    const safePlayer=it.player.replace(/\\/g,"").replace(/'/g,"\\'");
-    const call = it.kind==="golf" ? `markGolfPaid('${it.gameId}','${safePlayer}')` : `markCashPaid('${it.cashId}')`;
+    const uid=it.uid;
     return `<tr>
       <td><span class="player-dot" style="background:${playerColor(it.player)}"></span> ${it.player}</td>
       <td>${it.what}</td>
       <td><span class="money-neg">${fmtMoney(it.amount)}</span></td>
-      <td style="text-align:center"><input type="checkbox" class="paid-chk" title="Mark as paid" style="width:22px;height:22px;cursor:pointer" onclick="${call}"></td>
+      <td style="text-align:center">
+        <select class="paid-select" data-uid="${uid}" title="Confirm payment">
+          <option value="open" selected>No, open</option>
+          <option value="paid">Yes, paid</option>
+        </select>
+      </td>
     </tr>`;
   }).join("")
   + `<tr style="font-weight:800"><td>Total outstanding</td><td></td><td><span class="pts">${fmtMoney(items.reduce((a,x)=>a+x.amount,0))}</span></td><td></td></tr>`;
 }
+
+/* ---- Confirm an outstanding payment as paid (NEW reliable control) ----
+   Driven by the <select> "Yes, paid". The uid encodes exactly which record to
+   update (golf::<gameId>::<player> or cash::<cashId>), so confirming one entry
+   can never affect another. We SET paid=true (not toggle), persist via save()
+   (which writes back to Google Sheets through the normal sync), then re-render
+   so the settled row disappears. */
+function confirmSettlePaid(uid){
+  if(!uid) return;
+  const parts=String(uid).split("::");
+  const kind=parts[0];
+  if(kind==="golf"){
+    const gameId=parts[1], player=parts.slice(2).join("::");
+    const g=(state.gameDays||[]).find(x=>x.id===gameId); if(!g) return;
+    const row=(g.rows||[]).find(r=>r.player===player); if(!row) return;
+    row.paid=true;
+  }else if(kind==="cash"){
+    const cashId=parts[1];
+    const c=(state.cashIns||[]).find(x=>x.id===cashId); if(!c) return;
+    c.paid=true;
+  }else{ return; }
+  save(); renderAll(); toast("Marked as paid ✔");
+}
+window.confirmSettlePaid=confirmSettlePaid;
 function markGolfPaid(gameId, player){
   const g=state.gameDays.find(x=>x.id===gameId); if(!g) return;
   const row=g.rows.find(r=>r.player===player); if(!row) return;
@@ -2800,6 +2850,22 @@ function wireUI(){
   $$(".modal-ov").forEach(ov=>ov.addEventListener("click",e=>{if(e.target===ov)closeModal();}));
   document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeTableFs();$("#fab").classList.remove("open");}});
   enableDragScroll();  // init
+
+  /* ---- Outstanding Payments: reliable "Yes, paid" confirmation ----
+     Delegated on the settle table so dynamically re-rendered rows always work.
+     A native <select> change event is used (cannot be swallowed by the table
+     drag-to-scroll logic), and routes by the row's stable uid. */
+  (function(){
+    var body=document.querySelector("#settleTable");
+    if(body && !body.__paidWired){
+      body.__paidWired=true;
+      body.addEventListener("change", function(e){
+        var sel=e.target;
+        if(!sel || !sel.classList || !sel.classList.contains("paid-select")) return;
+        if(sel.value==="paid"){ confirmSettlePaid(sel.getAttribute("data-uid")); }
+      });
+    }
+  })();
   // Add a "swipe / rotate" scroll hint above each wide table (shown only on mobile via CSS).
   document.querySelectorAll(".table-scroll").forEach(function(ts){
     if(ts.previousElementSibling && ts.previousElementSibling.classList && ts.previousElementSibling.classList.contains("scrollhint")) return;
