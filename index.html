@@ -929,6 +929,8 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
   background:linear-gradient(90deg,var(--gold-2),var(--gold))}
 .pb-im-days{display:grid;grid-template-columns:1.2fr 1fr;gap:10px;padding:14px;background:color-mix(in srgb,var(--gold) 8%,var(--card))}
 .pb-im-days-4{grid-template-columns:repeat(4,1fr)!important}
+.pb-im-days-2{grid-template-columns:1fr 1fr!important}
+@media(max-width:560px){.pb-im-days-2{grid-template-columns:1fr!important}}
 @media(max-width:720px){.pb-im-days-4{grid-template-columns:repeat(2,1fr)!important}}
 .pb-im-day{display:flex;flex-direction:column;gap:4px;background:var(--card);border:1px solid var(--line);
   border-radius:12px;padding:12px 11px;min-width:0}
@@ -1372,32 +1374,18 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
 
         <!-- Island Masters tournament spanning all 4 days -->
         <div class="pb-im">
-          <div class="pb-im-band">🏝️ Island Masters · ein Turnier über 4 Tage · eigener Titel &amp; Champion</div>
-          <div class="pb-im-days pb-im-days-4">
+          <div class="pb-im-band">🏝️ Island Masters · ein Turnier über 4 Tage</div>
+          <div class="pb-im-days pb-im-days-2">
             <div class="pb-im-day pb-im-day1">
-              <span class="pb-im-dn">Tag 1</span>
-              <span class="pb-im-dt">Play-off-Final · alte Saison</span>
-              <span class="pb-im-shots">🎯 Play-off-Shots (4-2-1) gemäß Tabelle</span>
-            </div>
-            <div class="pb-im-day pb-im-day1">
-              <span class="pb-im-dn">Tag 2</span>
-              <span class="pb-im-dt">Play-off-Final · alte Saison</span>
-              <span class="pb-im-shots">🏆 Tag 2 kürt den Champion der alten Saison</span>
+              <span class="pb-im-dn">Tag 1 &amp; 2</span>
+              <span class="pb-im-dt">Saisonfinale · Play-off der alten Saison</span>
+              <span class="pb-im-shots">🎯 Play-off-Shots (4-2-1) · 🏆 kürt den Champion</span>
             </div>
             <div class="pb-im-day pb-im-day234">
-              <span class="pb-im-dn">Tag 3</span>
-              <span class="pb-im-dt">Neue Saison · Auftakt</span>
-            </div>
-            <div class="pb-im-day pb-im-day234">
-              <span class="pb-im-dn">Tag 4</span>
+              <span class="pb-im-dn">Tag 3 &amp; 4</span>
               <span class="pb-im-dt">Neue Saison</span>
             </div>
           </div>
-          <div class="pb-im-flow2">
-            <div class="pb-im-fbox pb-im-fold">⟵ Alte Saison: zweitägiges Finale (Tag 1 &amp; 2)</div>
-            <div class="pb-im-fbox pb-im-fnew">Neue Saison ab Tag 3 ⟶</div>
-          </div>
-          <div class="pb-im-champ">🏆 Der Island-Masters-Titel wird über alle 4 Tage ermittelt · die alte Saison endet nach dem zweitägigen Finale (Tag 1 &amp; 2)</div>
         </div>
       </div>
     </section>
