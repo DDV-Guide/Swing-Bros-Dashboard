@@ -509,10 +509,13 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 
 
 @media (max-width:900px){
-  .header{grid-template-columns:1fr;grid-template-areas:"controls" "main";padding:20px;border-radius:18px;gap:14px}
-  .h-controls{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;min-width:0}
-  .h-main{grid-area:main}
+  .header{grid-template-columns:1fr;grid-template-areas:"main" "controls";padding:20px;border-radius:18px;gap:12px}
+  .h-main{grid-area:main;order:0}
+  .h-controls{grid-area:controls;order:1;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:12px;min-width:0}
   .h-main h1{font-size:30px}
+  /* Season selector sits directly under the title/subtitle, left-aligned */
+  .season-pick{flex-direction:row;align-items:center;flex-wrap:wrap;gap:10px}
+  .season-sel-wrap{align-items:flex-start}
   .season-kpi{padding:6px 14px}
 }
 @media (max-width:480px){
@@ -1193,9 +1196,7 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
 
   <section id="sec-actions"><div class="card"><div class="toolbar">
     <button class="btn-gold" id="exportBtn">⬇️ Export CSV</button>
-    <button class="btn-outline" id="importHistBtn" type="button">📥 Import 2024 &amp; 2025 archive</button>
-    <button class="btn-red" id="resetBtn">🗑️ Reset Season</button>
-  </div></div></section>
+    </div></div></section>
   <p class="small-muted" style="text-align:center;margin:24px 0">Swing Bros · live-synced to Google Sheets.</p>
   <p class="credit credit-foot">Designed in Gnadental. Produced in Silicon Valley.</p>
 </div>
@@ -2269,16 +2270,29 @@ function budgetTotal(){
   const outA = state.outflows.filter(c=>String(c.date)>=d && seasonOfCash(c)===currentSeason()).reduce((a,c)=>a+num(c.amount),0);
   return base + inA - outA;
 }
-function renderDashboard(stats){const arr=Object.values(stats);const totalDays=state.gameDays.length;const winner=arr.slice().sort((a,b)=>b.points-a.points)[0];
+function renderDashboard(stats){const arr=Object.values(stats);
+  // Season-scoped: Game days + Top Cash Cow reflect ONLY the currently viewed season.
+  const seasonGames=visibleGameDays();
+  const totalDays=seasonGames.length;
+  const winner=arr.slice().sort((a,b)=>b.points-a.points)[0];
   let lowest=null,lw="",lc="";arr.forEach(s=>{if(s.best!==null&&(lowest===null||s.best<lowest)){lowest=s.best;lw=s.name;lc=s.bestCourse;}});
-  const ct={};state.players.forEach(p=>ct[p.name]=0);state.cashIns.forEach(c=>{if(c.count&&ct[c.payer]!==undefined)ct[c.payer]+=num(c.amount);});const tp=Object.entries(ct).sort((a,b)=>b[1]-a[1])[0];
-  $("#dashboard").innerHTML=`
-    <div class="stat"><div class="label">Game days played</div><div class="value">${totalDays}</div><div class="meta">${state.gameDays.filter(g=>g.rows.some(r=>r.strokes!==null)).length} rounds with score</div></div>
-    <div class="stat gold"><div class="label">🏆 Current leader</div><div class="value">${winner&&winner.points>0?winner.name:'–'}</div><div class="meta">${winner?fmtNum(winner.points,2)+' pts · −'+(winner.projShots||0)+' shots final':''}</div></div>
-    <div class="stat"><div class="label">🎯 Lowest Round</div><div class="value">${lowest!==null?lw:'–'}</div><div class="meta">${lowest!==null?fmtPar(lowest)+(lc?' · '+lc:''):''}</div></div>
-    <div class="stat gold"><div class="label">🪙 Top Cash Cow</div><div class="value">${tp&&tp[1]>0?tp[0]:'–'}</div><div class="meta">${tp&&tp[1]>0?fmtMoney(tp[1]):''}</div></div>
-    <div class="stat"><div class="label">💶 Our budget</div><div class="value">${fmtMoney(budgetTotal())}</div><div class="meta">paid in by all of us</div></div>
-    ${(function(){var d=daysToSylt();return d===null?'':'<div class="stat sylt"><div class="label">🏖️ Road to Sylt</div><div class="value">'+d+'</div><div class="meta">Days until the trip to Sylt</div></div>';})()}`;}
+  const ct={};state.players.forEach(p=>ct[p.name]=0);visibleCashIns().forEach(c=>{if(c.count&&ct[c.payer]!==undefined)ct[c.payer]+=num(c.amount);});const tp=Object.entries(ct).sort((a,b)=>b[1]-a[1])[0];
+  const current=isViewingCurrent();
+  const tiles=[];
+  tiles.push(`<div class="stat"><div class="label">Game days played</div><div class="value">${totalDays}</div><div class="meta">${seasonGames.filter(g=>g.rows.some(r=>r.strokes!==null)).length} rounds with score</div></div>`);
+  // "Current leader" only makes sense for the live season.
+  if(current){
+    tiles.push(`<div class="stat gold"><div class="label">🏆 Current leader</div><div class="value">${winner&&winner.points>0?winner.name:'–'}</div><div class="meta">${winner?fmtNum(winner.points,2)+' pts · −'+(winner.projShots||0)+' shots final':''}</div></div>`);
+  }
+  tiles.push(`<div class="stat"><div class="label">🎯 Lowest Round</div><div class="value">${lowest!==null?lw:'–'}</div><div class="meta">${lowest!==null?fmtPar(lowest)+(lc?' · '+lc:''):''}</div></div>`);
+  tiles.push(`<div class="stat gold"><div class="label">🪙 Top Cash Cow</div><div class="value">${tp&&tp[1]>0?tp[0]:'–'}</div><div class="meta">${tp&&tp[1]>0?fmtMoney(tp[1]):''}</div></div>`);
+  // Budget + Road to Sylt only for the live/current season (not relevant for historical archive).
+  if(current){
+    tiles.push(`<div class="stat"><div class="label">💶 Our budget</div><div class="value">${fmtMoney(budgetTotal())}</div><div class="meta">paid in by all of us</div></div>`);
+    var d=daysToSylt();
+    if(d!==null) tiles.push('<div class="stat sylt"><div class="label">🏖️ Road to Sylt</div><div class="value">'+d+'</div><div class="meta">Days until the trip to Sylt</div></div>');
+  }
+  $("#dashboard").innerHTML=tiles.join("");}
 function renderLeaderboard(stats){const arr=Object.values(stats).sort((a,b)=>b.points-a.points||((a.avgNet??999)-(b.avgNet??999)));const tb=$("#leaderboard tbody");
   const rankNums=competitionRanks(arr.map(a=>a.points));
   tb.innerHTML=arr.map((s,i)=>`<tr class="${rankNums[i]===1&&s.points>0?'leader':''}"><td><span class="rankbadge ${rankNums[i]===1?'r1':''}">${rankNums[i]}</span></td>
@@ -3096,8 +3110,7 @@ function wireUI(){
       tb.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "||e.key==="Spacebar"){ e.preventDefault(); __toggleTheme(); } });
     }
   })();
-  {var _ih=document.getElementById("importHistBtn");if(_ih&&!_ih.__wired){_ih.__wired=true;_ih.addEventListener("click",importHistoricalSeasons);}}
-  $("#resetBtn").addEventListener("click",()=>{
+  {var _rb=document.getElementById("resetBtn"); if(_rb) _rb.addEventListener("click",()=>{
     if(!confirm("Do you really want to reset the season? This clears all game days, cash-ins, expenses and appointments (players, handicaps and settings are kept).")) return;
     const pw=prompt("Enter the reset password to confirm:");
     if(pw===null) return;
@@ -3105,7 +3118,7 @@ function wireUI(){
     state.gameDays=[]; state.cashIns=[]; state.outflows=[]; state.appts=[];
     save(); renderAll();
     toast("Season has been reset ✔");
-  });
+  });}
   $("#fabMain").addEventListener("click",()=>$("#fab").classList.toggle("open"));
   $$(".fab-item .btn-circ").forEach(b=>b.addEventListener("click",()=>{if(b.dataset.open==="game")exitEdit();openModal(b.dataset.open);}));
   $$("[data-close]").forEach(b=>b.addEventListener("click",closeModal));
