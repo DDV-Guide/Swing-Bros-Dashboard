@@ -1056,13 +1056,26 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 #settleTable td:last-child,#ngHistory td:last-child{position:relative;z-index:5}
 .tablebox::after{pointer-events:none !important;z-index:0}
 
-/* Outstanding Payments confirmation control */
-.paid-select{appearance:auto;-webkit-appearance:menulist;font-size:13px;padding:7px 10px;border-radius:10px;
-  border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;min-width:112px;
-  position:relative;z-index:5;pointer-events:auto}
-.paid-select:focus{outline:2px solid var(--green-500);outline-offset:1px}
-#settleTable td:last-child{position:relative;z-index:5;min-width:124px}
+/* Outstanding Payments confirmation control — full-cell, large tappable button */
+#settleTable td:last-child.paid-cell,#settleTable td.paid-cell{
+  position:relative;z-index:5;padding:8px 10px;min-width:150px;text-align:center}
+.paid-confirm{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;min-height:44px;                 /* 44px = comfortable touch target */
+  padding:10px 14px;border-radius:12px;cursor:pointer;
+  font-size:14px;font-weight:700;line-height:1;white-space:nowrap;
+  color:var(--green-700);background:var(--green-50);
+  border:1.5px solid var(--green-500);
+  -webkit-tap-highlight-color:rgba(0,0,0,.08);touch-action:manipulation;
+  pointer-events:auto;position:relative;z-index:6;transition:background var(--t),transform var(--t),box-shadow var(--t)}
+.paid-confirm:hover{background:var(--green-100);box-shadow:var(--shadow-glow)}
+.paid-confirm:active{transform:scale(.98)}
+.paid-confirm:focus-visible{outline:2px solid var(--green-500);outline-offset:2px}
+.paid-confirm .pc-ico{font-size:15px;font-weight:900}
+html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.18);border-color:rgba(90,200,130,.5)}
+/* make the whole fade/overlay never intercept, and the last column keep room */
 .tablebox::after{pointer-events:none !important;z-index:0}
+@media (max-width:720px){ #settleTable td.paid-cell{min-width:128px} .paid-confirm{font-size:13px;min-height:46px} }
 </style>
 </head>
 <body>
@@ -2142,11 +2155,10 @@ function renderSettlement(){
       <td><span class="player-dot" style="background:${playerColor(it.player)}"></span> ${it.player}</td>
       <td>${it.what}</td>
       <td><span class="money-neg">${fmtMoney(it.amount)}</span></td>
-      <td style="text-align:center">
-        <select class="paid-select" data-uid="${uid}" title="Confirm payment">
-          <option value="open" selected>No, open</option>
-          <option value="paid">Yes, paid</option>
-        </select>
+      <td class="paid-cell">
+        <button type="button" class="paid-confirm" data-uid="${uid}" aria-label="Mark this payment as paid">
+          <span class="pc-ico">✓</span> Yes, paid
+        </button>
       </td>
     </tr>`;
   }).join("")
@@ -2856,13 +2868,15 @@ function wireUI(){
      A native <select> change event is used (cannot be swallowed by the table
      drag-to-scroll logic), and routes by the row's stable uid. */
   (function(){
-    var body=document.querySelector("#settleTable");
-    if(body && !body.__paidWired){
-      body.__paidWired=true;
-      body.addEventListener("change", function(e){
-        var sel=e.target;
-        if(!sel || !sel.classList || !sel.classList.contains("paid-select")) return;
-        if(sel.value==="paid"){ confirmSettlePaid(sel.getAttribute("data-uid")); }
+    var tbl=document.querySelector("#settleTable");
+    if(tbl && !tbl.__paidWired){
+      tbl.__paidWired=true;
+      // Delegated click/tap: fire from anywhere inside the button (icon, text or padding).
+      tbl.addEventListener("click", function(e){
+        var btn=e.target && e.target.closest ? e.target.closest(".paid-confirm") : null;
+        if(!btn) return;
+        e.preventDefault();
+        confirmSettlePaid(btn.getAttribute("data-uid"));
       });
     }
   })();
