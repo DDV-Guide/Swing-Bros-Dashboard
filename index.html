@@ -1049,6 +1049,12 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 .paid-chk{position:relative;z-index:4;pointer-events:auto !important;cursor:pointer;
   -webkit-appearance:checkbox;appearance:checkbox;margin:0 auto;display:inline-block}
 #settleTable td:last-child,#ngHistory td:last-child{position:relative;z-index:4}
+
+/* Root-cause reinforcement: Paid checkboxes & their cells always interactive */
+.paid-chk{position:relative;z-index:5;pointer-events:auto !important;cursor:pointer;
+  -webkit-appearance:checkbox;appearance:checkbox;margin:0 auto;display:inline-block}
+.paid-cell,#settleTable td:last-child,#ngHistory td:last-child{position:relative;z-index:5}
+.tablebox::after{pointer-events:none !important;z-index:0}
 </style>
 </head>
 <body>
@@ -2115,7 +2121,7 @@ function renderSettlement(){
       <td><span class="player-dot" style="background:${playerColor(it.player)}"></span> ${it.player}</td>
       <td>${it.what}</td>
       <td><span class="money-neg">${fmtMoney(it.amount)}</span></td>
-      <td style="text-align:center"><input type="checkbox" class="paid-chk" title="Mark as paid" style="width:22px;height:22px;cursor:pointer" onclick="${call}"></td>
+      <td class="paid-cell" style="text-align:center"><input type="checkbox" class="paid-chk" title="Mark as paid" style="width:22px;height:22px;cursor:pointer" data-kind="${it.kind}" data-game="${it.kind==='golf'?it.gameId:''}" data-cash="${it.kind==='cash'?it.cashId:''}" data-player="${safePlayer}"></td>
     </tr>`;
   }).join("")
   + `<tr style="font-weight:800"><td>Total outstanding</td><td></td><td><span class="pts">${fmtMoney(items.reduce((a,x)=>a+x.amount,0))}</span></td><td></td></tr>`;
@@ -2153,7 +2159,7 @@ function renderCash(){const map={};state.players.forEach(p=>map[p.name]={name:p.
   $("#cashTable tbody").innerHTML=arr.map((m,i)=>`<tr><td><span class="rankbadge ${i===0&&m.total>0?'r1':''}">${i+1}</span></td><td><span class="player-dot" style="background:${m.color}"></span> ${m.name}</td><td class="pts">${fmtMoney(m.total)}</td><td>${fmtMoney(m.Golf)}</td><td>${fmtMoney(m.PGA)}</td><td>${fmtMoney(m.FIFA)}</td><td>${fmtMoney(m.Others)}</td><td>${m.count}</td></tr>`).join("");
   buildCashFilterChips();
   const inR=state.cashIns.map(c=>({...c,flow:"In"}));const outR=state.outflows.map(o=>({...o,flow:"Out",type:"Expense",payer:""}));const all=inR.concat(outR).filter(cashFilterPass).sort((a,b)=>b.date.localeCompare(a.date));
-  $("#ngHistory tbody").innerHTML=all.length?all.map(c=>{const payable=isOpenPayment(c);const paidCell = c.gameId ? '<span class="small-muted">via game</span>' : (payable ? `<input type="checkbox" class="paid-chk" title="Mark as received / confirm payment" style="width:20px;height:20px;cursor:pointer" ${c.paid?"checked":""} onclick="toggleCashPaid(\'${c.id}\')">` : '<span class="small-muted">—</span>');const actionCell = c.gameId ? '<span class="small-muted">⛳ from game</span>' : `<button class="btn-red btn-sm" onclick="deleteCashIn(\'${c.id}\')">🗑️</button>`;return `<tr><td>${fmtDate(c.date)}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type||'–'}${c.gameId?' <span class=\'pill\'>⛳</span>':''}</td><td>${c.name||'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${c.payer}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td style="text-align:center">${paidCell}</td><td style="text-align:center">${actionCell}</td></tr>`;}).join(""):`<tr><td colspan="8" style="color:var(--muted)">${cashFilter.size?"No entries for the selected "+(cashFilter.size>1?"people":"person")+".":"No entries yet."}</td></tr>`;}
+  $("#ngHistory tbody").innerHTML=all.length?all.map(c=>{const payable=isOpenPayment(c);const paidCell = c.gameId ? '<span class="small-muted">via game</span>' : (payable ? `<input type="checkbox" class="paid-chk" title="Mark as received / confirm payment" style="width:20px;height:20px;cursor:pointer" ${c.paid?"checked":""} data-kind="cashtoggle" data-cash="${c.id}">` : '<span class="small-muted">—</span>');const actionCell = c.gameId ? '<span class="small-muted">⛳ from game</span>' : `<button class="btn-red btn-sm" onclick="deleteCashIn(\'${c.id}\')">🗑️</button>`;return `<tr><td>${fmtDate(c.date)}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type||'–'}${c.gameId?' <span class=\'pill\'>⛳</span>':''}</td><td>${c.name||'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${c.payer}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td style="text-align:center">${paidCell}</td><td style="text-align:center">${actionCell}</td></tr>`;}).join(""):`<tr><td colspan="8" style="color:var(--muted)">${cashFilter.size?"No entries for the selected "+(cashFilter.size>1?"people":"person")+".":"No entries yet."}</td></tr>`;}
 function renderAppts(){$("#apptList").innerHTML=state.appts.length?state.appts.map(a=>{const po=/island|play.?off|final/i.test(a.what);const w=String(a.when||"").trim();const hasDate=/\d/.test(w) && !/^tbd$/i.test(w) && !/^n\/?a$/i.test(w);const cls=po?"playoff":(hasDate?"dated":"tbd");return `<div class="appt ${cls}"><div class="what">${a.what}</div><div style="display:flex;align-items:center;gap:8px"><span class="when">${w||"tbd"}</span><button onclick="deleteAppt('${a.id}')">✕</button></div></div>`;}).join(""):`<p style="color:var(--muted)">No upcoming appointments.</p>`;}
 
 const M_LABELS={
@@ -2794,6 +2800,38 @@ function wireUI(){
   $$(".modal-ov").forEach(ov=>ov.addEventListener("click",e=>{if(e.target===ov)closeModal();}));
   document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();closeTableFs();$("#fab").classList.remove("open");}});
   enableDragScroll();  // init
+
+  /* ---- ROBUST "Paid?" handling (root-cause fix) ----
+     The Outstanding Payments and Cash-In History checkboxes used to depend on an
+     inline onclick that could be swallowed by the table's drag-to-scroll capture
+     logic / pointer-capture retargeting. We now drive them from the native
+     "change" event via delegation on the document, which fires reliably on every
+     device and cannot be intercepted by the scroll module. The handler reads
+     data-* attributes to route to the exact same application logic as before. */
+  if(!window.__paidChkWired){
+    window.__paidChkWired=true;
+    document.addEventListener("change", function(e){
+      var chk=e.target;
+      if(!chk || chk.classList===undefined || !chk.classList.contains("paid-chk")) return;
+      var kind=chk.getAttribute("data-kind");
+      try{
+        if(kind==="golf"){
+          markGolfPaid(chk.getAttribute("data-game"), chk.getAttribute("data-player"));
+        }else if(kind==="cash"){
+          markCashPaid(chk.getAttribute("data-cash"));
+        }else if(kind==="cashtoggle"){
+          toggleCashPaid(chk.getAttribute("data-cash"));
+        }
+      }catch(err){ console && console.error && console.error("paid-chk handler error", err); }
+    }, false);
+    /* Safety net: make sure a tap/click on a paid checkbox is never cancelled by
+       any capture-phase listener higher up — stop it from bubbling INTO the
+       scroll module's swallowers while still letting the native toggle happen. */
+    document.addEventListener("click", function(e){
+      var chk=e.target;
+      if(chk && chk.classList && chk.classList.contains("paid-chk")){ e.stopPropagation(); }
+    }, true);
+  }
   // Add a "swipe / rotate" scroll hint above each wide table (shown only on mobile via CSS).
   document.querySelectorAll(".table-scroll").forEach(function(ts){
     if(ts.previousElementSibling && ts.previousElementSibling.classList && ts.previousElementSibling.classList.contains("scrollhint")) return;
@@ -2886,7 +2924,9 @@ function enableDragScroll(){
     var mDown=false,mx=0,my=0,mLeft=0,mAxis=null,moved=false,pid=null;
     el.addEventListener("pointerdown",function(e){
       if(e.pointerType==="touch") return;
-      if(e.target&&e.target.closest&&e.target.closest(CTRL)) return;
+      // Never begin a drag (and never capture the pointer) when the press starts
+      // on an interactive control — this is what previously stole checkbox clicks.
+      if(e.target&&e.target.closest&&e.target.closest(CTRL)) { mDown=false; return; }
       if(e.pointerType==="mouse"&&e.button!==0) return;
       mDown=true; moved=false; mAxis=null; pid=e.pointerId; mx=e.clientX; my=e.clientY; mLeft=el.scrollLeft; el.style.cursor="grabbing";
     });
