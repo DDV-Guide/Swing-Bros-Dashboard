@@ -1153,6 +1153,15 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
   <div class="checkbox-row"><input type="checkbox" id="gd_playoff"><label for="gd_playoff" style="margin:0"><b>🏝️ Play-off / Final Day</b> — auto-apply standings bonus shots (<span id="poShotRule">−5 / −3 / −1</span>) to net</label></div>
   <div class="info-box hidden" id="poInfo"></div>
   <div class="checkbox-row"><input type="checkbox" id="gd_elclassico"><label for="gd_elclassico" style="margin:0"><b>⚔️ El Clásico</b> — festes Duell Glatter &amp; Breuer vs. Busch &amp; Preis (eigene All-Time-Wertung)</label></div>
+  <div class="field hidden" id="elcWinnerWrap" style="margin-top:12px">
+    <label for="gd_elc_winner"><b>El Clásico — Siegerteam</b> (Pflichtfeld)</label>
+    <select id="gd_elc_winner">
+      <option value="">— bitte wählen —</option>
+      <option value="A">Julian Glatter &amp; Lukas Breuer</option>
+      <option value="B">Marco Preis &amp; Dominik Busch</option>
+      <option value="T">Unentschieden (Tied)</option>
+    </select>
+  </div>
   <div class="checkbox-row"><input type="checkbox" id="gd_indivCounts"><label for="gd_indivCounts" style="margin:0">Individual stroke score counts (e.g. Rotating Threesome)</label></div>
   <p class="small-muted" id="scoringNote"></p>
   <div id="playersForm"></div>
@@ -1665,10 +1674,10 @@ function fromSheet(data){
   const games={};
   (data.GameDays||[]).forEach(r=>{const id=String(r.GameID||"").trim();if(!id||!r.Player)return;
     if(!games[id])games[id]={id,date:dstr(r["Date(YYYY-MM-DD)"]||r.Date),mode:String(r.Mode||""),course:String(r.Course||""),
-      indivCounts:B(r.IndivCounts),isPlayoff:B(r.IsPlayoff),isElClassico:B(r.IsElClassico),rows:[]};
+      indivCounts:B(r.IndivCounts),isPlayoff:B(r.IsPlayoff),isElClassico:B(r.IsElClassico),elWinner:String(r.ElClassicoWinner||"").trim(),rows:[]};
     const strokes=(r.Strokes===""||r.Strokes===null||r.Strokes===undefined)?null:num(r.Strokes);
     games[id].rows.push({player:String(r.Player).trim(),strokes:(strokes===null||isNaN(strokes))?null:strokes,
-      points:num(r.Points),money:num(r.Money),paid:B(r.Paid)});});
+      points:num(r.Points),money:num(r.Money),paid:B(r.Paid),courseHcp:((r.CourseHcp===""||r.CourseHcp===null||r.CourseHcp===undefined)?null:num(r.CourseHcp))});if(r.ElClassicoWinner){games[id].elWinner=String(r.ElClassicoWinner).trim();}if(B(r.IsElClassico))games[id].isElClassico=true;});
   s.gameDays=Object.values(games); // preserve physical sheet order (new rows stay appended at the end)
   (data.Cash||[]).forEach(r=>{const flow=String(r["Flow(In/Out)"]||r.Flow||"In").trim();const id=String(r.EntryID||uid());
     const amount=num(r.Amount);const date=dstr(r["Date(YYYY-MM-DD)"]||r.Date);
@@ -1693,8 +1702,8 @@ function toSheet(){
   const Players=state.players.map(p=>{var raw=(p&&p._raw)||{};var o={};for(var k in raw){ if(Object.prototype.hasOwnProperty.call(raw,k) && k!=="_raw") o[k]=raw[k]; }o.Name=p.name;o.Color=p.color;o["Active(TRUE/FALSE)"]=(p.active===false?"FALSE":"TRUE");if(p.nickname!==undefined && raw.Nickname===undefined) o.Nickname=p.nickname;if(p.country!==undefined && raw.Country===undefined) o.Country=p.country;if(p.golfclub!==undefined && raw["Golf Club"]===undefined) o["Golf Club"]=p.golfclub;if(p.golferSince!==undefined && raw["Golfer Since"]===undefined) o["Golfer Since"]=p.golferSince;if(p.bio!==undefined && raw.Bio===undefined) o.Bio=p.bio;if(p.trophies){if(raw["Swing Bros Championship"]===undefined) o["Swing Bros Championship"]=p.trophies["Swing Bros Championship"]||"";if(raw["Hacker Tour Champion"]===undefined) o["Hacker Tour Champion"]=p.trophies["Hacker Tour"]||"";if(raw["Live Golf Champion"]===undefined) o["Live Golf Champion"]=p.trophies["Live Golf"]||"";if(raw["Island Master"]===undefined) o["Island Master"]=p.trophies["Island Master"]||"";}return o;});
   const Handicaps=[];Object.keys(state.hdcHistory).forEach(n=>state.hdcHistory[n].forEach(e=>Handicaps.push({Player:n,"EffectiveDate(YYYY-MM-DD)":e.date,Hdc:e.hdc})));
   const GameDays=[];state.gameDays.forEach(g=>g.rows.forEach(r=>GameDays.push({GameID:g.id,"Date(YYYY-MM-DD)":g.date,Mode:g.mode,Course:g.course,
-    IndivCounts:g.indivCounts?"TRUE":"FALSE",IsPlayoff:g.isPlayoff?"TRUE":"FALSE",IsElClassico:g.isElClassico?"TRUE":"FALSE",Player:r.player,
-    Strokes:(r.strokes===null?"":r.strokes),Points:r.points,Money:r.money,Paid:(r.paid?"TRUE":"FALSE")})));
+    IndivCounts:g.indivCounts?"TRUE":"FALSE",IsPlayoff:g.isPlayoff?"TRUE":"FALSE",IsElClassico:g.isElClassico?"TRUE":"FALSE",ElClassicoWinner:(g.isElClassico?(g.elWinner||""):""),Player:r.player,
+    Strokes:(r.strokes===null?"":r.strokes),Points:r.points,Money:r.money,Paid:(r.paid?"TRUE":"FALSE"),CourseHcp:((r.courseHcp===null||r.courseHcp===undefined||r.courseHcp==="")?"":r.courseHcp)})));
   const Cash=[];
   state.cashIns.forEach(c=>Cash.push({EntryID:c.id,"Date(YYYY-MM-DD)":c.date,"Flow(In/Out)":"In",Category:c.type,Name:c.name,Player:c.payer,Amount:c.amount,CountInRanking:c.count?"TRUE":"FALSE",Paid:(c.paid?"TRUE":"FALSE")}));
   state.outflows.forEach(o=>Cash.push({EntryID:o.id,"Date(YYYY-MM-DD)":o.date,"Flow(In/Out)":"Out",Category:"Expense",Name:o.name,Player:"",Amount:o.amount,CountInRanking:"FALSE",Paid:"TRUE"}));
@@ -1865,13 +1874,15 @@ function buildPlayersForm(){
         <div class="field"><label>Score vs. par (e.g. 2 = +2, -2 = −2)</label><input type="number" step="1" class="pf-strokes" data-slot="${i}" placeholder="e.g. 2 or -2"></div>
         <div class="field"><label>Play-off bonus shots</label><input type="number" class="pf-bonus" data-slot="${i}" readonly value="0" style="background:var(--green-100)"></div>
         <div class="field"><label>Net (score − hdc − bonus)</label><input type="number" class="pf-net" data-slot="${i}" placeholder="auto" readonly style="background:var(--green-100)"></div></div>
+      <div class="row"><div class="field"><label>Course Handicap (optional, actual CH for this course/day)</label><input type="number" step="1" class="pf-coursehcp" data-slot="${i}" placeholder="e.g. 13"></div></div>
     </div>`).join("");
   const rc=slot=>{const name=wrap.querySelector(`.pf-player[data-slot="${slot}"]`).value;const str=wrap.querySelector(`.pf-strokes[data-slot="${slot}"]`);
     const date=$("#gd_date").value||new Date().toISOString().slice(0,10);const bonus=$("#gd_playoff").checked?playoffShotsFor(name,date):0;
     wrap.querySelector(`.pf-bonus[data-slot="${slot}"]`).value=bonus;
-    const net=str.value===""?"":(Number(str.value)-hdcOn(name,date)-bonus);wrap.querySelector(`.pf-net[data-slot="${slot}"]`).value=net===""?"":net;};
+    var _chInp=wrap.querySelector(`.pf-coursehcp[data-slot="${slot}"]`);var _ch=(_chInp&&_chInp.value!=="")?Number(_chInp.value):null;var _hdc=(_ch!==null&&!isNaN(_ch))?_ch:hdcOn(name,date);const net=str.value===""?"":(Number(str.value)-_hdc-bonus);wrap.querySelector(`.pf-net[data-slot="${slot}"]`).value=net===""?"":net;};
   wrap.querySelectorAll(".pf-strokes").forEach(inp=>inp.addEventListener("input",()=>rc(inp.dataset.slot)));
   wrap.querySelectorAll(".pf-player").forEach(sel=>sel.addEventListener("change",()=>rc(sel.dataset.slot)));
+  wrap.querySelectorAll(".pf-coursehcp").forEach(inp=>inp.addEventListener("input",()=>rc(inp.dataset.slot)));
   wrap.querySelectorAll(".pf-player").forEach((s,i)=>rc(i));
 }
 function updateScoringNote(){$("#scoringNote").innerHTML=$("#gd_indivCounts").checked
@@ -1940,21 +1951,23 @@ function readGameForm(){const date=$("#gd_date").value,mode=$("#gd_mode").value,
   const rows=[],names=new Set();for(let i=0;i<state.players.length;i++){const name=$(`.pf-player[data-slot="${i}"]`).value;
     const points=parseFloat($(`.pf-points[data-slot="${i}"]`).value)||0;const money=parseFloat($(`.pf-money[data-slot="${i}"]`).value)||0;
     const sr=$(`.pf-strokes[data-slot="${i}"]`).value;const strokes=sr!==""?Number(sr):null;names.add(name);
-    rows.push({player:name,strokes:(strokes===null||isNaN(strokes))?null:strokes,points,money});}return{date,mode,course,indiv,po,elc,rows,uniq:names.size};}
+    const _chEl=document.querySelector(`.pf-coursehcp[data-slot="${i}"]`);const _chV=(_chEl&&_chEl.value!=="")?Number(_chEl.value):null;
+    rows.push({player:name,strokes:(strokes===null||isNaN(strokes))?null:strokes,points,money,courseHcp:(_chV===null||isNaN(_chV))?null:_chV});}const elcWinner=(function(){var w=document.getElementById("gd_elc_winner");return w?w.value:"";})();return{date,mode,course,indiv,po,elc,elcWinner,rows,uniq:names.size};}
 function addOrSaveGame(){const g=readGameForm();
   if(!g.date)return toast("Please pick a date.","err");if(g.uniq!==state.players.length)return toast("Each slot must have a different player.","err");
   if(g.indiv&&g.rows.some(r=>r.strokes===null))return toast("Individual counts: enter strokes for all 4 players.","err");
+  if(g.elc && !["A","B","T"].includes(g.elcWinner))return toast("El Clásico: bitte das Siegerteam auswählen.","err");
   if(editingGameId){const prev=state.gameDays.find(x=>x.id===editingGameId);if(prev){g.rows.forEach(r=>{const pr=prev.rows.find(p=>p.player===r.player);if(pr&&pr.paid)r.paid=true;});}}
-  const entry={id:editingGameId||("G"+uid()),date:g.date,mode:g.mode,course:g.course,indivCounts:g.indiv,isPlayoff:g.po,isElClassico:g.elc,rows:g.rows};
+  const entry={id:editingGameId||("G"+uid()),date:g.date,mode:g.mode,course:g.course,indivCounts:g.indiv,isPlayoff:g.po,isElClassico:g.elc,elWinner:(g.elc?g.elcWinner:""),rows:g.rows};
   if(editingGameId){state.gameDays[state.gameDays.findIndex(x=>x.id===editingGameId)]=entry;toast("Game day updated ✔");exitEdit();}
   else{state.gameDays.push(entry);toast(g.po?"🏝️ Play-off day added ✔":"Game day added ✔");}
   syncGameCashIns(entry);
   save();renderAll();resetGameFormValues();closeModal();}
-function resetGameFormValues(){$("#gd_course").value="";$("#gd_playoff").checked=false;{var _ec=document.getElementById("gd_elclassico");if(_ec)_ec.checked=false;}$$(".pf-points,.pf-money,.pf-strokes,.pf-net").forEach(i=>i.value="");}
+function resetGameFormValues(){$("#gd_course").value="";$("#gd_playoff").checked=false;{var _ec=document.getElementById("gd_elclassico");if(_ec)_ec.checked=false;var _ew=document.getElementById("gd_elc_winner");if(_ew)_ew.value="";if(typeof updateElClassicoField==="function")updateElClassicoField();}$$(".pf-points,.pf-money,.pf-strokes,.pf-net").forEach(i=>i.value="");}
 function editGame(id){const g=state.gameDays.find(x=>x.id===id);if(!g)return;editingGameId=id;openModal("game");
   $("#gameModalTitle").textContent="Edit Game Day";$("#gd_date").value=g.date;$("#gd_mode").value=g.mode;$("#gd_course").value=g.course||"";
-  $("#gd_indivCounts").checked=!!g.indivCounts;$("#gd_playoff").checked=!!g.isPlayoff;{var _ec=document.getElementById("gd_elclassico");if(_ec)_ec.checked=!!g.isElClassico;}updateScoringNote();updatePlayoffInfo();buildPlayersForm();
-  g.rows.forEach((r,i)=>{$(`.pf-player[data-slot="${i}"]`).value=r.player;$(`.pf-points[data-slot="${i}"]`).value=r.points;$(`.pf-money[data-slot="${i}"]`).value=r.money;const st=$(`.pf-strokes[data-slot="${i}"]`);if(r.strokes!==null){st.value=r.strokes;st.dispatchEvent(new Event("input"));}});
+  $("#gd_indivCounts").checked=!!g.indivCounts;$("#gd_playoff").checked=!!g.isPlayoff;{var _ec=document.getElementById("gd_elclassico");if(_ec)_ec.checked=!!g.isElClassico;var _ew=document.getElementById("gd_elc_winner");if(_ew)_ew.value=g.elWinner||"";if(typeof updateElClassicoField==="function")updateElClassicoField();}updateScoringNote();updatePlayoffInfo();buildPlayersForm();
+  g.rows.forEach((r,i)=>{$(`.pf-player[data-slot="${i}"]`).value=r.player;$(`.pf-points[data-slot="${i}"]`).value=r.points;$(`.pf-money[data-slot="${i}"]`).value=r.money;const st=$(`.pf-strokes[data-slot="${i}"]`);if(r.strokes!==null){st.value=r.strokes;st.dispatchEvent(new Event("input"));}var _ch=document.querySelector(`.pf-coursehcp[data-slot="${i}"]`);if(_ch)_ch.value=(r.courseHcp===null||r.courseHcp===undefined)?"":r.courseHcp;});
   $("#addGameBtn").textContent="💾 Save changes";$("#cancelEditBtn").classList.remove("hidden");$("#gameFormCard").classList.add("editing");}
 function exitEdit(){editingGameId=null;$("#gameModalTitle").textContent="Add a Game Day";$("#addGameBtn").textContent="➕ Add Game Day";$("#cancelEditBtn").classList.add("hidden");$("#gameFormCard").classList.remove("editing");}
 function deleteGame(id){if(!confirm("Delete this game day?"))return;state.gameDays=state.gameDays.filter(x=>x.id!==id);removeGameCashIns(id);if(editingGameId===id)exitEdit();save();renderAll();toast("Game day deleted");}
@@ -2537,15 +2550,21 @@ function computeClassico(){
     }):[];
     games=games.slice().sort(function(a,b){return String(a.date).localeCompare(String(b.date));});
     games.forEach(function(g){
-      var a=0,b=0;
-      (g.rows||[]).forEach(function(r){
-        if(A.players.indexOf(r.player)>-1) a+=num(r.points);
-        else if(B.players.indexOf(r.player)>-1) b+=num(r.points);
-      });
-      // Win = +1 to the winner; tie = +0.5 each (independent of the raw point spread).
+      // Primary source of truth: the recorded winning team ("A", "B" or "T").
+      // Backward compatible: if no winner was recorded, derive it from the team points.
+      var w=String(g.elWinner||"").trim().toUpperCase();
+      if(w!=="A" && w!=="B" && w!=="T"){
+        var a=0,b=0;
+        (g.rows||[]).forEach(function(r){
+          if(A.players.indexOf(r.player)>-1) a+=num(r.points);
+          else if(B.players.indexOf(r.player)>-1) b+=num(r.points);
+        });
+        w = a>b ? "A" : (b>a ? "B" : "T");
+      }
+      // Win = +1 to the winner; tie = +0.5 each.
       var ptA, ptB;
-      if(a>b){ ptA=1; ptB=0; }
-      else if(b>a){ ptA=0; ptB=1; }
+      if(w==="A"){ ptA=1; ptB=0; }
+      else if(w==="B"){ ptA=0; ptB=1; }
       else { ptA=0.5; ptB=0.5; }
       res.aPts+=ptA; res.bPts+=ptB; res.games++;
       res.log.push({date:g.date, a:ptA, b:ptB});
@@ -2642,9 +2661,26 @@ function setTheme(t){document.documentElement.setAttribute("data-theme",t);$("#t
 /* =================================================================
    INIT
    ================================================================= */
+function updateElClassicoField(){
+  var cb=document.getElementById("gd_elclassico");
+  var wrap=document.getElementById("elcWinnerWrap");
+  var sel=document.getElementById("gd_elc_winner");
+  if(!wrap) return;
+  var on=cb && cb.checked;
+  wrap.classList.toggle("hidden", !on);
+  if(sel){ sel.required=!!on; if(!on) sel.value=""; }
+}
 function wireUI(){
   wirePlaybookUI();
   wirePlayersUI();
+  (function(){
+    var cb=document.getElementById("gd_elclassico");
+    if(cb && !cb.__elcWired){
+      cb.__elcWired=true;
+      cb.addEventListener("change", updateElClassicoField);
+    }
+    updateElClassicoField();
+  })();
   (function(){
     if(window.__syltTimer) return;
     var lastDay=new Date().toDateString();
