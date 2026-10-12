@@ -146,6 +146,9 @@ tbody tr.leader td{color:var(--ink);font-weight:600}
 .rotate-btn .ph{display:inline-block;animation:tilt 1.8s ease-in-out infinite;font-size:15px}
 @keyframes tilt{0%,100%{transform:rotate(0)}45%,55%{transform:rotate(-78deg)}}
 
+/* Hidden in historical (completed) seasons */
+.hist-hide{display:none !important}
+
 /* ---------------- Budget tile ---------------- */
 .budget-big{background:
    radial-gradient(500px 240px at 90% -20%, rgba(79,212,154,.22), transparent 60%),
@@ -1171,10 +1174,10 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
     <div class="card">
       
       <div class="card-head"><button class="rotate-btn" onclick="openTableFs('leaderboard','Season Leaderboard')" title="Rotate / open full table"><span class="ph">📱</span>➜ Full table</button></div><div class="tablebox"><div class="table-scroll"><table id="leaderboard" class="m-stack">
-        <thead><tr><th>#</th><th>Player</th><th>Hdc</th><th>Points</th><th><span class="lbl-full">Projected shots for final round</span><span class="lbl-short">Proj. shots</span></th><th>Total strokes</th><th>Avg gross</th><th>Avg net</th><th>Best round</th><th>Worst round</th></tr></thead>
+        <thead id="lbHead"><tr><th>#</th><th>Player</th><th>Hdc</th><th>Points</th><th class="lb-proj"><span class="lbl-full">Projected shots for final round</span><span class="lbl-short">Proj. shots</span></th><th>Total strokes</th><th>Avg gross</th><th>Avg net</th><th>Best round</th><th>Worst round</th></tr></thead>
         <tbody></tbody></table></div></div>
       <div class="po-banner" id="poBanner" style="margin-top:16px;margin-bottom:0">🏝️ <span></span></div>
-      <p class="small-muted">“Projected shots for final round” = the stroke bonus the current standings would give on the Island Masters final (see above). Scores are shown relative to par (e.g. +2 or −2). Avg net uses the handicap valid on each round's date.</p>
+      <p class="small-muted" id="lbExplain">“Projected shots for final round” = the stroke bonus the current standings would give on the Island Masters final (see above). Scores are shown relative to par (e.g. +2 or −2). Avg net uses the handicap valid on each round's date.</p>
     </div>
   
       <div class="rankhist">
@@ -1201,7 +1204,7 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
 
   <section id="sec-cash"><div class="section-title"><span class="ico">🪙</span> Cash Pool &amp; Competitions</div>
     <div style="display:block">
-      <div class="card budget-big" style="display:flex;flex-direction:column;justify-content:center">
+      <div class="card budget-big" id="budgetBox" style="display:flex;flex-direction:column;justify-content:center">
         <div class="lbl">Our budget (paid in by all of us)</div><div class="amt" id="totalBudget">0,00 €</div>
         <div class="small-muted" style="color:#cfe6da" id="budgetMeta"></div></div>
       <div class="card" style="margin-top:20px"><h3 style="color:var(--green-500);margin-bottom:12px;font-size:16px">Cash-in ranking (birthday payments excluded)</h3>
@@ -1228,7 +1231,7 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
   <a href="#sec-leaderboard"><span class="mi">🥇</span>Table</a>
   <a href="#sec-history"><span class="mi">📅</span>Games</a>
   <a href="#sec-cash"><span class="mi">🪙</span>Budget</a>
-  <a href="#sec-next"><span class="mi">🗓️</span>Next</a>
+  <a href="#sec-next" id="mnavNext"><span class="mi">🗓️</span>Next</a>
 </nav>
 
 <button class="fab-playbook" id="fabPlaybook" type="button" aria-label="Open Swing Bros Playbook" title="Playbook / Rules">
@@ -2352,6 +2355,10 @@ function renderDashboard(stats){const arr=Object.values(stats);
     tiles.push(`<div class="stat gold"><div class="label">🏆 Current leader</div><div class="value">${winner&&winner.points>0?winner.name:'–'}</div><div class="meta">${winner?fmtNum(winner.points,2)+' pts · −'+(winner.projShots||0)+' shots final':''}</div></div>`);
   }
   tiles.push(`<div class="stat"><div class="label">🎯 Lowest Round</div><div class="value">${lowest!==null?lw:'–'}</div><div class="meta">${lowest!==null?fmtPar(lowest)+(lc?' · '+lc:''):''}</div></div>`);
+  // Total Paid In Cash: sum of EVERY cash-in of the viewed season (no expenses / outflows deducted).
+  const _seasonCashIns=visibleCashIns();
+  const totalPaidIn=_seasonCashIns.reduce((a,c)=>a+num(c.amount),0);
+  tiles.push(`<div class="stat"><div class="label">💵 Total Paid In Cash</div><div class="value">${fmtMoney(totalPaidIn)}</div><div class="meta">${_seasonCashIns.length} cash-in${_seasonCashIns.length===1?'':'s'} · Season ${viewSeason()}</div></div>`);
   tiles.push(`<div class="stat gold"><div class="label">🪙 Top Cash Cow</div><div class="value">${tp&&tp[1]>0?tp[0]:'–'}</div><div class="meta">${tp&&tp[1]>0?fmtMoney(tp[1]):''}</div></div>`);
   // Budget + Road to Sylt only for the live/current season (not relevant for historical archive).
   if(current){
@@ -2361,10 +2368,14 @@ function renderDashboard(stats){const arr=Object.values(stats);
   }
   $("#dashboard").innerHTML=tiles.join("");}
 function renderLeaderboard(stats){const arr=Object.values(stats).sort((a,b)=>b.points-a.points||((a.avgNet??999)-(b.avgNet??999)));const tb=$("#leaderboard tbody");
+  // Historical (completed) seasons: final standings are fixed, so the "Projected shots" column is dropped.
+  const _showProj=isViewingCurrent();
+  {const _th=document.querySelector("#lbHead th.lb-proj"); if(_th) _th.style.display=_showProj?"":"none";}
+  M_LABELS.leaderboard=_showProj?LB_LABELS_FULL.slice():LB_LABELS_FULL.filter(function(l){return l!=="Proj. shots";});
   const rankNums=competitionRanks(arr.map(a=>a.points));
   tb.innerHTML=arr.map((s,i)=>`<tr class="${rankNums[i]===1&&s.points>0?'leader':''}"><td><span class="rankbadge ${rankNums[i]===1?'r1':''}">${rankNums[i]}</span></td>
     <td><span class="player-dot" style="background:${s.color};margin-right:6px"></span>${s.name} ${rankNums[i]===1&&s.points>0?'🏆':''}</td>
-    <td>${fmtNum(s.curHdc,1)}</td><td class="pts">${fmtNum(s.points,2)}</td><td>${s.projShots>0?`<span class="shotbadge">−${s.projShots} shots</span>`:'–'}</td>
+    <td>${fmtNum(s.curHdc,1)}</td><td class="pts">${fmtNum(s.points,2)}</td>${_showProj?`<td>${s.projShots>0?`<span class="shotbadge">−${s.projShots} shots</span>`:'–'}</td>`:''}
     <td>${s.totalStrokes?fmtPar(s.totalStrokes):'–'}</td><td>${s.avgGross!==null?fmtPar(s.avgGross):'–'}</td><td>${s.avgNet!==null?fmtPar(s.avgNet):'–'}</td>
     <td>${s.best!==null?fmtPar(s.best)+(s.bestCourse?' · '+s.bestCourse:''):'–'}</td><td>${s.worst!==null?fmtPar(s.worst)+(s.worstCourse?' · '+s.worstCourse:''):'–'}</td></tr>`).join("");
   tb.classList.remove("flash");void tb.offsetWidth;tb.classList.add("flash");
@@ -2510,8 +2521,9 @@ function renderCash(){const _cins=visibleCashIns(),_outs=visibleOutflows();const
   $("#ngHistory tbody").innerHTML=all.length?all.map(c=>{const payable=isOpenPayment(c);const paidCell = c.gameId ? `<input type="checkbox" class="paid-chk" title="Mark as paid / confirm payment" style="width:20px;height:20px;cursor:pointer" ${c.paid?"checked":""} onclick="toggleGameCashPaid(\'${c.id}\')">` : (payable ? `<input type="checkbox" class="paid-chk" title="Mark as received / confirm payment" style="width:20px;height:20px;cursor:pointer" ${c.paid?"checked":""} onclick="toggleCashPaid(\'${c.id}\')">` : '<span class="small-muted">—</span>');const actionCell = c.gameId ? '<span class="small-muted">⛳ from game</span>' : `<button class="btn-red btn-sm" onclick="deleteCashIn(\'${c.id}\')">🗑️</button>`;return `<tr><td>${fmtDate(c.date)}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type||'–'}${c.gameId?' <span class=\'pill\'>⛳</span>':''}</td><td>${c.name||'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${c.payer}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td style="text-align:center">${paidCell}</td><td style="text-align:center">${actionCell}</td></tr>`;}).join(""):`<tr><td colspan="8" style="color:var(--muted)">${cashFilter.size?"No entries for the selected "+(cashFilter.size>1?"people":"person")+".":"No entries yet."}</td></tr>`;}
 function renderAppts(){$("#apptList").innerHTML=state.appts.length?state.appts.map(a=>{const po=/island|play.?off|final/i.test(a.what);const w=String(a.when||"").trim();const hasDate=/\d/.test(w) && !/^tbd$/i.test(w) && !/^n\/?a$/i.test(w);const cls=po?"playoff":(hasDate?"dated":"tbd");return `<div class="appt ${cls}"><div class="what">${a.what}</div><div style="display:flex;align-items:center;gap:8px"><span class="when">${w||"tbd"}</span><button onclick="deleteAppt('${a.id}')">✕</button></div></div>`;}).join(""):`<p style="color:var(--muted)">No upcoming appointments.</p>`;}
 
+var LB_LABELS_FULL=["#","Player","Hdc","Points","Proj. shots","Total","Avg gross","Avg net","Best","Worst"];
 const M_LABELS={
-  leaderboard:["#","Player","Hdc","Points","Proj. shots","Total","Avg gross","Avg net","Best","Worst"],
+  leaderboard:["#","Player","Hdc","Points","Proj. shots","Total","Avg gross","Avg net","Best","Worst"],  // switched per season in renderLeaderboard
   history:["Date","Mode","Course","Indiv?","Details","Actions"],
   settleTable:["Player","What","Amount to pay in","Paid?"],
   cashTable:["#","Name","Total","Golf","PGA","FIFA","Others","#"],
@@ -2534,7 +2546,7 @@ function decorateMobileTables(){
 function setupScrollSpy(){
   const ids=["sec-summary","sec-leaderboard","sec-history","sec-cash","sec-next"];
   const links=document.querySelectorAll(".mnav a");
-  function onScroll(){ let cur=ids[0]; ids.forEach(function(id){const el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<=120)cur=id;}); links.forEach(function(a){a.classList.toggle("active",a.getAttribute("href")==="#"+cur);}); }
+  function onScroll(){ let cur=ids[0]; ids.forEach(function(id){const el=document.getElementById(id);if(el&&el.offsetParent!==null&&el.getBoundingClientRect().top<=120)cur=id;}); links.forEach(function(a){a.classList.toggle("active",a.getAttribute("href")==="#"+cur);}); }
   window.addEventListener("scroll",onScroll,{passive:true}); onScroll();
 }
 
@@ -3038,7 +3050,16 @@ function renderSeasonUI(){
     banner.innerHTML=html2;
   }
 }
-function renderAll(){renderSeasonUI();const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();renderRankChart();decorateMobileTables();enableDragScroll();if(typeof PL_OPEN!=="undefined"&&PL_OPEN){try{var _pv=document.getElementById("plProfile");if(_pv&&_pv.getAttribute("aria-hidden")==="false"){/* keep current profile */}else{plRenderLanding();}}catch(e){}}try{if(typeof pbRenderClassico==="function")pbRenderClassico();}catch(e){}}
+/* Historical (completed) seasons show a simplified page: no What's Next, no Outstanding
+   Payments, no Our-Budget box, no leaderboard explanation / projected-shots banner.
+   The current season is untouched. Purely presentational — data & sync are unaffected. */
+function applySeasonVisibility(){
+  var hist=!isViewingCurrent();
+  ["sec-next","sec-payin","budgetBox","lbExplain","poBanner","mnavNext"].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.classList.toggle("hist-hide",hist);
+  });
+}
+function renderAll(){renderSeasonUI();applySeasonVisibility();const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();renderRankChart();decorateMobileTables();enableDragScroll();if(typeof PL_OPEN!=="undefined"&&PL_OPEN){try{var _pv=document.getElementById("plProfile");if(_pv&&_pv.getAttribute("aria-hidden")==="false"){/* keep current profile */}else{plRenderLanding();}}catch(e){}}try{if(typeof pbRenderClassico==="function")pbRenderClassico();}catch(e){}}
 
 /* EXPORT */
 function exportCSV(){const stats=computeStats();const arr=Object.values(stats).sort((a,b)=>b.points-a.points);
