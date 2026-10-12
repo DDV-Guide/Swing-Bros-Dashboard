@@ -918,6 +918,9 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 .pb-standard-card{position:relative;border:2px solid var(--green-500);
   box-shadow:0 0 0 4px color-mix(in srgb,var(--green-500) 12%,transparent),var(--shadow)}
 .pb-standard-card>.pb-std-badge{position:absolute;top:12px;right:12px;margin:0}
+/* Variante A (Bestball & Aggregat) — Standard Playing Mode inside 3a */
+.pb-standard-card.pb-variant-std>.pb-std-badge{position:static;align-self:flex-start;margin:0 0 10px}
+.pb-standard-card.pb-variant-std{background:linear-gradient(180deg,color-mix(in srgb,var(--green-500) 7%,var(--card)) 0,var(--card) 110px)}
 @media (max-width:480px){
   .pb-std-badge{margin-left:0;margin-top:6px;font-size:10.5px}
   .pb-standard-card>.pb-std-badge{position:static;align-self:flex-start;margin-bottom:8px}
@@ -1180,7 +1183,7 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
     <div class="card">
       
       <div class="card-head"><button class="rotate-btn" onclick="openTableFs('leaderboard','Season Leaderboard')" title="Rotate / open full table"><span class="ph">📱</span>➜ Full table</button></div><div class="tablebox"><div class="table-scroll"><table id="leaderboard" class="m-stack">
-        <thead id="lbHead"><tr><th>#</th><th>Player</th><th>Hdc</th><th>Points</th><th class="lb-proj"><span class="lbl-full">Projected shots for final round</span><span class="lbl-short">Proj. shots</span></th><th>Total strokes</th><th>Avg gross</th><th>Avg net</th><th>Best round</th><th>Worst round</th></tr></thead>
+        <thead id="lbHead"><tr><th>#</th><th>Player</th><th>Hdc</th><th>Points</th><th class="lb-proj"><span class="lbl-full">Projected Shots Final</span><span class="lbl-short">Proj. shots</span></th><th>Total strokes</th><th>Avg gross</th><th>Avg net</th><th>Best round</th><th>Worst round</th></tr></thead>
         <tbody></tbody></table></div></div>
       <div class="po-banner" id="poBanner" style="margin-top:16px;margin-bottom:0">🏝️ <span></span></div>
       <p class="small-muted" id="lbExplain">“Projected shots for final round” = the stroke bonus the current standings would give on the Island Masters final (see above). Scores are shown relative to par (e.g. +2 or −2). Avg net uses the handicap valid on each round's date.</p>
@@ -1444,23 +1447,24 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
           <div class="pb-stage"><span class="pb-stage-n">2</span>Loch 7–12</div>
           <div class="pb-stage"><span class="pb-stage-n">3</span>Loch 13–18</div>
         </div>
-        <p class="pb-muted">Jeder Sechs-Loch-Abschnitt kann nach einer der folgenden Varianten gespielt werden.</p>
+        <p class="pb-muted">Jeder Sechs-Loch-Abschnitt wird standardmäßig nach <b>Variante A · Bestball &amp; Aggregat</b> gespielt; alternativ kann <b>Variante B · Scramble</b> vereinbart werden.</p>
       </div>
 
       <div class="pb-grid-2">
-        <div class="pb-card">
-          <h3 class="pb-h3">Variante A · Scramble (Zählspiel)</h3>
-          <p>Jedes Team spielt gemeinsam einen Ball: Nach jedem Schlag entscheidet das Team, welcher Ball weitergespielt wird; von dort spielen beide den nächsten Schlag. Gewertet wird das <b>Gesamtergebnis als Zählspiel</b>.</p>
-          <div class="pb-rulebox pb-rulebox-gold"><span>Vorgabe: Spielt ein Team gegen Preisi, erhält das <b>gegnerische Team einen Schlag Vorgabe pro Sechs-Loch-Abschnitt</b>.</span></div>
-        </div>
-        <div class="pb-card">
-          <h3 class="pb-h3">Variante B · Bestball &amp; Aggregat</h3>
-          <p>Zwei getrennte Wertungen, je ein Punkt:</p>
+        <div class="pb-card pb-standard-card pb-variant-std">
+          <span class="pb-std-badge">⭐ Standard Playing Mode</span>
+          <h3 class="pb-h3">Variante A · Bestball &amp; Aggregat</h3>
+          <p>Das <b>Standardformat</b> für jeden Sechs-Loch-Abschnitt der Swing-Bros-Saison. Zwei getrennte Wertungen, je ein Punkt:</p>
           <ul class="pb-list">
             <li><b>Bestball:</b> das bessere Einzelergebnis je Team wird verglichen → Gewinner erhält <b>1 Punkt</b>.</li>
             <li><b>Aggregat:</b> die beiden Einzelergebnisse je Team werden addiert und verglichen → Gewinner erhält <b>1 Punkt</b>.</li>
           </ul>
           <div class="pb-rulebox pb-rulebox-gold"><span>Vorgabe: <b>Preisi wird mit Handicap 0</b> gewertet; die drei anderen mit ihrem am Spieltag gültigen Handicap. Diese Vorgabe wirkt auf die Einzelergebnisse und damit auf Bestball <b>und</b> Aggregat.</span></div>
+        </div>
+        <div class="pb-card">
+          <h3 class="pb-h3">Variante B · Scramble (Zählspiel)</h3>
+          <p>Jedes Team spielt gemeinsam einen Ball: Nach jedem Schlag entscheidet das Team, welcher Ball weitergespielt wird; von dort spielen beide den nächsten Schlag. Gewertet wird das <b>Gesamtergebnis als Zählspiel</b>. Alternative zum Standardformat – Wahl vor dem Start an Tee 1.</p>
+          <div class="pb-rulebox pb-rulebox-gold"><span>Vorgabe: Spielt ein Team gegen Preisi, erhält das <b>gegnerische Team einen Schlag Vorgabe pro Sechs-Loch-Abschnitt</b>.</span></div>
         </div>
       </div>
     </div></details>
@@ -1616,8 +1620,7 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
           <ul class="pb-list">
             <li>Titel „Swing Bros Season Champion“</li>
             <li>Namensgravur auf dem Wanderpokal</li>
-            <li>Champions Dinner – eingeladen von den drei anderen</li>
-            <li>Highlight-Golfplatz (z. B. Bernardus oder vergleichbarer Saisonhöhepunkt auf Sylt)</li>
+            <li>Einladung zum Highlight-Golfplatz (z. B. Budersand) inklusive Champions-Dinner, gestiftet von den drei anderen Swing Bros.</li>
           </ul>
         </div>
         <div class="pb-card pb-last">
