@@ -2837,7 +2837,12 @@ function plRenderProfile(idx){
   if(cLG>0) ach.push({ic:"🎯",t:cLG+"× Live Golf"});
   // "Other" = big career wins in other tournaments: one achievement badge per entry,
   // shown verbatim as entered in the Players sheet column "Other".
-  otherList.forEach(function(x){ ach.push({ic:"🏆",t:x,cls:"pl-badge-other"}); });
+  // Format: "1× <title>" (same style as "2× Swing Bros Champion"). Identical entries are grouped (e.g. "2× <title>").
+  (function(){
+    var order=[], cnt={};
+    otherList.forEach(function(x){ var k=x.toLowerCase(); if(!cnt[k]){cnt[k]={label:x,n:0};order.push(k);} cnt[k].n++; });
+    order.forEach(function(k){ ach.push({ic:"🏆",t:cnt[k].n+"× "+cnt[k].label,cls:"pl-badge-other"}); });
+  })();
   if(live.standing===1) ach.push({ic:"🥇",t:"Current season leader"});
   if(!ach.length) ach.push({ic:"🌱",t:"Chasing a first title"});
   var achHtml='<div class="pl-card"><h3>Achievements</h3><div class="pl-ach">'
