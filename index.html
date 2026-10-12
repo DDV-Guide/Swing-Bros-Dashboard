@@ -733,10 +733,8 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 .pl-badge{display:inline-flex;align-items:center;gap:8px;background:var(--card-2);border:1px solid var(--line);
   border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--ink)}
 .pl-badge .ic{font-size:17px}
-/* "Other" career wins in Achievements — highlighted in the player's colour, long names wrap */
-.pl-badge.pl-badge-other{border:1.5px solid var(--pl-color,var(--green-500));
-  background:color-mix(in srgb,var(--pl-color,#2fb37c) 10%,var(--card-2));
-  white-space:normal;overflow-wrap:anywhere;max-width:100%;line-height:1.35}
+/* "Other" career wins in Achievements — same look as every other achievement; long names wrap */
+.pl-badge.pl-badge-other{white-space:normal;overflow-wrap:anywhere;max-width:100%;line-height:1.35}
 .pl-badge.pl-badge-other .ic{flex:0 0 auto}
 
 @media(max-width:600px){
@@ -1142,6 +1140,8 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
 .readonly-note{display:flex;align-items:center;gap:10px;margin-top:12px;padding:11px 15px;border-radius:12px;
   background:color-mix(in srgb,var(--green-500) 9%,var(--card-2));border:1px dashed var(--green-500);
   font-size:12.5px;color:var(--ink-soft)}
+.readonly-note.archive-note{align-items:flex-start;font-size:13.5px;line-height:1.55;color:var(--ink);
+  border-style:solid;border-color:var(--gold);background:color-mix(in srgb,var(--gold) 10%,var(--card-2))}
 @media (max-width:560px){ .champ-trophy{display:none} .champ-face{width:50px;height:50px} }
 </style>
 </head>
@@ -1824,10 +1824,34 @@ function seasonCompleted(season){
   var i=arr.indexOf(String(season));
   return i>-1 && i<arr.length-1;
 }
-/* Seasons offered as *historical* options = all completed seasons (older than current). */
-function historicalSeasons(){
-  return allSeasonsSorted().filter(function(s){ return seasonCompleted(s); });
+/* Archive-only seasons: seasons from before the official points & ranking system.
+   They have NO game-day / cash data — only a consensus champion and a note. They are
+   offered in the Season dropdown but never influence the current season, rankings,
+   budget or Google Sheets sync. */
+var ARCHIVE_ONLY_SEASONS = {
+  "2023": {
+    champion: "Marco Preis",
+    note: "Der Champion der Saison 2023 wurde im gemeinsamen Konsens der Swing Bros bestimmt. Ausschlaggebend war die herausragende Leistung von Marco Preis, der in diesem Jahr das Teilnehmerfeld deutlich dominierte. Da zu diesem Zeitpunkt noch kein offizielles Punkte- und Wertungssystem etabliert war, existieren für diese Saison weder ein Leaderboard noch weiterführende Statistiken."
+  }
+};
+function isArchiveOnlySeason(season){
+  return Object.prototype.hasOwnProperty.call(ARCHIVE_ONLY_SEASONS, String(season)) && !hasSeasonGames(season);
 }
+function hasSeasonGames(season){
+  return (state&&state.gameDays?state.gameDays:[]).some(function(g){ return seasonOf(g)===String(season); });
+}
+/* Seasons offered as *historical* options = all completed seasons (older than current)
+   plus the archive-only seasons (e.g. 2023). */
+function historicalSeasons(){
+  var arr=allSeasonsSorted().filter(function(s){ return seasonCompleted(s); });
+  var cur=currentSeason();
+  Object.keys(ARCHIVE_ONLY_SEASONS).forEach(function(s){
+    if(arr.indexOf(s)===-1 && s!==cur && isArchiveOnlySeason(s)) arr.push(s);
+  });
+  arr.sort(function(a,b){return Number(a)-Number(b);});
+  return arr;
+}
+function isViewingArchiveOnly(){ return !isViewingCurrent() && isArchiveOnlySeason(viewSeason()); }
 /* The season currently being viewed (selected, or the live current season). */
 function viewSeason(){ return SELECTED_SEASON || currentSeason(); }
 function isViewingCurrent(){ return viewSeason()===currentSeason(); }
@@ -3091,7 +3115,24 @@ function renderSeasonUI(){
   if(_lb){ _lb.textContent = isViewingCurrent() ? "Play-off until Island Masters" : ("Final standings · "+view); }
   if(banner){
     var html2="";
-    if(!isViewingCurrent()){
+    if(isViewingArchiveOnly()){
+      // Archive-only season (e.g. 2023): consensus champion banner + "Anmerkung" — no stats.
+      var aInfo=ARCHIVE_ONLY_SEASONS[String(view)];
+      var aName=aInfo.champion;
+      var aP=(state.players||[]).find(function(x){return x.name===aName;});
+      var aColor=aP?aP.color:"#caa43a";
+      var aPhoto=playerPhotoFor(aName);
+      var aFace = aPhoto
+        ? '<img class="champ-face" src="'+aPhoto+'" alt="'+escapeHtml(aName)+'">'
+        : '<div class="champ-face initials" style="background:'+aColor+'">'+escapeHtml(aName.slice(0,1))+'</div>';
+      html2+='<div class="champ-banner">'+aFace+
+        '<div class="champ-txt"><span class="champ-k">Season '+view+' Champion</span>'+
+        '<span class="champ-name">'+escapeHtml(aName)+'</span>'+
+        '<span class="champ-sub">🥇 Im Konsens der Swing Bros bestimmt</span></div>'+
+        '<div class="champ-trophy">🏆</div></div>';
+      html2+='<div class="readonly-note archive-note">📝 <span><b>Anmerkung:</b> '+escapeHtml(aInfo.note)+'</span></div>';
+    }
+    else if(!isViewingCurrent()){
       var champ=seasonChampion(view);
       if(champ){
         var photo=playerPhotoFor(champ.name);
@@ -3116,6 +3157,14 @@ function applySeasonVisibility(){
   var hist=!isViewingCurrent();
   ["sec-next","sec-payin","budgetBox","lbExplain","poBanner","mnavNext"].forEach(function(id){
     var el=document.getElementById(id); if(el) el.classList.toggle("hist-hide",hist);
+  });
+  // Archive-only seasons (e.g. 2023): only the champion banner + note remain.
+  var arch=isViewingArchiveOnly();
+  ["dashboard","sec-leaderboard","sec-history","sec-cash","sec-cashhist","sec-actions"].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.classList.toggle("hist-hide",arch);
+  });
+  document.querySelectorAll('.mnav a[href="#sec-leaderboard"],.mnav a[href="#sec-history"],.mnav a[href="#sec-cash"]').forEach(function(a){
+    a.classList.toggle("hist-hide",arch);
   });
 }
 function renderAll(){renderSeasonUI();applySeasonVisibility();const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();renderRankChart();decorateMobileTables();enableDragScroll();if(typeof PL_OPEN!=="undefined"&&PL_OPEN){try{var _pv=document.getElementById("plProfile");if(_pv&&_pv.getAttribute("aria-hidden")==="false"){/* keep current profile */}else{plRenderLanding();}}catch(e){}}try{if(typeof pbRenderClassico==="function")pbRenderClassico();}catch(e){}}
