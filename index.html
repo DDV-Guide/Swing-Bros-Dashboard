@@ -2566,7 +2566,74 @@ function renderCash(){const _cins=visibleCashIns(),_outs=visibleOutflows();const
   buildCashFilterChips();
   const inR=_cins.map(c=>({...c,flow:"In"}));const outR=_outs.map(o=>({...o,flow:"Out",type:"Expense",payer:""}));const all=inR.concat(outR).filter(cashFilterPass).sort((a,b)=>b.date.localeCompare(a.date));
   $("#ngHistory tbody").innerHTML=all.length?all.map(c=>{const payable=isOpenPayment(c);const paidCell = c.gameId ? `<input type="checkbox" class="paid-chk" title="Mark as paid / confirm payment" style="width:20px;height:20px;cursor:pointer" ${c.paid?"checked":""} onclick="toggleGameCashPaid(\'${c.id}\')">` : (payable ? `<input type="checkbox" class="paid-chk" title="Mark as received / confirm payment" style="width:20px;height:20px;cursor:pointer" ${c.paid?"checked":""} onclick="toggleCashPaid(\'${c.id}\')">` : '<span class="small-muted">—</span>');const actionCell = c.gameId ? '<span class="small-muted">⛳ from game</span>' : `<button class="btn-red btn-sm" onclick="deleteCashIn(\'${c.id}\')">🗑️</button>`;return `<tr><td>${fmtDate(c.date)}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type||'–'}${c.gameId?' <span class=\'pill\'>⛳</span>':''}</td><td>${c.name||'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${c.payer}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td style="text-align:center">${paidCell}</td><td style="text-align:center">${actionCell}</td></tr>`;}).join(""):`<tr><td colspan="8" style="color:var(--muted)">${cashFilter.size?"No entries for the selected "+(cashFilter.size>1?"people":"person")+".":"No entries yet."}</td></tr>`;}
-function renderAppts(){$("#apptList").innerHTML=state.appts.length?state.appts.map(a=>{const po=/island|play.?off|final/i.test(a.what);const w=String(a.when||"").trim();const hasDate=/\d/.test(w) && !/^tbd$/i.test(w) && !/^n\/?a$/i.test(w);const cls=po?"playoff":(hasDate?"dated":"tbd");return `<div class="appt ${cls}"><div class="what">${a.what}</div><div style="display:flex;align-items:center;gap:8px"><span class="when">${w||"tbd"}</span><button onclick="deleteAppt('${a.id}')">✕</button></div></div>`;}).join(""):`<p style="color:var(--muted)">No upcoming appointments.</p>`;}
+/* ---- What's Next: chronological sorting of appointments ----
+   "When" is free text (e.g. "07.08.26", "11.-15.09.26", "11.09.-15.09.2026",
+   "2026-10-12", "09.26", "März 2027", "tbd"). apptDateRange() extracts the start
+   and end date; the list is then shown as:
+     1) upcoming / ongoing appointments — soonest first (top = next appointment)
+     2) appointments without a usable date (tbd) — original order
+     3) past appointments (end date before today) — at the very bottom
+   Only the DISPLAY order changes; state.appts and the Google Sheet keep their order. */
+var APPT_MONTHS={jan:1,januar:1,january:1,"jän":1,feb:2,februar:2,february:2,"mär":3,"märz":3,maerz:3,mar:3,march:3,apr:4,april:4,mai:5,may:5,jun:6,juni:6,june:6,jul:7,juli:7,july:7,aug:8,august:8,sep:9,sept:9,september:9,okt:10,oct:10,oktober:10,october:10,nov:11,november:11,dez:12,dec:12,dezember:12,december:12};
+function apptFullYear(y){ y=Number(y); return y<100 ? 2000+y : y; }
+function apptValid(y,m,d){ if(!(m>=1&&m<=12&&d>=1&&d<=31)) return false; var dt=new Date(y,m-1,d); return dt.getMonth()===m-1; }
+function apptDateRange(when){
+  var w=String(when||"").trim(); if(!w) return null;
+  var toks=[], m, re;
+  // 1) ISO dates (also what Google Sheets returns for real date cells)
+  re=/(\d{4})-(\d{1,2})-(\d{1,2})/g;
+  while((m=re.exec(w))){ toks.push({d:+m[3],m:+m[2],y:+m[1]}); }
+  // 2) European numeric dates incl. ranges: "11.-15.09.26", "07.08.26", "09.26", "07/08/2026"
+  if(!toks.length){
+    re=/(\d{1,2})[.\/](?:\s*(\d{1,2})[.\/]?)?(?:\s*(\d{4}|\d{2})(?!\d))?/g;
+    while((m=re.exec(w))){
+      var d=+m[1], mo=m[2]?+m[2]:null, y=m[3]?apptFullYear(m[3]):null;
+      if(mo!==null && mo>12 && y===null){ y=apptFullYear(mo); mo=d; d=1; }   // "09.26" = month.year
+      toks.push({d:d,m:mo,y:y});
+    }
+    // inherit missing month / year from the following token ("11.-15.09.26")
+    for(var i=toks.length-2;i>=0;i--){
+      if(toks[i].m===null) toks[i].m=toks[i+1].m;
+      if(toks[i].y===null) toks[i].y=toks[i+1].y;
+    }
+    // no numeric month found (e.g. "15. Mai 2027") -> try month names instead
+    if(!toks.some(function(k){return k.m!==null;})) toks=[];
+  }
+  // 3) Month names: "März 2027", "15. Mai 2027", "Sept 26"
+  if(!toks.length){
+    re=/(?:(\d{1,2})\.?\s*)?([A-Za-zÄÖÜäöü]{3,9})\.?\s*(\d{4}|\d{2})?(?!\d)/g;
+    while((m=re.exec(w))){
+      var key=m[2].toLowerCase(), mm=APPT_MONTHS[key]||APPT_MONTHS[key.slice(0,3)];
+      if(!mm) continue;
+      toks.push({d:m[1]?+m[1]:1,m:mm,y:m[3]?apptFullYear(m[3]):null});
+    }
+    for(var j=toks.length-2;j>=0;j--){ if(toks[j].y===null) toks[j].y=toks[j+1].y; }
+  }
+  // 4) Year only: "2027"
+  if(!toks.length){ m=w.match(/\b(20\d{2})\b/); if(m) toks.push({d:1,m:1,y:+m[1]}); }
+  // finalise: missing year -> this year (or next year if that is clearly in the past)
+  var today=new Date(); today.setHours(0,0,0,0);
+  var dates=toks.filter(function(k){return k.m!==null;}).map(function(k){
+    var y=k.y;
+    if(y===null){ y=today.getFullYear(); var tmp=new Date(y,k.m-1,k.d); if(tmp<today-30*864e5) y++; }
+    return apptValid(y,k.m,k.d) ? new Date(y,k.m-1,k.d) : null;
+  }).filter(Boolean);
+  if(!dates.length) return null;
+  var start=dates[0], end=dates[dates.length-1];
+  if(end<start){ var x=start; start=end; end=x; }
+  return {start:start,end:end};
+}
+function sortedAppts(list){
+  var today=new Date(); today.setHours(0,0,0,0);
+  return (list||[]).map(function(a,i){ return {a:a,i:i,r:apptDateRange(a.when)}; })
+    .sort(function(x,y){
+      function grp(o){ return !o.r ? 1 : (o.r.end<today ? 2 : 0); }   // 0 upcoming, 1 tbd, 2 past
+      var gx=grp(x), gy=grp(y); if(gx!==gy) return gx-gy;
+      if(gx===1) return x.i-y.i;
+      return (x.r.start-y.r.start) || (x.r.end-y.r.end) || (x.i-y.i);
+    }).map(function(o){ return o.a; });
+}
+function renderAppts(){$("#apptList").innerHTML=state.appts.length?sortedAppts(state.appts).map(a=>{const po=/island|play.?off|final/i.test(a.what);const w=String(a.when||"").trim();const hasDate=/\d/.test(w) && !/^tbd$/i.test(w) && !/^n\/?a$/i.test(w);const cls=po?"playoff":(hasDate?"dated":"tbd");return `<div class="appt ${cls}"><div class="what">${a.what}</div><div style="display:flex;align-items:center;gap:8px"><span class="when">${w||"tbd"}</span><button onclick="deleteAppt('${a.id}')">✕</button></div></div>`;}).join(""):`<p style="color:var(--muted)">No upcoming appointments.</p>`;}
 
 var LB_LABELS_FULL=["#","Player","Hdc","Points","Proj. shots","Total","Avg gross","Avg net","Best","Worst"];
 const M_LABELS={
