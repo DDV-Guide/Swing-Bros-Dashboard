@@ -591,7 +591,7 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 .rankhist-toggle .rh-ico{font-size:16px;font-weight:800;line-height:1;color:var(--green-600)}
 .rankhist-body{overflow:hidden;max-height:0;opacity:0;transition:max-height .45s ease,opacity .35s ease,margin-top .35s ease;margin-top:0}
 .rankhist-body:not([hidden]).open{max-height:1200px;opacity:1;margin-top:14px}
-#histGdBody.open,#histCashBody.open{max-height:4000px}
+#histGdBody.open,#histCashBody.open{max-height:none}
 .rankhist-legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px}
 .rankhist-legend .lg-item{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink-soft)}
 .rankhist-legend .lg-dot{width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 2px var(--card)}
@@ -1154,7 +1154,7 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
     <div class="h-main">
       <h1><span class="edit-title" id="titleInput">Swing Bros</span></h1>
       <div class="subtitle">Championship and Budget Dashboard</div>
-      <div class="sub">Live-synced to Google Sheets · use the <b>＋</b> button (bottom-right) to add data</div><div class="credit credit-head">Designed in Gnadental. Produced in Silicon Valley.</div>
+<div class="credit credit-head">Designed in Gnadental. Produced in Silicon Valley.</div>
     </div>
     <div class="h-controls">
       <div class="season-pick">
@@ -1211,7 +1211,7 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
   <section id="sec-cash"><div class="section-title"><span class="ico">🪙</span> Cash Pool &amp; Competitions</div>
     <div style="display:block">
       <div class="card budget-big" id="budgetBox" style="display:flex;flex-direction:column;justify-content:center">
-        <div class="lbl">Our budget (paid in by all of us)</div><div class="amt" id="totalBudget">0,00 €</div>
+        <div class="lbl">Our budget</div><div class="amt" id="totalBudget">0,00 €</div>
         <div class="small-muted" style="color:#cfe6da" id="budgetMeta"></div></div>
       <div class="card" style="margin-top:20px"><h3 style="color:var(--green-500);margin-bottom:12px;font-size:16px">Cash-in ranking (birthday payments excluded)</h3>
         <div class="tablebox"><div class="table-scroll"><table id="cashTable" class="m-stack"><thead><tr><th>#</th><th>Name</th><th>Total</th><th>Golf</th><th>PGA</th><th>FIFA</th><th>Others</th><th>#</th></tr></thead><tbody></tbody></table></div></div></div>
@@ -2405,11 +2405,11 @@ function renderDashboard(stats){const arr=Object.values(stats);
   const _seasonCashIns=_seasonCashInsAll.filter(c=>!isCarryForward(c));
   const _carryAmt=_seasonCashInsAll.filter(isCarryForward).reduce((a,c)=>a+num(c.amount),0);
   const totalPaidIn=_seasonCashIns.reduce((a,c)=>a+num(c.amount),0);
-  tiles.push(`<div class="stat"><div class="label">💵 Total Paid In Cash</div><div class="value">${fmtMoney(totalPaidIn)}</div><div class="meta">${_seasonCashIns.length} cash-in${_seasonCashIns.length===1?'':'s'} · Season ${viewSeason()}${_carryAmt>0?` · excl. Übertrag ${fmtMoney(_carryAmt)}`:''}</div></div>`);
+  tiles.push(`<div class="stat"><div class="label">💵 Total Paid In Cash</div><div class="value">${fmtMoney(totalPaidIn)}</div><div class="meta">Total cash-ins Season ${viewSeason()}</div></div>`);
   tiles.push(`<div class="stat gold"><div class="label">🪙 Top Cash Cow</div><div class="value">${tp&&tp[1]>0?tp[0]:'–'}</div><div class="meta">${tp&&tp[1]>0?fmtMoney(tp[1]):''}</div></div>`);
   // Budget + Road to Sylt only for the live/current season (not relevant for historical archive).
   if(current){
-    tiles.push(`<div class="stat"><div class="label">💶 Our budget</div><div class="value">${fmtMoney(budgetTotal())}</div><div class="meta">paid in by all of us</div></div>`);
+    tiles.push(`<div class="stat"><div class="label">💶 Our budget</div><div class="value">${fmtMoney(budgetTotal())}</div></div>`);
     var d=daysToSylt();
     if(d!==null) tiles.push('<div class="stat sylt"><div class="label">🏖️ Road to Sylt</div><div class="value">'+d+'</div><div class="meta">Days until the trip to Sylt</div></div>');
   }
@@ -3300,17 +3300,29 @@ function wireUI(){
       var opening=body.hasAttribute("hidden");
       if(opening){
         body.removeAttribute("hidden");
-        requestAnimationFrame(function(){ body.classList.add("open"); });
+        body.style.maxHeight="0px";
+        requestAnimationFrame(function(){
+          body.classList.add("open");
+          // Animate to the real content height, then remove the cap entirely so long
+          // tables (e.g. full Cash-in & expense history) are never cut off.
+          body.style.maxHeight=body.scrollHeight+"px";
+        });
+        var release=function(){ if(body.classList.contains("open")) body.style.maxHeight="none"; body.removeEventListener("transitionend",release); };
+        body.addEventListener("transitionend",release);
+        setTimeout(release,520);
         btn.setAttribute("aria-expanded","true");
         btn.querySelector(".rh-ico").textContent="−";
         btn.querySelector(".rh-label").textContent=hideLbl;
         if(typeof opts.onOpen==="function"){ try{ opts.onOpen(); }catch(e){} }
       }else{
+        body.style.maxHeight=body.scrollHeight+"px";   // from "none" back to a px value so it can animate
+        void body.offsetHeight;
         body.classList.remove("open");
+        body.style.maxHeight="0px";
         btn.setAttribute("aria-expanded","false");
         btn.querySelector(".rh-ico").textContent="＋";
         btn.querySelector(".rh-label").textContent=showLbl;
-        var hide=function(){ if(!body.classList.contains("open")) body.setAttribute("hidden",""); body.removeEventListener("transitionend",hide); };
+        var hide=function(){ if(!body.classList.contains("open")){ body.setAttribute("hidden",""); body.style.maxHeight=""; } body.removeEventListener("transitionend",hide); };
         body.addEventListener("transitionend",hide);
         setTimeout(hide,480);
       }
