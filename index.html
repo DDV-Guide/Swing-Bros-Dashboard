@@ -733,6 +733,11 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 .pl-badge{display:inline-flex;align-items:center;gap:8px;background:var(--card-2);border:1px solid var(--line);
   border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--ink)}
 .pl-badge .ic{font-size:17px}
+/* "Other" career wins in Achievements — highlighted in the player's colour, long names wrap */
+.pl-badge.pl-badge-other{border:1.5px solid var(--pl-color,var(--green-500));
+  background:color-mix(in srgb,var(--pl-color,#2fb37c) 10%,var(--card-2));
+  white-space:normal;overflow-wrap:anywhere;max-width:100%;line-height:1.35}
+.pl-badge.pl-badge-other .ic{flex:0 0 auto}
 
 @media(max-width:600px){
   .pl-hero{min-height:300px}
@@ -2830,11 +2835,13 @@ function plRenderProfile(idx){
   if(cIM>0) ach.push({ic:"🏝️",t:cIM+"× Island Master"});
   if(cHT>0) ach.push({ic:"⛳",t:cHT+"× Hacker Tour"});
   if(cLG>0) ach.push({ic:"🎯",t:cLG+"× Live Golf"});
-  if(cOT>0) ach.push({ic:"🏅",t:cOT+"× Other title"+(cOT===1?"":"s")});
+  // "Other" = big career wins in other tournaments: one achievement badge per entry,
+  // shown verbatim as entered in the Players sheet column "Other".
+  otherList.forEach(function(x){ ach.push({ic:"🏆",t:x,cls:"pl-badge-other"}); });
   if(live.standing===1) ach.push({ic:"🥇",t:"Current season leader"});
   if(!ach.length) ach.push({ic:"🌱",t:"Chasing a first title"});
   var achHtml='<div class="pl-card"><h3>Achievements</h3><div class="pl-ach">'
-    + ach.map(function(a){return '<span class="pl-badge"><span class="ic">'+a.ic+'</span>'+plEsc(a.t)+'</span>';}).join("")
+    + ach.map(function(a){return '<span class="pl-badge'+(a.cls?' '+a.cls:'')+'"><span class="ic">'+a.ic+'</span>'+plEsc(a.t)+'</span>';}).join("")
     + '</div></div>';
 
   var bioHtml = p.bio
