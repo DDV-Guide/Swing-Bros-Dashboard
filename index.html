@@ -1938,7 +1938,7 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function fromSheet(data){
   const s={players:[],hdcHistory:{},gameDays:[],cashIns:[],outflows:[],appts:[],
            title:"Swing Bros Championship and Budget Dashboard",year:"2026",theme:"light"};
-  (data.Players||[]).forEach(r=>{if(r.Name)s.players.push({name:String(r.Name).trim(),_raw:r,color:String(r.Color||"#888").trim(),active:B(r["Active(TRUE/FALSE)"]!==undefined?r["Active(TRUE/FALSE)"]:r.Active),nickname:String(r.Nickname||"").trim(),country:String(r.Country||"").trim(),golfclub:String(r["Golf Club"]||r.Golfclub||r.GolfClub||"").trim(),golferSince:String(r["Golfer Since"]||r["Golfer since"]||"").trim(),bio:String(r.Bio||"").trim(),trophies:{"Swing Bros Championship":String(r["Swing Bros Championship"]||"").trim(),"Hacker Tour":String(r["Hacker Tour Champion"]||r["Hacker Tour"]||"").trim(),"Live Golf":String(r["Live Golf Champion"]||r["Live Golf"]||"").trim(),"Island Master":String(r["Island Master"]||r["Island Masters"]||"").trim()}});});
+  (data.Players||[]).forEach(r=>{if(r.Name)s.players.push({name:String(r.Name).trim(),_raw:r,color:String(r.Color||"#888").trim(),active:B(r["Active(TRUE/FALSE)"]!==undefined?r["Active(TRUE/FALSE)"]:r.Active),nickname:String(r.Nickname||"").trim(),country:String(r.Country||"").trim(),golfclub:String(r["Golf Club"]||r.Golfclub||r.GolfClub||"").trim(),golferSince:String(r["Golfer Since"]||r["Golfer since"]||"").trim(),bio:String(r.Bio||"").trim(),trophies:{"Swing Bros Championship":String(r["Swing Bros Championship"]||"").trim(),"Hacker Tour":String(r["Hacker Tour Champion"]||r["Hacker Tour"]||"").trim(),"Live Golf":String(r["Live Golf Champion"]||r["Live Golf"]||"").trim(),"Island Master":String(r["Island Master"]||r["Island Masters"]||"").trim()},otherTitles:plTitleCount(r.Other!==undefined?r.Other:r.other)});});
   s.players.forEach(p=>s.hdcHistory[p.name]=[]);
   (data.Handicaps||[]).forEach(r=>{const n=String(r.Player||"").trim();if(!n)return;if(!s.hdcHistory[n])s.hdcHistory[n]=[];
     s.hdcHistory[n].push({date:dstr(r["EffectiveDate(YYYY-MM-DD)"]||r.EffectiveDate||"1900-01-01")||"1900-01-01",hdc:num(r.Hdc)});});
@@ -2340,6 +2340,18 @@ function budgetTotal(){
   // Current season: opening balance + all later cash-ins − all later expenses (fully dynamic).
   return budgetBreakdown().total;
 }
+/* Carry-forward ("Übertrag") detection for cash-ins. Checks every text field a cash
+   row can carry (Name, Category/type, Player) — case-insensitive, trimmed, Unicode-
+   normalised (also tolerates the "Uebertrag" spelling). */
+function isCarryForward(c){
+  if(!c) return false;
+  return [c.name,c.type,c.payer,c.category].some(function(v){
+    if(v===null||v===undefined) return false;
+    var x=String(v); try{ x=x.normalize("NFC"); }catch(e){}
+    x=x.trim().toLowerCase();
+    return x.indexOf("übertrag")>-1 || x.indexOf("uebertrag")>-1;
+  });
+}
 function renderDashboard(stats){const arr=Object.values(stats);
   // Season-scoped: Game days + Top Cash Cow reflect ONLY the currently viewed season.
   const seasonGames=visibleGameDays();
@@ -2355,10 +2367,15 @@ function renderDashboard(stats){const arr=Object.values(stats);
     tiles.push(`<div class="stat gold"><div class="label">🏆 Current leader</div><div class="value">${winner&&winner.points>0?winner.name:'–'}</div><div class="meta">${winner?fmtNum(winner.points,2)+' pts · −'+(winner.projShots||0)+' shots final':''}</div></div>`);
   }
   tiles.push(`<div class="stat"><div class="label">🎯 Lowest Round</div><div class="value">${lowest!==null?lw:'–'}</div><div class="meta">${lowest!==null?fmtPar(lowest)+(lc?' · '+lc:''):''}</div></div>`);
-  // Total Paid In Cash: sum of EVERY cash-in of the viewed season (no expenses / outflows deducted).
-  const _seasonCashIns=visibleCashIns();
+  // Total Paid In Cash: sum of all cash-ins of the viewed season, EXCLUDING the
+  // carry-forward ("Übertrag") row — it is the previous season's balance, not a new
+  // contribution. Excluded directly in the filter (never deducted twice). Expenses /
+  // outflows are never part of visibleCashIns(), so they are excluded by design.
+  const _seasonCashInsAll=visibleCashIns();
+  const _seasonCashIns=_seasonCashInsAll.filter(c=>!isCarryForward(c));
+  const _carryAmt=_seasonCashInsAll.filter(isCarryForward).reduce((a,c)=>a+num(c.amount),0);
   const totalPaidIn=_seasonCashIns.reduce((a,c)=>a+num(c.amount),0);
-  tiles.push(`<div class="stat"><div class="label">💵 Total Paid In Cash</div><div class="value">${fmtMoney(totalPaidIn)}</div><div class="meta">${_seasonCashIns.length} cash-in${_seasonCashIns.length===1?'':'s'} · Season ${viewSeason()}</div></div>`);
+  tiles.push(`<div class="stat"><div class="label">💵 Total Paid In Cash</div><div class="value">${fmtMoney(totalPaidIn)}</div><div class="meta">${_seasonCashIns.length} cash-in${_seasonCashIns.length===1?'':'s'} · Season ${viewSeason()}${_carryAmt>0?` · excl. Übertrag ${fmtMoney(_carryAmt)}`:''}</div></div>`);
   tiles.push(`<div class="stat gold"><div class="label">🪙 Top Cash Cow</div><div class="value">${tp&&tp[1]>0?tp[0]:'–'}</div><div class="meta">${tp&&tp[1]>0?fmtMoney(tp[1]):''}</div></div>`);
   // Budget + Road to Sylt only for the live/current season (not relevant for historical archive).
   if(current){
@@ -2654,6 +2671,14 @@ var FLAG_BY_COUNTRY={ "germany":"🇩🇪","deutschland":"🇩🇪","austria":"�
 function plFlag(country){ if(!country) return ""; var f=FLAG_BY_COUNTRY[String(country).trim().toLowerCase()]; return f?f+" ":"📍 "; }
 function plInitials(name){ return String(name||"").trim().split(/\s+/).map(function(w){return w[0]||"";}).slice(0,2).join("").toUpperCase(); }
 function plPhoto(name){ return PLAYER_PHOTOS[name] || null; }
+/* "Other" titles (Players sheet column "Other") are stored as a plain COUNT.
+   Safe numeric conversion: blank / missing / non-numeric / negative -> 0. */
+function plTitleCount(v){
+  if(v===null||v===undefined) return 0;
+  var n=(typeof v==="number")?v:parseFloat(String(v).trim().replace(",","."));
+  if(!isFinite(n)||isNaN(n)||n<0) return 0;
+  return Math.floor(n);
+}
 function plParseYears(str){
   if(!str) return [];
   return String(str).split(/[,;/]+/).map(function(x){return x.trim();})
@@ -2744,6 +2769,12 @@ function plRenderProfile(idx){
       + ' <span class="pl-tcount">'+years.length+'</span></div>'
       + '<div class="pl-years">'+yearsHtml+'</div></div>';
   }).join("");
+  // "Other" titles: count only (no years) — read from the Players sheet column "Other".
+  var cOT=plTitleCount(p.otherTitles);
+  totalTitles=Number(totalTitles)+cOT;
+  trophyRows+='<div class="pl-trow"><div class="pl-tname">🏅 Other'
+    + ' <span class="pl-tcount">'+cOT+'</span></div>'
+    + '<div class="pl-years">'+(cOT>0?'<span class="pl-year win">'+cOT+'× title'+(cOT===1?'':'s')+'</span>':'<span class="pl-none">\u2013</span>')+'</div></div>';
 
   var cSB=plParseYears(p.trophies?p.trophies["Swing Bros Championship"]:"").length;
   var cHT=plParseYears(p.trophies?p.trophies["Hacker Tour"]:"").length;
@@ -2785,6 +2816,7 @@ function plRenderProfile(idx){
   if(cIM>0) ach.push({ic:"🏝️",t:cIM+"× Island Master"});
   if(cHT>0) ach.push({ic:"⛳",t:cHT+"× Hacker Tour"});
   if(cLG>0) ach.push({ic:"🎯",t:cLG+"× Live Golf"});
+  if(cOT>0) ach.push({ic:"🏅",t:cOT+"× Other title"+(cOT===1?"":"s")});
   if(live.standing===1) ach.push({ic:"🥇",t:"Current season leader"});
   if(!ach.length) ach.push({ic:"🌱",t:"Chasing a first title"});
   var achHtml='<div class="pl-card"><h3>Achievements</h3><div class="pl-ach">'
@@ -2810,6 +2842,7 @@ function plRenderProfile(idx){
       + '<div class="pl-stat"><div class="v">'+cHT+'</div><div class="l">Hacker Tour</div></div>'
       + '<div class="pl-stat"><div class="v">'+cLG+'</div><div class="l">Live Golf</div></div>'
       + '<div class="pl-stat"><div class="v">'+cIM+'</div><div class="l">Island Master</div></div>'
+      + '<div class="pl-stat"><div class="v">'+cOT+'</div><div class="l">Other</div></div>'
     + '</div></div>'
     + '<div class="pl-card"><h3>Trophy cabinet</h3><div class="pl-trophies">'+trophyRows+'</div></div>'
     + achHtml
