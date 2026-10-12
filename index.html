@@ -896,6 +896,27 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 .pb-details-body .pb-card:first-child{margin-top:4px}
 
 
+/* ===== Standard Playing Mode (Playbook 3a) ===== */
+.pb-details.pb-standard{border:2px solid var(--green-500);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--green-500) 14%,transparent),var(--shadow);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--green-500) 7%,var(--card)) 0,var(--card) 90px)}
+.pb-details.pb-standard>.pb-summary{flex-wrap:wrap}
+.pb-std-badge{display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin-left:8px;
+  font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;
+  color:#3a2f05;background:var(--grad-gold,linear-gradient(135deg,#e3c766,#caa43a));border:1px solid var(--gold);
+  border-radius:999px;padding:4px 10px;box-shadow:0 2px 8px rgba(202,164,58,.28)}
+.pb-std-note{display:flex;align-items:flex-start;gap:10px;margin:4px 0 16px;padding:12px 14px;border-radius:12px;
+  border:1px dashed var(--green-500);background:color-mix(in srgb,var(--green-500) 10%,var(--card-2));
+  color:var(--ink);font-size:13.5px;line-height:1.5}
+.pb-standard-card{position:relative;border:2px solid var(--green-500);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--green-500) 12%,transparent),var(--shadow)}
+.pb-standard-card>.pb-std-badge{position:absolute;top:12px;right:12px;margin:0}
+@media (max-width:480px){
+  .pb-std-badge{margin-left:0;margin-top:6px;font-size:10.5px}
+  .pb-standard-card>.pb-std-badge{position:static;align-self:flex-start;margin-bottom:8px}
+}
+
+
 /* Equal-height governance boxes: align trailing rule boxes to the card bottom */
 .pb-grid-2 > .pb-card{display:flex;flex-direction:column}
 .pb-grid-2 > .pb-card > .pb-rulebox:last-child{margin-top:auto}
@@ -910,7 +931,7 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 .pb-tl-sum-ic{font-size:24px;line-height:1;flex:none}
 
 
-/* Dynamic handicap list in Playbook 3a */
+/* Dynamic handicap list in Playbook 3b (Einzelwertung) */
 .pb-hcp-list{display:flex;flex-direction:column;gap:8px;width:100%}
 .pb-hcp-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .pb-hcp-name{font-weight:800;color:var(--ink)}
@@ -1128,7 +1149,6 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
     </div>
     <div class="h-controls">
       <div class="season-pick">
-        <div class="season-kpi"><span class="y" id="yearInput">2026</span><span class="s">Season</span></div>
         <label class="season-sel-wrap"><span class="season-sel-lbl">Select Season</span>
           <select id="seasonSelect" class="season-sel" title="Select season"></select>
         </label>
@@ -1323,7 +1343,7 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
   <div class="pb-wrap">
     <header class="pb-hero">
       <div class="pb-hero-kicker">Offizielles Regelwerk</div>
-      <h1 class="pb-hero-title">Das Swing Bros Playbook</h1>
+      <h1 class="pb-hero-title">Swing Bros Playbook</h1>
       <p class="pb-hero-sub">Regeln, Formate, Punktesystem &amp; Finanzordnung – die verbindliche Grundlage für jeden offiziellen Swing-Bros-Zock.</p>
     </header>
 
@@ -1372,7 +1392,7 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
     <section class="pb-chapter" id="pb-ch2">
       <h2 class="pb-h2"><span class="pb-ic">🏝️</span> 2 · Saisonkalender &amp; Island Masters</h2>
       <div class="pb-card">
-        <p>Die <b>Island Masters</b> sind das prestigeträchtigste Event im Swing Bros Kalender. Über vier Turniertage wird ein eigenständiger Champion ermittelt, während das Turnier gleichzeitig die Brücke zwischen zwei Swing Bros Saisons schlägt. <b>Tag 1 &amp; Tag 2</b> bilden das zweitägige Saisonfinale (Play-off-Final) der alten Saison – inklusive der unveränderten Play-off-Shots. Erst die <b>Tage 3 &amp; 4</b> eröffnen die neue Saison. Da sämtliche vier Runden in die Swing Bros Championship einfließen, besitzen die Island Masters eine außergewöhnliche sportliche Relevanz und nehmen eine Sonderstellung im gesamten Wettbewerbskalender ein.</p>
+        <p>Die <b>Island Masters</b> sind das prestigeträchtigste Event im Swing Bros Kalender. Über vier Turniertage wird ein eigenständiger Champion ermittelt, während das Turnier gleichzeitig die Brücke zwischen zwei Swing Bros Saisons schlägt. <b>Tag 1 &amp; Tag 2</b> bilden das zweitägige Saisonfinale (Play-off-Final) der alten Saison: zwei 18-Loch-Runden im Netto-Zählspiel, in denen die über die reguläre Saison erspielten Play-off-Shots („Shots Gained“) eingelöst werden und der Swing Bros Champion des Jahres ermittelt wird (Details in Kapitel 6). Erst die <b>Tage 3 &amp; 4</b> eröffnen die neue Saison. Da sämtliche vier Runden in die Swing Bros Championship einfließen, besitzen die Island Masters eine außergewöhnliche sportliche Relevanz und nehmen eine Sonderstellung im gesamten Wettbewerbskalender ein.</p>
 
         <!-- Island Masters tournament spanning all 4 days -->
         <div class="pb-im">
@@ -1396,8 +1416,8 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
     <section class="pb-chapter" id="pb-ch3">
       <h2 class="pb-h2"><span class="pb-ic">👑</span> 3 · Die Königsdisziplinen</h2>
       <div class="pb-grid-2">
-        <div class="pb-card pb-format"><div class="pb-format-ic">🎯</div><h3 class="pb-h3">Einzelwertung</h3><p>Jeder spielt seinen eigenen Ball – gewertet wird das Netto relativ zu Par.</p></div>
-        <div class="pb-card pb-format"><div class="pb-format-ic">🔄</div><h3 class="pb-h3">Rotating Threesome</h3><p>Drei Sechs-Loch-Abschnitte mit rotierenden Zweier-Teams.</p></div>
+        <div class="pb-card pb-format pb-standard-card"><span class="pb-std-badge">⭐ Standard Playing Mode</span><div class="pb-format-ic">🔄</div><h3 class="pb-h3">3a · Rotating Threesome</h3><p>Drei Sechs-Loch-Abschnitte mit rotierenden Zweier-Teams.</p></div>
+        <div class="pb-card pb-format"><div class="pb-format-ic">🎯</div><h3 class="pb-h3">3b · Einzelwertung</h3><p>Jeder spielt seinen eigenen Ball – gewertet wird das Netto relativ zu Par.</p></div>
       </div>
       <div class="pb-rulebox pb-rulebox-green">
         <span class="pb-vote">3 / 4</span>
@@ -1405,8 +1425,39 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
       </div>
     <p class="pb-muted">Details zu beiden Königsdisziplinen findest du direkt darunter – zum Aufklappen auf <b>3a</b> bzw. <b>3b</b> tippen.</p></section>
 
-    <!-- ===== 4. Individual format ===== -->
-    <details class="pb-details pb-chapter" id="pb-ch4"><summary class="pb-summary"><span class="pb-ic">🎯</span><span class="pb-sum-title">3a · Regeln der Einzelwertung</span><span class="pb-sum-hint">Details</span><span class="pb-chev">▾</span></summary><div class="pb-details-body">
+    <!-- ===== 3a. Rotating Threesome — STANDARD PLAYING MODE ===== -->
+    <details class="pb-details pb-chapter pb-standard" id="pb-ch5"><summary class="pb-summary"><span class="pb-ic">🔄</span><span class="pb-sum-title">3a · Rotating Threesome <span class="pb-std-badge">⭐ Standard Playing Mode</span></span><span class="pb-sum-hint">Details</span><span class="pb-chev">▾</span></summary><div class="pb-details-body">
+      <div class="pb-std-note">⭐ <span><b>Standard Playing Mode:</b> Der Rotating Threesome ist das Standardformat für Wertung und Spielbetrieb jedes offiziellen Swing-Bros-Spieltags – sofern vor dem Start an Tee 1 nicht per Dreiviertelmehrheit ein anderes Format beschlossen wird.</span></div>
+      <div class="pb-card">
+        <p>Drei Abschnitte mit je sechs Löchern. Die Teamzusammensetzung rotiert, sodass unterschiedliche Zweier-Teams gegeneinander antreten.</p>
+        <div class="pb-stages">
+          <div class="pb-stage"><span class="pb-stage-n">1</span>Loch 1–6</div>
+          <div class="pb-stage"><span class="pb-stage-n">2</span>Loch 7–12</div>
+          <div class="pb-stage"><span class="pb-stage-n">3</span>Loch 13–18</div>
+        </div>
+        <p class="pb-muted">Jeder Sechs-Loch-Abschnitt kann nach einer der folgenden Varianten gespielt werden.</p>
+      </div>
+
+      <div class="pb-grid-2">
+        <div class="pb-card">
+          <h3 class="pb-h3">Variante A · Scramble (Zählspiel)</h3>
+          <p>Jedes Team spielt gemeinsam einen Ball: Nach jedem Schlag entscheidet das Team, welcher Ball weitergespielt wird; von dort spielen beide den nächsten Schlag. Gewertet wird das <b>Gesamtergebnis als Zählspiel</b>.</p>
+          <div class="pb-rulebox pb-rulebox-gold"><span>Vorgabe: Spielt ein Team gegen Preisi, erhält das <b>gegnerische Team einen Schlag Vorgabe pro Sechs-Loch-Abschnitt</b>.</span></div>
+        </div>
+        <div class="pb-card">
+          <h3 class="pb-h3">Variante B · Bestball &amp; Aggregat</h3>
+          <p>Zwei getrennte Wertungen, je ein Punkt:</p>
+          <ul class="pb-list">
+            <li><b>Bestball:</b> das bessere Einzelergebnis je Team wird verglichen → Gewinner erhält <b>1 Punkt</b>.</li>
+            <li><b>Aggregat:</b> die beiden Einzelergebnisse je Team werden addiert und verglichen → Gewinner erhält <b>1 Punkt</b>.</li>
+          </ul>
+          <div class="pb-rulebox pb-rulebox-gold"><span>Vorgabe: <b>Preisi wird mit Handicap 0</b> gewertet; die drei anderen mit ihrem am Spieltag gültigen Handicap. Diese Vorgabe wirkt auf die Einzelergebnisse und damit auf Bestball <b>und</b> Aggregat.</span></div>
+        </div>
+      </div>
+    </div></details>
+
+    <!-- ===== 3b. Individual format ===== -->
+    <details class="pb-details pb-chapter" id="pb-ch4"><summary class="pb-summary"><span class="pb-ic">🎯</span><span class="pb-sum-title">3b · Regeln der Einzelwertung</span><span class="pb-sum-hint">Details</span><span class="pb-chev">▾</span></summary><div class="pb-details-body">
 
       <div class="pb-card">
         <h3 class="pb-h3">Grundformat</h3>
@@ -1446,42 +1497,21 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
       </div>
 
       <div class="pb-card pb-highlight" id="pbHcpConfig">
-        <h3 class="pb-h3">⚙️ Handicap &amp; aktuelle Vorgabe</h3>
-        <p>Grundsätzlich gilt das am Tag der Runde gültige Handicap. <b id="pbHcpRef">Marco Preis</b> wird als Referenz auf <b>0</b> gesetzt; alle anderen erhalten als Vorgabe die Differenz <b>eigenes Handicap − Handicap von Marco Preis</b>.</p>
+        <h3 class="pb-h3">⚙️ Handicap · Course Handicap &amp; Stroke Index</h3>
+        <p>Maßgeblich ist das offizielle <b>Course Handicap (Spielvorgabe)</b> des jeweiligen Spielers für den gespielten Golfplatz und Abschlag – so, wie es der Golfclub bzw. die offizielle Course-Handicap-Tabelle am Spieltag ausweist. Grundlage ist der am Spieltag gültige Handicap-Index; Course Rating, Slope und Par des Platzes sind darin bereits berücksichtigt.</p>
+        <ul class="pb-list">
+          <li><b>Nettoergebnis = Brutto − Course Handicap</b> (im Play-off-Finale zusätzlich abzüglich der Play-off-Shots).</li>
+          <li>Die Vorgabeschläge werden gemäß <b>Stroke Index</b> der Scorekarte verteilt: je ein Schlag an den Löchern mit Stroke Index 1 bis zur Höhe des Course Handicaps (z. B. Course Handicap 12 → je −1 an den Löchern mit SI 1–12).</li>
+          <li>Bei einem Course Handicap über 18 erhält der Spieler auf allen Löchern einen Schlag und zusätzlich einen zweiten Schlag an den Löchern mit SI 1 bis (Course Handicap − 18).</li>
+          <li>Das Course Handicap wird beim Anlegen eines Spieltags je Spieler im Feld <b>„Course Handicap“</b> erfasst und fließt so direkt in Netto-Score, Tageswertung und Saisontabelle ein. Ist kein Wert erfasst, wird hilfsweise das im Dashboard gepflegte Handicap verwendet.</li>
+        </ul>
         <div class="pb-rulebox pb-rulebox-gold">
-          <div id="pbHcpList" class="pb-hcp-list"></div>
+          <div style="width:100%">
+            <div style="margin-bottom:8px;font-weight:700">Aktuell hinterlegte Handicaps (Basis für das Course Handicap je Platz):</div>
+            <div id="pbHcpList" class="pb-hcp-list"></div>
+          </div>
         </div>
-        <p class="pb-muted">Die Vorgabe ergibt sich aus <b>eigenes Handicap − Handicap Marco Preis</b> und wird kaufmännisch auf <b>volle Schläge</b> gerundet (z. B. 9,5 → 10, 9,4 → 9, 6,5 → 7, 6,4 → 6). Beispiel: Marco Preis HCP 3, Dominik Busch HCP 10 → <b>+7 Schläge</b>: An den 7 schwersten Löchern wird Dominiks Brutto-Ergebnis am jeweiligen Loch um −1 gewertet. Werte aktualisieren sich automatisch aus den im Dashboard gepflegten Handicaps.</p>
-      </div>
-    </div></details>
-
-    <!-- ===== 5. Rotating Threesome ===== -->
-    <details class="pb-details pb-chapter" id="pb-ch5"><summary class="pb-summary"><span class="pb-ic">🔄</span><span class="pb-sum-title">3b · Rotating Threesome</span><span class="pb-sum-hint">Details</span><span class="pb-chev">▾</span></summary><div class="pb-details-body">
-      <div class="pb-card">
-        <p>Drei Abschnitte mit je sechs Löchern. Die Teamzusammensetzung rotiert, sodass unterschiedliche Zweier-Teams gegeneinander antreten.</p>
-        <div class="pb-stages">
-          <div class="pb-stage"><span class="pb-stage-n">1</span>Loch 1–6</div>
-          <div class="pb-stage"><span class="pb-stage-n">2</span>Loch 7–12</div>
-          <div class="pb-stage"><span class="pb-stage-n">3</span>Loch 13–18</div>
-        </div>
-        <p class="pb-muted">Jeder Sechs-Loch-Abschnitt kann nach einer der folgenden Varianten gespielt werden.</p>
-      </div>
-
-      <div class="pb-grid-2">
-        <div class="pb-card">
-          <h3 class="pb-h3">Variante A · Scramble (Zählspiel)</h3>
-          <p>Jedes Team spielt gemeinsam einen Ball: Nach jedem Schlag entscheidet das Team, welcher Ball weitergespielt wird; von dort spielen beide den nächsten Schlag. Gewertet wird das <b>Gesamtergebnis als Zählspiel</b>.</p>
-          <div class="pb-rulebox pb-rulebox-gold"><span>Vorgabe: Spielt ein Team gegen Preisi, erhält das <b>gegnerische Team einen Schlag Vorgabe pro Sechs-Loch-Abschnitt</b>.</span></div>
-        </div>
-        <div class="pb-card">
-          <h3 class="pb-h3">Variante B · Bestball &amp; Aggregat</h3>
-          <p>Zwei getrennte Wertungen, je ein Punkt:</p>
-          <ul class="pb-list">
-            <li><b>Bestball:</b> das bessere Einzelergebnis je Team wird verglichen → Gewinner erhält <b>1 Punkt</b>.</li>
-            <li><b>Aggregat:</b> die beiden Einzelergebnisse je Team werden addiert und verglichen → Gewinner erhält <b>1 Punkt</b>.</li>
-          </ul>
-          <div class="pb-rulebox pb-rulebox-gold"><span>Vorgabe: <b>Preisi wird mit Handicap 0</b> gewertet; die drei anderen mit ihrem am Spieltag gültigen Handicap. Diese Vorgabe wirkt auf die Einzelergebnisse und damit auf Bestball <b>und</b> Aggregat.</span></div>
-        </div>
+        <p class="pb-muted">Die Liste aktualisiert sich automatisch aus den im Dashboard gepflegten Handicaps. Das für die Wertung verbindliche Course Handicap ergibt sich je Platz und Abschlag aus der offiziellen Course-Handicap-Tabelle des Clubs.</p>
       </div>
     </div></details>
 
@@ -1517,7 +1547,7 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
               <tr><td>Platz 4</td><td><span class="pb-pill">0,00</span></td></tr>
             </tbody>
           </table>
-          <p class="pb-muted">Bei Gleichstand gilt die Teilungsregel aus Kapitel 3a.</p>
+          <p class="pb-muted">Bei Gleichstand gilt die Teilungsregel aus Kapitel 3b.</p>
         </div>
         <div class="pb-card">
           <h3 class="pb-h3">Punkte · Rotating Threesome</h3>
@@ -1573,7 +1603,7 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
         <div class="pb-card pb-champ">
           <div class="pb-vs-ic">🏆</div>
           <h3 class="pb-h3">Season Champion</h3>
-          <p>Meiste Gesamtpunkte am Saisonende.</p>
+          <p>Sieger des zweitägigen Play-off-Finales bei den Island Masters – niedrigster Final Championship Score.</p>
           <ul class="pb-list">
             <li>Titel „Swing Bros Season Champion“</li>
             <li>Namensgravur auf dem Wanderpokal</li>
@@ -1590,6 +1620,22 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
             <li>Tragepflicht die gesamte Folgesaison – sobald mindestens ein weiteres Mitglied im selben Flight ist</li>
           </ul>
         </div>
+      </div>
+      <div class="pb-card pb-highlight pb-calc" id="pbFinalFormat">
+        <h3 class="pb-h3">🏝️ Play-off-Finale · Island Masters</h3>
+        <p>Der <b>Swing Bros Champion des Jahres</b> wird im Play-off-Finale ermittelt. Das Finale besteht aus <b>zwei 18-Loch-Runden</b>, gespielt an <b>Tag 1 und Tag 2 der Island Masters</b>.</p>
+        <ul class="pb-list">
+          <li>Beide Runden werden im <b>Netto-Zählspiel</b> gewertet – auf Basis des offiziellen <b>Course Handicaps</b> des jeweiligen Spielers auf dem jeweiligen Golfplatz.</li>
+          <li>Die Vorgabeschläge werden platzspezifisch gemäß <b>Stroke Index</b> der Löcher verteilt (siehe Kapitel 3b).</li>
+          <li>Der in der regulären Saison über die Tabellenplatzierung erspielte Play-off-Vorteil (<b>„Shots Gained“</b>) wird vom Gesamtergebnis beider Finalrunden <b>abgezogen</b>.</li>
+        </ul>
+        <div class="pb-formula">
+          <span class="pb-f-item">Netto <b>Tag 1</b></span><span class="pb-f-op">+</span>
+          <span class="pb-f-item">Netto <b>Tag 2</b></span><span class="pb-f-op">−</span>
+          <span class="pb-f-item">Play-off <b>Shots Gained</b></span><span class="pb-f-op">=</span>
+          <span class="pb-f-item pb-f-res">Final Championship Score</span>
+        </div>
+        <div class="pb-rulebox pb-rulebox-gold"><span>Der Spieler mit dem <b>niedrigsten Final Championship Score</b> ist der <b>Swing Bros Champion des Jahres</b>.</span></div>
       </div>
       <div class="pb-rulebox"><span>Bei Gleichstand um die Championship oder den letzten Platz entscheidet ein oder mehrere Folgematches.</span></div>
     </section>
@@ -1701,10 +1747,14 @@ function competitionRanks(values){
   }
   return ranks;
 }
-let BUDGET_BASELINE=120;      // default anchor; override via Settings "BudgetBaseline"
+/* Budget = opening balance (historical baseline only) + every cash-in − every expense
+   dated AFTER the baseline date. The baseline is NOT the live budget; it is just the
+   verified fund balance at the close of BUDGET_BASELINE_DATE. Both values can be
+   overridden via Settings "BudgetBaseline" / "BudgetBaselineDate" in the Sheet. */
+let BUDGET_BASELINE=120;                 // opening balance (EUR) as of BUDGET_BASELINE_DATE
+let BUDGET_BASELINE_DATE="2026-10-05";   // fixed reference date of the opening balance (YYYY-MM-DD)
 let SYLT_START_DATE="2027-03-10";   // single source of truth for "Road to Sylt" (trip start); override via Settings "IslandMastersDate"
 let ISLAND_MASTERS_DATE=SYLT_START_DATE;   // kept as alias for backward compatibility
-let BUDGET_BASELINE_DATE=new Date().toISOString().slice(0,10);  // default = today; override via Settings "BudgetBaselineDate"
 
 /* =================================================================
    STATE (built from the Sheet). Internal shape:
@@ -1931,7 +1981,8 @@ function toSheet(){
   state.outflows.forEach(o=>Cash.push({EntryID:o.id,"Date(YYYY-MM-DD)":o.date,"Flow(In/Out)":"Out",Category:"Expense",Name:o.name,Player:"",Amount:o.amount,CountInRanking:"FALSE",Paid:"TRUE",Season:(o.season||"")}));
   const Appointments=state.appts.map(a=>({ApptID:a.id,What:a.what,When:a.when}));
   const Settings=[{Key:"Title",Value:state.title},{Key:"Year",Value:state.year},{Key:"Currency",Value:CURRENCY},
-    {Key:"PlayoffShots",Value:PLAYOFF_SHOTS.join(",")},{Key:"Theme",Value:state.theme}];
+    {Key:"PlayoffShots",Value:PLAYOFF_SHOTS.join(",")},{Key:"Theme",Value:state.theme},
+    {Key:"BudgetBaseline",Value:BUDGET_BASELINE},{Key:"BudgetBaselineDate",Value:BUDGET_BASELINE_DATE}];
   return {Players,Handicaps,GameDays,Cash,Appointments,Settings};
 }
 
@@ -2256,6 +2307,26 @@ function syncGameCashIns(game){
   });
 }
 function removeGameCashIns(gameId){state.cashIns=state.cashIns.filter(c=>c.gameId!==gameId);}
+/* A cash flow belongs to the live fund if it is dated after the baseline date and
+   does not belong to an archived season older than the baseline season. Works for
+   historical (back-dated) and future entries alike, across season roll-overs. */
+function budgetInWindow(c){
+  const d=String(BUDGET_BASELINE_DATE||"");
+  const cd=String((c&&c.date)||"");
+  if(d && !(cd>d)) return false;                 // already contained in the opening balance
+  const baseSea=Number(yearOfDate(d)||0);
+  const sea=Number(seasonOfCash(c)||0);
+  if(baseSea && sea && sea<baseSea) return false; // archived 2024/2025 data never affects the live fund
+  return true;
+}
+function budgetBreakdown(){
+  const base=(BUDGET_BASELINE!==null && BUDGET_BASELINE!==undefined && !isNaN(BUDGET_BASELINE)) ? num(BUDGET_BASELINE) : 0;
+  const ins =(state&&state.cashIns ?state.cashIns :[]).filter(budgetInWindow);
+  const outs=(state&&state.outflows?state.outflows:[]).filter(budgetInWindow);
+  const inSum =ins.reduce((a,c)=>a+num(c.amount),0);
+  const outSum=outs.reduce((a,c)=>a+num(c.amount),0);
+  return {base, date:BUDGET_BASELINE_DATE, inSum, outSum, inCount:ins.length, outCount:outs.length, total:base+inSum-outSum};
+}
 function budgetTotal(){
   // Historical seasons: show that season's own net budget (In − Out), fully isolated from live data.
   if(!isViewingCurrent()){
@@ -2263,12 +2334,8 @@ function budgetTotal(){
     const outH = visibleOutflows().reduce((a,c)=>a+num(c.amount),0);
     return inH - outH;
   }
-  // Current season: anchored budget, scoped so historical seasons can never drag it.
-  const base = (BUDGET_BASELINE!==null && !isNaN(BUDGET_BASELINE)) ? BUDGET_BASELINE : 0;
-  const d = BUDGET_BASELINE_DATE || "9999-12-31";
-  const inA  = state.cashIns.filter(c=>String(c.date)>=d && seasonOfCash(c)===currentSeason()).reduce((a,c)=>a+num(c.amount),0);
-  const outA = state.outflows.filter(c=>String(c.date)>=d && seasonOfCash(c)===currentSeason()).reduce((a,c)=>a+num(c.amount),0);
-  return base + inA - outA;
+  // Current season: opening balance + all later cash-ins − all later expenses (fully dynamic).
+  return budgetBreakdown().total;
 }
 function renderDashboard(stats){const arr=Object.values(stats);
   // Season-scoped: Game days + Top Cash Cow reflect ONLY the currently viewed season.
@@ -2432,7 +2499,10 @@ function clearCashFilter(){if(!cashFilter.size)return;cashFilter.clear();renderC
 function cashFilterPass(c){if(!cashFilter.size)return true;return !!c.payer && cashFilter.has(c.payer);}
 function renderCash(){const _cins=visibleCashIns(),_outs=visibleOutflows();const map={};state.players.forEach(p=>map[p.name]={name:p.name,color:p.color,total:0,Golf:0,PGA:0,FIFA:0,Others:0,count:0});
   _cins.forEach(c=>{if(!c.count)return;const m=map[c.payer];if(!m)return;const cat=["Golf","PGA","FIFA"].includes(c.type)?c.type:"Others";m[cat]+=num(c.amount);m.total+=num(c.amount);m.count++;});
-  $("#totalBudget").textContent=fmtMoney(budgetTotal());$("#budgetMeta").textContent=_cins.length+" cash-ins · "+_outs.length+" expenses";
+  $("#totalBudget").textContent=fmtMoney(budgetTotal());
+  if(isViewingCurrent()){const _bb=budgetBreakdown();
+    $("#budgetMeta").textContent="Opening balance "+fmtMoney(_bb.base)+(_bb.date?" ("+fmtDate(_bb.date)+")":"")+" + "+fmtMoney(_bb.inSum)+" cash-ins ("+_bb.inCount+") − "+fmtMoney(_bb.outSum)+" expenses ("+_bb.outCount+")";}
+  else{$("#budgetMeta").textContent=_cins.length+" cash-ins · "+_outs.length+" expenses";}
   const arr=Object.values(map).sort((a,b)=>b.total-a.total);
   $("#cashTable tbody").innerHTML=arr.map((m,i)=>`<tr><td><span class="rankbadge ${i===0&&m.total>0?'r1':''}">${i+1}</span></td><td><span class="player-dot" style="background:${m.color}"></span> ${m.name}</td><td class="pts">${fmtMoney(m.total)}</td><td>${fmtMoney(m.Golf)}</td><td>${fmtMoney(m.PGA)}</td><td>${fmtMoney(m.FIFA)}</td><td>${fmtMoney(m.Others)}</td><td>${m.count}</td></tr>`).join("");
   buildCashFilterChips();
@@ -2806,8 +2876,8 @@ var PB_CHAPTERS = [
   ["pb-ch1","1 · Grundlagen"],
   ["pb-ch2","2 · Island Masters"],
   ["pb-ch3","3 · Formate"],
-  ["pb-ch4","3a · Einzel"],
-  ["pb-ch5","3b · Rotating"],
+  ["pb-ch5","3a · Rotating ⭐"],
+  ["pb-ch4","3b · Einzel"],
   ["pb-ch6","4 · Punkte"],
   ["pb-ch7","5 · 2 vs 2"],
   ["pb-ch8","6 · Championship"],
@@ -2882,27 +2952,15 @@ function pbRenderClassico(){
 }
 function pbApplyHcpConfig(){
   var list=document.getElementById("pbHcpList"); if(!list) return;
-  var REF="Marco Preis";
   try{
     if(!state || !state.players || !state.players.length){ list.innerHTML='<span>Handicaps werden geladen…</span>'; return; }
     function hcpOf(n){ return (typeof currentHdc==="function")?Number(currentHdc(n)):0; }
-    var refHcp=hcpOf(REF);
-    var refRound=Math.round(refHcp);
-    var players=state.players.filter(function(p){return p && p.name;});
-    var refArr=players.filter(function(p){return p.name===REF;}).map(function(p){
-      return {name:p.name, hcp:refHcp, give:0, isRef:true};
-    });
-    var others=players.filter(function(p){return p.name!==REF;}).map(function(p){
-      var h=hcpOf(p.name);
-      return {name:p.name, hcp:h, give:Math.max(0, Math.round(h) - refRound), isRef:false};
+    var rows=state.players.filter(function(p){return p && p.name;}).map(function(p){
+      return {name:p.name, hcp:hcpOf(p.name)};
     }).sort(function(a,b){ return a.hcp-b.hcp || a.name.localeCompare(b.name); });
-    var rows=refArr.concat(others);
-    var refEl=document.getElementById("pbHcpRef"); if(refEl) refEl.textContent=REF;
     list.innerHTML=rows.map(function(r){
-      var shots=r.isRef?"0 Shots":("+"+r.give+" Shots");
-      var cls=r.isRef?" pb-hcp-ref":"";
       return '<div class="pb-hcp-row"><span class="pb-hcp-name">'+r.name+'</span>'
-        +'<span class="pb-hcp-badge'+cls+'">HCP '+plNum(r.hcp,1)+' | '+shots+'</span></div>';
+        +'<span class="pb-hcp-badge">HCP '+plNum(r.hcp,1)+' → Course Handicap je Platz</span></div>';
     }).join("");
   }catch(e){ list.innerHTML='<span>Handicaps nicht verfügbar.</span>'; }
 }
@@ -2943,8 +3001,8 @@ function renderSeasonUI(){
   // Build dropdown: "Current Season (<cur>)" + each completed historical season (desc), no duplicates.
   if(sel){
     var hist=historicalSeasons().filter(function(s){return s!==cur;}).sort(function(a,b){return Number(b)-Number(a);});
-    var opts='<option value="">Current Season ('+cur+')</option>';
-    hist.forEach(function(s){ opts+='<option value="'+s+'">'+s+'</option>'; });
+    var opts='<option value="">Season '+cur+'</option>';
+    hist.forEach(function(s){ opts+='<option value="'+s+'">Season '+s+'</option>'; });
     var keep=SELECTED_SEASON||"";
     sel.innerHTML=opts;
     // keep selection valid (if the selected historical season still exists)
