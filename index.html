@@ -695,7 +695,10 @@ html[data-theme="dark"] .po-banner{background:linear-gradient(120deg,#15362a,#1f
 .pl-card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
   padding:22px;margin-bottom:18px}
 .pl-card h3{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800;margin:0 0 12px}
-.pl-bio{font-size:15px;line-height:1.6;color:var(--ink)}
+.pl-bio{font-size:15px;line-height:1.6;color:var(--ink);overflow-wrap:anywhere}
+.pl-bio p{margin:0 0 .9em}
+.pl-bio p:last-child{margin-bottom:0}
+@media (max-width:600px){.pl-bio{font-size:14.5px;line-height:1.62}.pl-bio p{margin-bottom:.8em}}
 
 .pl-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
 .pl-stat{background:var(--card-2);border:1px solid var(--line);border-radius:14px;padding:16px 14px;text-align:center}
@@ -1949,7 +1952,7 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function fromSheet(data){
   const s={players:[],hdcHistory:{},gameDays:[],cashIns:[],outflows:[],appts:[],
            title:"Swing Bros Championship and Budget Dashboard",year:String(new Date().getFullYear()),theme:"light"};
-  (data.Players||[]).forEach(r=>{if(r.Name)s.players.push({name:String(r.Name).trim(),_raw:r,color:safeColor(r.Color),active:B(r["Active(TRUE/FALSE)"]!==undefined?r["Active(TRUE/FALSE)"]:r.Active),nickname:String(r.Nickname||"").trim(),country:String(r.Country||"").trim(),golfclub:String(r["Golf Club"]||r.Golfclub||r.GolfClub||"").trim(),golferSince:String(r["Golfer Since"]||r["Golfer since"]||"").trim(),bio:String(r.Bio||"").trim(),trophies:{"Swing Bros Championship":String(r["Swing Bros Championship"]||"").trim(),"Hacker Tour":String(r["Hacker Tour Champion"]||r["Hacker Tour"]||"").trim(),"Live Golf":String(r["Live Golf Champion"]||r["Live Golf"]||"").trim(),"Island Master":String(r["Island Master"]||r["Island Masters"]||"").trim()},otherTitles:plOtherList(r.Other!==undefined?r.Other:r.other)});});
+  (data.Players||[]).forEach(r=>{if(r.Name)s.players.push({name:String(r.Name).trim(),_raw:r,color:safeColor(r.Color),active:B(r["Active(TRUE/FALSE)"]!==undefined?r["Active(TRUE/FALSE)"]:r.Active),nickname:String(r.Nickname||"").trim(),country:String(r.Country||"").trim(),golfclub:String(r["Golf Club"]||r.Golfclub||r.GolfClub||"").trim(),golferSince:String(r["Golfer Since"]||r["Golfer since"]||"").trim(),bio:String(r.Bio==null?"":r.Bio).replace(/\r\n?/g,"\n").trim(),trophies:{"Swing Bros Championship":String(r["Swing Bros Championship"]||"").trim(),"Hacker Tour":String(r["Hacker Tour Champion"]||r["Hacker Tour"]||"").trim(),"Live Golf":String(r["Live Golf Champion"]||r["Live Golf"]||"").trim(),"Island Master":String(r["Island Master"]||r["Island Masters"]||"").trim()},otherTitles:plOtherList(r.Other!==undefined?r.Other:r.other)});});
   s.players.forEach(p=>s.hdcHistory[p.name]=[]);
   (data.Handicaps||[]).forEach(r=>{const n=String(r.Player||"").trim();if(!n)return;if(!s.hdcHistory[n])s.hdcHistory[n]=[];
     s.hdcHistory[n].push({date:dstr(r["EffectiveDate(YYYY-MM-DD)"]||r.EffectiveDate||"1900-01-01")||"1900-01-01",hdc:num(r.Hdc)});});
@@ -3046,8 +3049,9 @@ function plRenderProfile(idx){
     + ach.map(function(a){return '<span class="pl-badge'+(a.cls?' '+a.cls:'')+'"><span class="ic">'+a.ic+'</span>'+plEsc(a.t)+'</span>';}).join("")
     + '</div></div>';
 
-  var bioHtml = p.bio
-    ? '<div class="pl-card"><h3>Bio</h3><div class="pl-bio">'+plEsc(p.bio)+'</div></div>'
+  var _bio=plBioHtml(p.bio);
+  var bioHtml = _bio
+    ? '<div class="pl-card"><h3>Bio</h3><div class="pl-bio">'+_bio+'</div></div>'
     : "";
 
   host.style.setProperty("--pl-color", color);
@@ -3075,6 +3079,29 @@ function plNum(n,d){ try{ return (typeof fmtNum==="function")?fmtNum(n,(d==null?
 function plPar(n){ try{ return (typeof fmtPar==="function")?fmtPar(n):String(Math.round(n)); }catch(e){ return String(n); } }
 function plEsc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
 
+/* ---- Player bio → safe paragraphs ----
+   The Bio cell from Google Sheets keeps its line breaks (Alt+Enter / Ctrl+Enter in Sheets).
+   Rules (content is never changed, shortened or split by length):
+     • [NEW_SECTION] (any case, optional spaces) = explicit paragraph break; the marker is never shown.
+     • If the text contains blank lines (double line breaks) → those are the paragraph breaks;
+       single line breaks inside a paragraph are kept as visible line breaks.
+     • If it only contains single line breaks → each line becomes its own paragraph.
+     • Text without any breaks stays one paragraph.
+   Every paragraph is HTML-escaped, so HTML/scripts in the sheet are shown as plain text. */
+function plBioParagraphs(raw){
+  var txt=String(raw==null?"":raw)
+    .replace(/\r\n?/g,"\n").replace(/[\u2028\u2029]/g,"\n")
+    .replace(/\s*\[\s*NEW[_ ]?SECTION\s*\]\s*/gi,"\n\n")
+    .replace(/[ \t]+\n/g,"\n").trim();
+  if(!txt) return [];
+  var paras = /\n[ \t]*\n/.test(txt) ? txt.split(/\n[ \t]*\n+/) : txt.split("\n");
+  return paras.map(function(p){ return p.trim(); }).filter(function(p){ return p!==""; });
+}
+function plBioHtml(raw){
+  return plBioParagraphs(raw).map(function(p){
+    return '<p>'+p.split("\n").map(function(line){ return plEsc(line.trim()); }).join("<br>")+'</p>';
+  }).join("");
+}
 var PL_OPEN=false;
 function plShowLanding(){
   document.getElementById("plLanding").style.display="";
