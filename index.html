@@ -1591,13 +1591,13 @@ html[data-theme="dark"] .paid-confirm{color:#8ff0b0;background:rgba(42,122,69,.1
           <div class="pb-cl-team" id="pbClTeamA">
             <div class="pb-cl-faces" data-cl="Julian Glatter|Lukas Breuer"></div>
             <div class="pb-cl-names">Julian Glatter<br>Lukas Breuer</div>
-            <div class="pb-cl-score" id="pbClScoreA">6,5</div>
+            <div class="pb-cl-score" id="pbClScoreA">–</div>
           </div>
           <div class="pb-cl-mid"><span class="pb-cl-vs-badge">VS</span></div>
           <div class="pb-cl-team" id="pbClTeamB">
             <div class="pb-cl-faces" data-cl="Dominik Busch|Marco Preis"></div>
             <div class="pb-cl-names">Dominik Busch<br>Marco Preis</div>
-            <div class="pb-cl-score" id="pbClScoreB">10,5</div>
+            <div class="pb-cl-score" id="pbClScoreB">–</div>
           </div>
         </div>
         <div class="pb-cl-standing" id="pbClStanding"></div>
@@ -1977,11 +1977,11 @@ function fromSheet(data){
   const games={};
   (data.GameDays||[]).forEach(r=>{const id=String(r.GameID||"").trim();if(!id||!r.Player)return;
     if(!games[id])games[id]={id,date:dstr(r["Date(YYYY-MM-DD)"]||r.Date),mode:String(r.Mode||""),course:String(r.Course||""),
-      indivCounts:B(r.IndivCounts),isPlayoff:B(r.IsPlayoff),isElClassico:B(r.IsElClassico),elWinner:String(r.ElClassicoWinner||"").trim(),
+      indivCounts:B(r.IndivCounts),isPlayoff:B(r.IsPlayoff),isElClassico:elcFlag(r.IsElClassico),elWinner:elcWinnerCode(r.ElClassicoWinner),
       season:String(r.Season||"").trim(),playoffDay:(r.PlayoffDay===""||r.PlayoffDay===null||r.PlayoffDay===undefined)?null:num(r.PlayoffDay),rows:[]};
     const strokes=(r.Strokes===""||r.Strokes===null||r.Strokes===undefined)?null:num(r.Strokes);
     games[id].rows.push({player:String(r.Player).trim(),strokes:(strokes===null||isNaN(strokes))?null:strokes,
-      points:num(r.Points),money:num(r.Money),paid:B(r.Paid),courseHcp:((r.CourseHcp===""||r.CourseHcp===null||r.CourseHcp===undefined)?null:num(r.CourseHcp))});if(r.ElClassicoWinner){games[id].elWinner=String(r.ElClassicoWinner).trim();}if(B(r.IsElClassico))games[id].isElClassico=true;if(r.Season)games[id].season=String(r.Season).trim();if(!(r.PlayoffDay===""||r.PlayoffDay===null||r.PlayoffDay===undefined))games[id].playoffDay=num(r.PlayoffDay);});
+      points:num(r.Points),money:num(r.Money),paid:B(r.Paid),courseHcp:((r.CourseHcp===""||r.CourseHcp===null||r.CourseHcp===undefined)?null:num(r.CourseHcp))});if(elcWinnerCode(r.ElClassicoWinner)){games[id].elWinner=elcWinnerCode(r.ElClassicoWinner);}if(elcFlag(r.IsElClassico))games[id].isElClassico=true;if(r.Season)games[id].season=String(r.Season).trim();if(!(r.PlayoffDay===""||r.PlayoffDay===null||r.PlayoffDay===undefined))games[id].playoffDay=num(r.PlayoffDay);});
   s.gameDays=Object.values(games); // preserve physical sheet order (new rows stay appended at the end)
   (data.Cash||[]).forEach(r=>{const flow=String(r["Flow(In/Out)"]||r.Flow||"In").trim();const id=String(r.EntryID||uid());
     const amount=num(r.Amount);const date=dstr(r["Date(YYYY-MM-DD)"]||r.Date);
@@ -2225,7 +2225,7 @@ function pbRenderClassico(){
     var aPct=tot>0?Math.round(r.aPts/tot*100):50;
     var bar='<div class="pb-cl-bar"><div class="pb-cl-bar-a" style="width:'+aPct+'%"></div><div class="pb-cl-bar-b" style="width:'+(100-aPct)+'%"></div></div>';
     var count = r.games>0
-      ? (r.games+' Match'+(r.games===1?'':'es')+' seit Baseline')
+      ? (r.games+' Match'+(r.games===1?'':'es')+' seit '+fmtDate(r.baseline.date))
       : ('Stand per '+fmtDate(r.baseline.date));
     var head='<div class="pb-cl-headline">'+leadTxt+'<span class="pb-cl-count">'+count+'</span></div>';
     var logHtml='';
@@ -3064,25 +3064,41 @@ var EL_CLASSICO_TEAMS=[
   {key:"B", players:["Dominik Busch","Marco Preis"]}
 ];
 /* ---- El Clásico all-time baseline ----
-   Historical record carried over as of the baseline date. Team A = Glatter &
-   Breuer, Team B = Busch & Preis. Only El-Clásico games recorded AFTER the
-   baseline date are added on top, so the all-time total always starts here.
-   A win adds 1 point to the winning team; a tie adds 0.5 to each team. */
+   Historical record as of the baseline date (results that are NOT stored as
+   GameDays). Team A = Glatter & Breuer, Team B = Busch & Preis.
+   Current score = baseline (applied exactly once) + EVERY El-Clásico game day
+   stored in GameDays (each GameID counted once). Win = +1, tie = +0.5 each.
+   The date is only a label ("Stand per …"); it no longer filters games. */
 var EL_CLASSICO_BASELINE = { date:"2026-10-09", aPts:6.5, bPts:10.5 };
 
+/* Tolerant readers for values typed directly into Google Sheets. */
+function elcFlag(v){
+  if(v===true) return true;
+  var x=String(v==null?"":v).trim().toLowerCase();
+  return x==="true"||x==="wahr"||x==="ja"||x==="yes"||x==="x"||x==="1"||x==="✓"||x==="✔";
+}
+function elcWinnerCode(v){
+  var x=String(v==null?"":v).trim().toUpperCase();
+  if(x==="A"||x==="TEAM A") return "A";
+  if(x==="B"||x==="TEAM B") return "B";
+  if(x==="T"||x==="TIE"||x==="TIED"||x==="DRAW"||x==="UNENTSCHIEDEN"||x==="REMIS"||x==="U") return "T";
+  return "";
+}
 function computeClassico(){
   var A=EL_CLASSICO_TEAMS[0], B=EL_CLASSICO_TEAMS[1];
-  var res={aPts:EL_CLASSICO_BASELINE.aPts, bPts:EL_CLASSICO_BASELINE.bPts, games:0, log:[], baseline:EL_CLASSICO_BASELINE};
-  try{
-    var games=(state&&state.gameDays)?state.gameDays.filter(function(g){
-      return g && g.isElClassico && String(g.date) > EL_CLASSICO_BASELINE.date;   // only matches after the baseline
-    }):[];
-    games=games.slice().sort(function(a,b){return String(a.date).localeCompare(String(b.date));});
-    games.forEach(function(g){
-      // Primary source of truth: the recorded winning team ("A", "B" or "T").
-      // Backward compatible: if no winner was recorded, derive it from the team points.
-      var w=String(g.elWinner||"").trim().toUpperCase();
-      if(w!=="A" && w!=="B" && w!=="T"){
+  var res={aPts:num(EL_CLASSICO_BASELINE.aPts), bPts:num(EL_CLASSICO_BASELINE.bPts), games:0, log:[], baseline:EL_CLASSICO_BASELINE};
+  var seen={};
+  (state&&state.gameDays?state.gameDays:[]).forEach(function(g){
+    try{
+      if(!g) return;
+      var w=elcWinnerCode(g.elWinner);
+      // An El-Clásico game day = IsElClassico flag OR a recorded winner (A/B/T). The dashboard
+      // only ever writes a winner for El-Clásico days, so a winner value is itself the marker.
+      if(!(elcFlag(g.isElClassico) || w)) return;
+      var key=String(g.id||(g.date+"|"+g.course));
+      if(seen[key]) return; seen[key]=true;             // never count the same game day twice
+      if(!w){
+        // Backward compatible: no winner recorded -> derive it from the team points.
         var a=0,b=0;
         (g.rows||[]).forEach(function(r){
           if(A.players.indexOf(r.player)>-1) a+=num(r.points);
@@ -3090,27 +3106,14 @@ function computeClassico(){
         });
         w = a>b ? "A" : (b>a ? "B" : "T");
       }
-      // Win = +1 to the winner; tie = +0.5 each.
-      var ptA, ptB;
-      if(w==="A"){ ptA=1; ptB=0; }
-      else if(w==="B"){ ptA=0; ptB=1; }
-      else { ptA=0.5; ptB=0.5; }
+      var ptA=(w==="A")?1:(w==="T"?0.5:0);
+      var ptB=(w==="B")?1:(w==="T"?0.5:0);
       res.aPts+=ptA; res.bPts+=ptB; res.games++;
       res.log.push({date:g.date, a:ptA, b:ptB});
-    });
-  }catch(e){}
-  return res;
-}
-function pbRenderClassico(){
-  var nodes=document.querySelectorAll(".pb-cl-faces"); if(!nodes.length) return;
-  nodes.forEach(function(box){
-    var names=(box.getAttribute("data-cl")||"").split("|").map(function(s){return s.trim();}).filter(Boolean);
-    box.innerHTML=names.map(function(n){
-      var photo=(typeof PLAYER_PHOTOS!=="undefined" && PLAYER_PHOTOS[n])?PLAYER_PHOTOS[n]:null;
-      if(photo){ return '<img src="'+photo+'" alt="'+n.replace(/"/g,'&quot;')+'" title="'+n.replace(/"/g,'&quot;')+'">'; }
-      return '<span class="pb-cl-ini" style="background:'+pbPlayerColor(n)+'" title="'+n.replace(/"/g,'&quot;')+'">'+pbInitials(n)+'</span>';
-    }).join("");
+    }catch(e){}
   });
+  res.log.sort(function(x,y){return String(x.date).localeCompare(String(y.date));});
+  return res;
 }
 function pbApplyHcpConfig(){
   var list=document.getElementById("pbHcpList"); if(!list) return;
