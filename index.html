@@ -1145,6 +1145,24 @@ button:disabled,button[aria-busy="true"]{opacity:.6;cursor:progress}
 .close-x{min-width:40px;min-height:40px}
 .what,.appt .what,#ngHistory td,#history td,.pl-trow,.pb-card{overflow-wrap:anywhere}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* ===== Championship Final ===== */
+.final-actions{display:flex;justify-content:flex-start;gap:10px;margin:0 0 14px}
+.final-actions.hidden{display:none}
+.final-start{min-height:44px}
+.final-box{margin-top:18px;padding:18px;border-radius:var(--radius-sm);border:1.5px solid var(--gold);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--gold) 12%,var(--card)) 0,var(--card) 120px)}
+.final-box.hidden{display:none}
+.final-head h3{font-size:16px;font-weight:800;color:var(--ink);margin:0 0 4px}
+.final-sub{display:block;font-size:12px;color:var(--muted);margin-bottom:10px}
+.final-status{font-size:13.5px;margin:4px 0 12px;padding:10px 12px;border-radius:10px;background:var(--card-2);border:1px solid var(--line);color:var(--ink-soft)}
+.final-status.win{border-color:var(--gold);background:var(--gold-light);color:#5a4708}
+.final-status.tie{border-color:var(--amber);background:var(--amber-bg);color:#7a5a00}
+[data-theme="dark"] .final-status.win,[data-theme="dark"] .final-status.tie{color:#2b2205}
+.final-status code{font-size:12px;background:rgba(0,0,0,.06);padding:1px 5px;border-radius:5px}
+#finalTable td,#finalTable th{white-space:nowrap}
+tr.final-champ td{font-weight:800}
+@media (max-width:480px){.final-box{padding:14px 10px}.final-head h3{font-size:15px}}
 </style>
 </head>
 <body>
@@ -1178,12 +1196,14 @@ button:disabled,button[aria-busy="true"]{opacity:.6;cursor:progress}
   <section id="sec-summary"><div class="section-title"><span class="ico">📊</span> <span id="summaryTitle">Season Summary</span></div><div id="seasonBanner"></div><div class="dash" id="dashboard"></div></section>
 
   <section id="sec-leaderboard">
-    <div class="section-title"><span class="ico">🥇</span> Season Leaderboard <span class="pill po" style="font-size:12px" id="lbBadge">Play-off until Island Masters 2027</span></div>
+    <div class="section-title"><span class="ico">🥇</span> Season Leaderboard <span class="pill po" style="font-size:12px" id="lbBadge">Play-off until Island Masters</span></div>
     <div class="card">
       
+      <div class="final-actions" id="finalActions"></div>
       <div class="card-head"><button class="rotate-btn" onclick="openTableFs('leaderboard','Season Leaderboard')" title="Rotate / open full table"><span class="ph">📱</span>➜ Full table</button></div><div class="tablebox"><div class="table-scroll"><table id="leaderboard" class="m-stack">
         <thead id="lbHead"><tr><th>#</th><th>Player</th><th>Hdc</th><th>Points</th><th class="lb-proj"><span class="lbl-full">Projected Shots Final</span><span class="lbl-short">Proj. shots</span></th><th>Total strokes</th><th>Avg gross</th><th>Avg net</th><th>Best round</th><th>Worst round</th></tr></thead>
         <tbody></tbody></table></div></div>
+      <div id="finalBox" class="final-box hidden" aria-live="polite"></div>
       <div class="po-banner" id="poBanner" style="margin-top:16px;margin-bottom:0">🏝️ <span></span></div>
       <p class="small-muted" id="lbExplain">“Projected shots for final round” = the stroke bonus the current standings would give on the Island Masters final (see above). Scores are shown relative to par (e.g. +2 or −2). Avg net uses the handicap valid on each round's date.</p>
     </div>
@@ -1266,17 +1286,18 @@ button:disabled,button[aria-busy="true"]{opacity:.6;cursor:progress}
     <div class="field"><label>Date</label><input type="date" id="gd_date"></div>
     <div class="field"><label>Game Mode</label><select id="gd_mode"></select></div>
     <div class="field"><label>Course name (optional)</label><input type="text" id="gd_course" placeholder="e.g. Son Muntaner"></div></div>
-  <div class="checkbox-row"><input type="checkbox" id="gd_playoff"><label for="gd_playoff" style="margin:0"><b>🏝️ Play-off / Final Day</b> — auto-apply standings bonus shots (<span id="poShotRule">−5 / −3 / −1</span>) to net</label></div>
+  <p class="small-muted" id="gdSeasonNote" style="margin:-4px 2px 10px"></p>
+  <div class="checkbox-row"><input type="checkbox" id="gd_playoff"><label for="gd_playoff" style="margin:0"><b>🏝️ Island Masters</b> — Day 1–2 = Championship Final (shots <span id="poShotRule" class="js-shot-rule">−5 / −3 / −1</span>), Day 3–4 = new season</label></div>
   <div class="field hidden" id="poDayWrap" style="margin-top:12px">
     <label for="gd_playoffDay"><b>Island Masters — which day?</b></label>
     <select id="gd_playoffDay">
-      <option value="">— not a final day —</option>
-      <option value="1">Day 1 · Playoff Final (previous season)</option>
-      <option value="2">Day 2 · Playoff Final (previous season)</option>
-      <option value="3">Day 3 · New season</option>
-      <option value="4">Day 4 · New season</option>
+      <option value="">— select the day (required) —</option>
+      <option value="1">Day 1 · Final round 1 (current season)</option>
+      <option value="2">Day 2 · Final round 2 · closes the season</option>
+      <option value="3">Day 3 · Opens the new season</option>
+      <option value="4">Day 4 · 2nd game day of the new season</option>
     </select>
-    <p class="small-muted" style="margin:8px 2px 0">Days 1–2 count for the <b>previous</b> season (two-day final). Days 3–4 start the <b>new</b> season. The 4-2-1 shot allocation is unchanged.</p>
+    <p class="small-muted" style="margin:8px 2px 0">Days 1–2 are the two-round <b>Championship Final</b> of the running season (net score per round, shots <span class="js-shot-rule">−5 / −3 / −1</span>; not counted in the season leaderboard). Day 2 completes the season, Day 3 automatically opens the next one.</p>
   </div>
   <div class="info-box hidden" id="poInfo"></div>
   <div class="checkbox-row"><input type="checkbox" id="gd_elclassico"><label for="gd_elclassico" style="margin:0"><b>⚔️ El Clásico</b> — festes Duell Glatter &amp; Breuer vs. Busch &amp; Preis (eigene All-Time-Wertung)</label></div>
@@ -1416,7 +1437,7 @@ button:disabled,button[aria-busy="true"]{opacity:.6;cursor:progress}
             <div class="pb-im-day pb-im-day1">
               <span class="pb-im-dn">Tag 1 &amp; 2</span>
               <span class="pb-im-dt">Saisonfinale · Play-off der alten Saison</span>
-              <span class="pb-im-shots">🎯 Play-off-Shots (4-2-1) · 🏆 kürt den Champion</span>
+              <span class="pb-im-shots">🎯 Play-off-Shots (<span class="js-shot-rule">−5 / −3 / −1</span>) · 🏆 kürt den Champion</span>
             </div>
             <div class="pb-im-day pb-im-day234">
               <span class="pb-im-dn">Tag 3 &amp; 4</span>
@@ -1732,9 +1753,20 @@ let PLAYOFF_SHOTS=[5,3,1,0];
 /* Standard competition ranking (1,2,2,4): equal scores share a rank, the next
    rank skips accordingly. `values` is an array already sorted DESC by the
    ranking key (points). Returns an array of 1-based ranks aligned to input. */
+/* Next Island Masters / Sylt trip start: Settings first, otherwise derived from What's Next. */
+function syltDate(){
+  if(SYLT_FROM_SETTINGS && SYLT_FROM_SETTINGS>=todayYmd()) return SYLT_FROM_SETTINGS;
+  try{
+    var today=new Date(); today.setHours(0,0,0,0); var best=null;
+    (state&&state.appts||[]).forEach(function(a){ if(!/island\s*masters|sylt/i.test(String(a.what||""))) return;
+      var r=apptDateRange(a.when); if(r && r.start>=today && (!best || r.start<best)) best=r.start; });
+    return best?ymd(best):(SYLT_FROM_SETTINGS||null);
+  }catch(e){ return SYLT_FROM_SETTINGS||null; }
+}
 function daysToSylt(){
   try{
-    var d=new Date(SYLT_START_DATE+"T00:00:00");
+    var sd=syltDate(); if(!sd) return null;
+    var d=new Date(sd+"T00:00:00");
     if(isNaN(d.getTime())) return null;
     var now=new Date(); now.setHours(0,0,0,0);
     var diff=Math.round((d-now)/86400000);
@@ -1768,8 +1800,8 @@ function competitionRanks(values){
    overridden via Settings "BudgetBaseline" / "BudgetBaselineDate" in the Sheet. */
 let BUDGET_BASELINE=120;                 // opening balance (EUR) as of BUDGET_BASELINE_DATE
 let BUDGET_BASELINE_DATE="2026-10-05";   // fixed reference date of the opening balance (YYYY-MM-DD)
-let SYLT_START_DATE="2027-03-10";   // single source of truth for "Road to Sylt" (trip start); override via Settings "IslandMastersDate"
-let ISLAND_MASTERS_DATE=SYLT_START_DATE;   // kept as alias for backward compatibility
+let SYLT_FROM_SETTINGS=null;   // Road to Sylt date: Settings "RoadToSyltDate" / "IslandMastersDate", else the next "Island Masters"/"Sylt" appointment   // single source of truth for "Road to Sylt" (trip start); override via Settings "IslandMastersDate"
+let ISLAND_MASTERS_DATE=null;   // kept as alias for backward compatibility
 
 /* =================================================================
    STATE (built from the Sheet). Internal shape:
@@ -1803,12 +1835,56 @@ let LOADED=false;
    ===================================================================== */
 var SELECTED_SEASON = null;   // null = "Current Season"
 function yearOfDate(d){ var m=String(d||"").match(/^(\d{4})/); return m?m[1]:""; }
+/* ---- Season assignment (no calendar-year dependency) ----
+   A season runs from Island Masters Day 3 to Island Masters Day 2 of the following year.
+   • Every game day carries an explicit Season (written to the GameDays "Season" column).
+   • Rows without a Season value are derived CHRONOLOGICALLY (assignSeasons):
+       – regular game days stay in the running season (Jan/Feb included);
+       – Island Masters Day 1 & 2 (final rounds) belong to the running season;
+       – Day 2 closes the season; the next game day (normally Day 3) opens season+1;
+       – Day 3 / Day 4 open season+1 (once per Island Masters, even if Day 1/2 are missing).
+   • The calendar year is used only for the very first game day ever recorded. */
+function imDay(g){ return (g && g.isPlayoff) ? (Number(g.playoffDay)||0) : 0; }
+/* Final round = Island Masters Day 1 or Day 2 (legacy: play-off without a day = final). */
+function isFinalRound(g){ if(!g||!g.isPlayoff) return false; var pd=Number(g.playoffDay)||0; return pd!==3 && pd!==4; }
+function gameOrderKey(g){ var pd=imDay(g); return pd===0?0:pd; }
+function cmpGames(a,b){ return String(a.date).localeCompare(String(b.date)) || (gameOrderKey(a)-gameOrderKey(b)) || ((a.__order||0)-(b.__order||0)); }
+function daysBetween(a,b){ var x=new Date(String(a)+"T00:00:00"), y=new Date(String(b)+"T00:00:00"); return Math.abs(Math.round((y-x)/864e5)); }
+function assignSeasons(games, targetId){
+  var list=(games||[]).map(function(g,i){ var c=Object.assign({},g); c.__order=(g.id===targetId)?1e9:i; return c; }).sort(cmpGames);
+  var cur=null, closed=false, lastOpen=null, out={};
+  list.forEach(function(g){
+    var pd=imDay(g), fin=isFinalRound(g);
+    var explicit=(g.id!==targetId && g.season)?String(g.season):"";
+    if(explicit){
+      var e=Number(explicit);
+      if(cur!==null && e>cur){ closed=false; lastOpen=g.date; }
+      cur=e;
+    }else if(cur===null){
+      var y=Number(yearOfDate(g.date))||new Date().getFullYear();
+      cur=fin?y-1:y;
+    }else if(fin){
+      if(closed && pd===1){ cur+=1; closed=false; }            // next season's final (new season had no games)
+    }else if(closed){
+      cur+=1; closed=false; lastOpen=g.date;                    // first game day after Day 2 opens the next season
+    }else if((pd===3||pd===4) && !(lastOpen && daysBetween(lastOpen,g.date)<=10)){
+      cur+=1; lastOpen=g.date;                                  // Day 3/4 without a recorded Day 2
+    }
+    if(fin && pd===2) closed=true;
+    out[g.id]=String(cur);
+  });
+  return out;
+}
+/* Season for a game day that is about to be saved (new or edited). */
+function seasonForNewGame(date, pd, excludeId){
+  var others=(state&&state.gameDays?state.gameDays:[]).filter(function(x){return x.id!==excludeId;});
+  var probe={id:"__new__", date:date||todayYmd(), isPlayoff:pd>0, playoffDay:pd>0?pd:null};
+  return assignSeasons(others.concat([probe]),"__new__")["__new__"];
+}
 function seasonOf(g){
   if(!g) return "";
-  if(g.season) return String(g.season);           // explicit value wins
-  var y=yearOfDate(g.date);
-  // Two-day playoff final (days 1–2) counts for the PREVIOUS season.
-  var pd=Number(g.playoffDay||0);
+  if(g.season) return String(g.season);           // explicit value wins (always set after load)
+  var y=yearOfDate(g.date), pd=Number(g.playoffDay||0);
   if(g.isPlayoff && (pd===1 || pd===2) && y){ return String(Number(y)-1); }
   return y;
 }
@@ -1818,17 +1894,23 @@ function allSeasonsSorted(){
   var arr=Object.keys(set); arr.sort(function(a,b){return Number(a)-Number(b);});
   return arr;
 }
+/* Island Masters Day 2 recorded → the season is closed (final completed). */
+function seasonClosedByFinal(season){
+  return (state&&state.gameDays?state.gameDays:[]).some(function(g){ return seasonOf(g)===String(season) && g.isPlayoff && Number(g.playoffDay)===2; });
+}
+/* Active season = latest season with data; once its Day 2 exists the NEXT season becomes
+   active immediately (empty until Island Masters Day 3 is entered). */
 function currentSeason(){
   var arr=allSeasonsSorted();
   if(!arr.length) return String((state&&state.year)|| (new Date().getFullYear()));
-  return arr[arr.length-1];   // the latest season with any games is the current one
+  var last=arr[arr.length-1];
+  return seasonClosedByFinal(last) ? String(Number(last)+1) : last;
 }
-/* A season is completed when a LATER season already has game-days
-   (i.e. the new season has started on Day 3) AND the season itself has data. */
+/* Completed = a later season has started OR Island Masters Day 2 has been played. */
 function seasonCompleted(season){
   var arr=allSeasonsSorted();
   var i=arr.indexOf(String(season));
-  return i>-1 && i<arr.length-1;
+  return i>-1 && (i<arr.length-1 || seasonClosedByFinal(season));
 }
 /* Archive-only seasons: seasons from before the official points & ranking system.
    They have NO game-day / cash data — only a consensus champion and a note. They are
@@ -1865,8 +1947,17 @@ function isViewingCurrent(){ return viewSeason()===currentSeason(); }
 function seasonOfCash(c){
   if(!c) return "";
   if(c.season) return String(c.season);
-  var m=String(c.date||"").match(/^(\d{4})/);
-  return m?m[1]:"";
+  if(c.gameId){ var g=(state&&state.gameDays||[]).find(function(x){return x.id===c.gameId;}); if(g) return seasonOf(g); }
+  return seasonForDate(c.date);
+}
+/* Season in which a calendar date falls (used only for cash rows without a Season value). */
+function seasonForDate(d){
+  var games=(state&&state.gameDays?state.gameDays:[]).slice().sort(cmpGames);
+  if(!games.length) return yearOfDate(d);
+  var prev=null; for(var i=0;i<games.length;i++){ if(String(games[i].date)<=String(d)) prev=games[i]; else break; }
+  if(!prev) return seasonOf(games[0]);
+  var sea=seasonOf(prev);
+  return (prev.isPlayoff && Number(prev.playoffDay)===2 && String(d)>String(prev.date)) ? String(Number(sea)+1) : sea;
 }
 function visibleCashIns(){
   var sea=viewSeason();
@@ -1882,20 +1973,77 @@ function visibleGameDays(){
 }
 /* Champion of a (completed) season = top of the final season standings.
    Returns {name,color,points,rank} or null if the season isn't completed. */
-function seasonChampion(season){
-  if(!seasonCompleted(season)) return null;
+/* =====================================================================
+   CHAMPIONSHIP FINAL (Island Masters Day 1 + Day 2)
+   Playbook: Final Championship Score = Net Day 1 + Net Day 2 − Play-off Shots Gained.
+   • Start Final Rounds freezes the regular-season standings (competition ranking,
+     ties share a rank) and assigns shots from PLAYOFF_SHOTS (default 5/3/1/0).
+     Stored in Settings as  Final_<season> = JSON  (survives reloads, synced to Sheets).
+   • Net per round = score vs. par − course handicap (Course Handicap field, else the
+     handicap valid on that day). Final rounds never count in the season leaderboard.
+   • Lowest total wins. Ties are NOT broken alphabetically: they are shown as a tie
+     until resolved via Settings  ChampionOverride_<season> = <player>.
+   ===================================================================== */
+function regularGamesOf(season){ return (state&&state.gameDays?state.gameDays:[]).filter(function(g){ return seasonOf(g)===String(season) && !isFinalRound(g); }); }
+function computeFreeze(season){
   var pts={}; (state.players||[]).forEach(function(p){pts[p.name]=0;});
-  (state.gameDays||[]).forEach(function(g){
-    if(seasonOf(g)!==String(season)) return;
-    g.rows.forEach(function(r){ if(pts[r.player]!==undefined) pts[r.player]+=num(r.points); });
+  var gs=regularGamesOf(season);
+  gs.forEach(function(g){ (g.rows||[]).forEach(function(r){ if(pts[r.player]!==undefined) pts[r.player]+=num(r.points); }); });
+  var ord=Object.keys(pts).map(function(n){return [n,Math.round(pts[n]*1000)/1000];}).sort(function(a,b){return b[1]-a[1];});
+  var ranks=competitionRanks(ord.map(function(e){return e[1];}));
+  return {season:String(season), frozenAt:todayYmd(), games:gs.length,
+          entries:ord.map(function(e,i){ var sh=num(PLAYOFF_SHOTS[ranks[i]-1]); return {player:e[0], rank:ranks[i], points:e[1], shots:sh>0?sh:0}; })};
+}
+function storedFinal(season){ return (state&&state.finals)?state.finals[String(season)]||null:null; }
+function finalRoundGame(season,day){ return (state&&state.gameDays?state.gameDays:[]).find(function(g){ return seasonOf(g)===String(season) && isFinalRound(g) && Number(g.playoffDay)===day; })||null; }
+function finalNet(g,player){
+  if(!g) return null; var r=(g.rows||[]).find(function(x){return x.player===player;});
+  if(!r || r.strokes===null || r.strokes===undefined || isNaN(r.strokes)) return null;
+  var hc=(r.courseHcp!==null && r.courseHcp!==undefined && r.courseHcp!=="" && !isNaN(r.courseHcp)) ? Number(r.courseHcp) : hdcOn(player,g.date);
+  return Math.round((Number(r.strokes)-hc)*100)/100;
+}
+function finalShotsFor(season,player){
+  var f=storedFinal(season)||computeFreeze(season);
+  var e=(f.entries||[]).find(function(x){return x.player===player;}); return e?num(e.shots):0;
+}
+function finalBonus(g,player){ return isFinalRound(g)?finalShotsFor(seasonOf(g),player):0; }
+/* Complete final view model for a season (stored freeze, or derived when final rounds exist). */
+function finalTable(season){
+  season=String(season);
+  var st=storedFinal(season), d1=finalRoundGame(season,1), d2=finalRoundGame(season,2);
+  if(!st && !d1 && !d2) return null;
+  var base=st||computeFreeze(season);
+  var rows=(base.entries||[]).map(function(e){
+    var r1=finalNet(d1,e.player), r2=finalNet(d2,e.player);
+    return {player:e.player, rank:e.rank, points:e.points, shots:num(e.shots), r1:r1, r2:r2,
+            total:Math.round((-num(e.shots)+(r1||0)+(r2||0))*100)/100, complete:(r1!==null && r2!==null)};
   });
-  var ordered=Object.keys(pts).map(function(n){return [n,pts[n]];})
-                    .sort(function(a,b){return b[1]-a[1] || a[0].localeCompare(b[0]);});
-  if(!ordered.length) return null;
-  if(ordered.length>1 && ordered[0][1]===ordered[1][1] && ordered[0][1]===0) return null; // nothing played
-  var champName=ordered[0][0];
-  var p=(state.players||[]).find(function(x){return x.name===champName;});
-  return {name:champName, color:(p?p.color:"#caa43a"), points:ordered[0][1], rank:1};
+  var champs=[];
+  if(d2){
+    var done=rows.filter(function(r){return r.complete;});
+    if(done.length){ var min=Math.min.apply(null,done.map(function(r){return r.total;}));
+      champs=done.filter(function(r){return Math.abs(r.total-min)<1e-9;}).map(function(r){return r.player;}); }
+  }
+  return {season:season, stored:!!st, frozenAt:base.frozenAt, games:base.games, rows:rows, hasR1:!!d1, hasR2:!!d2, champions:champs};
+}
+function championOverride(season){ var o=(state&&state.championOverride)?state.championOverride[String(season)]:""; return o||""; }
+/* Champion of a COMPLETED season. Order: ChampionOverride → Final table → (legacy seasons
+   without final rounds) regular-season points. Returns {names[], tie, source, ...} or null. */
+function seasonChampion(season){
+  season=String(season);
+  if(!seasonCompleted(season)) return null;
+  var ov=championOverride(season);
+  if(ov) return {names:[ov], tie:false, source:"override"};
+  var f=finalTable(season);
+  if(f){
+    if(!f.hasR2 || !f.champions.length) return {names:[], tie:false, source:"final", pending:true};
+    var w=f.rows.find(function(r){return r.player===f.champions[0];});
+    return {names:f.champions, tie:f.champions.length>1, source:"final", total:w?w.total:null};
+  }
+  var fr=computeFreeze(season);
+  if(!fr.games || !fr.entries.length || !(fr.entries[0].points>0)) return null;
+  var top=fr.entries.filter(function(e){return e.rank===1;}).map(function(e){return e.player;});
+  return {names:top, tie:top.length>1, source:"points", points:fr.entries[0].points};
 }
 
 
@@ -1950,7 +2098,8 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
    SHEET <-> STATE CONVERSION
    ================================================================= */
 function fromSheet(data){
-  const s={players:[],hdcHistory:{},gameDays:[],cashIns:[],outflows:[],appts:[],
+  SYLT_FROM_SETTINGS=null;
+  const s={players:[],hdcHistory:{},gameDays:[],cashIns:[],outflows:[],appts:[],finals:{},championOverride:{},settingsRows:[],
            title:"Swing Bros Championship and Budget Dashboard",year:String(new Date().getFullYear()),theme:"light"};
   (data.Players||[]).forEach(r=>{if(r.Name)s.players.push({name:String(r.Name).trim(),_raw:r,color:safeColor(r.Color),active:B(r["Active(TRUE/FALSE)"]!==undefined?r["Active(TRUE/FALSE)"]:r.Active),nickname:String(r.Nickname||"").trim(),country:String(r.Country||"").trim(),golfclub:String(r["Golf Club"]||r.Golfclub||r.GolfClub||"").trim(),golferSince:String(r["Golfer Since"]||r["Golfer since"]||"").trim(),bio:String(r.Bio==null?"":r.Bio).replace(/\r\n?/g,"\n").trim(),trophies:{"Swing Bros Championship":String(r["Swing Bros Championship"]||"").trim(),"Hacker Tour":String(r["Hacker Tour Champion"]||r["Hacker Tour"]||"").trim(),"Live Golf":String(r["Live Golf Champion"]||r["Live Golf"]||"").trim(),"Island Master":String(r["Island Master"]||r["Island Masters"]||"").trim()},otherTitles:plOtherList(r.Other!==undefined?r.Other:r.other)});});
   s.players.forEach(p=>s.hdcHistory[p.name]=[]);
@@ -1982,7 +2131,18 @@ function fromSheet(data){
     if(k==="Theme")s.theme=String(v)||"light";if(k==="PlayoffShots"&&v){PLAYOFF_SHOTS=String(v).split(",").map(x=>num(x.trim()));}
     if(k==="BudgetBaseline"&&v!==""&&v!==null&&v!==undefined){BUDGET_BASELINE=num(v);}
     if(k==="BudgetBaselineDate"&&v){BUDGET_BASELINE_DATE=dstr(v);}
-    if(k==="IslandMastersDate"&&v){SYLT_START_DATE=dstr(v)||SYLT_START_DATE;ISLAND_MASTERS_DATE=SYLT_START_DATE;}});
+    if(k==="IslandMastersDate"&&v&&!SYLT_FROM_SETTINGS){SYLT_FROM_SETTINGS=dstr(v)||null;}
+    if(k==="RoadToSyltDate"&&v){SYLT_FROM_SETTINGS=dstr(v)||SYLT_FROM_SETTINGS;}
+    var fm=k.match(/^Final_(\d{4})$/); if(fm&&v){ try{ var fo=JSON.parse(String(v)); if(fo&&Array.isArray(fo.entries)) s.finals[fm[1]]=fo; }catch(_){} }
+    var cm=k.match(/^ChampionOverride_(\d{4})$/); if(cm&&String(v||"").trim()) s.championOverride[cm[1]]=String(v).trim();
+    if(k==="ChampionOverride"&&v){ String(v).split(/[;\n]+/).forEach(function(part){ var m=part.match(/^\s*(\d{4})\s*[:=]\s*(.+?)\s*$/); if(m) s.championOverride[m[1]]=m[2]; }); }
+    if(k) s.settingsRows.push(Object.assign({},r));});
+  // ChampionOverride names are matched to the Players list (case-insensitive).
+  Object.keys(s.championOverride).forEach(function(y){ var n=s.championOverride[y].toLowerCase(); var p=s.players.find(function(x){return x.name.toLowerCase()===n;}); if(p) s.championOverride[y]=p.name; });
+  ISLAND_MASTERS_DATE=SYLT_FROM_SETTINGS;
+  // Season of every game day: explicit Season column wins; missing values are derived
+  // chronologically (Island Masters model) — never from the calendar year alone.
+  (function(){ var derived=assignSeasons(s.gameDays,null); s.gameDays.forEach(function(g){ if(!g.season) g.season=derived[g.id]; }); })();
   // Game-day money is the single source of truth: drop any previously-linked Golf cash-ins
   // (identified by the "C<gameId>_" id pattern) and rebuild them from the games.
   s.cashIns=s.cashIns.filter(c=>!/^C(G[0-9a-z]+)_/.test(String(c.id)));
@@ -2001,9 +2161,18 @@ function toSheet(){
   state.cashIns.forEach(c=>Cash.push({EntryID:c.id,"Date(YYYY-MM-DD)":c.date,"Flow(In/Out)":"In",Category:sheetSafe(c.type),Name:sheetSafe(c.name),Player:c.payer,Amount:c.amount,CountInRanking:c.count?"TRUE":"FALSE",Paid:(c.paid?"TRUE":"FALSE"),Season:(c.season||"")}));
   state.outflows.forEach(o=>Cash.push({EntryID:o.id,"Date(YYYY-MM-DD)":o.date,"Flow(In/Out)":"Out",Category:"Expense",Name:sheetSafe(o.name),Player:"",Amount:o.amount,CountInRanking:"FALSE",Paid:"TRUE",Season:(o.season||"")}));
   const Appointments=state.appts.map(a=>({ApptID:a.id,What:sheetSafe(a.what),When:sheetSafe(a.when)}));
-  const Settings=[{Key:"Title",Value:state.title},{Key:"Year",Value:state.year},{Key:"Currency",Value:CURRENCY},
-    {Key:"PlayoffShots",Value:PLAYOFF_SHOTS.join(",")},{Key:"Theme",Value:state.theme},
-    {Key:"BudgetBaseline",Value:BUDGET_BASELINE},{Key:"BudgetBaselineDate",Value:BUDGET_BASELINE_DATE}];
+  // Settings: only dashboard-managed keys are written; every other row of the Settings tab
+  // (IslandMastersDate, RoadToSyltDate, ChampionOverride…, any future key) is sent back unchanged.
+  const managed={Title:state.title,Year:state.year,Currency:CURRENCY,PlayoffShots:PLAYOFF_SHOTS.join(","),Theme:state.theme,
+    BudgetBaseline:BUDGET_BASELINE,BudgetBaselineDate:BUDGET_BASELINE_DATE};
+  Object.keys(state.finals||{}).forEach(function(y){ managed["Final_"+y]=JSON.stringify(state.finals[y]); });
+  const Settings=[], used={};
+  (state.settingsRows||[]).forEach(function(r){ const k=String(r.Key||"").trim(); if(!k||used[k]) return;
+    if(/^Final_\d{4}$/.test(k) && !Object.prototype.hasOwnProperty.call(managed,k)) return;   // final removed in the dashboard
+    used[k]=true;
+    if(Object.prototype.hasOwnProperty.call(managed,k)){ const o=Object.assign({},r); o.Key=k; o.Value=managed[k]; Settings.push(o); }
+    else Settings.push(Object.assign({},r)); });
+  Object.keys(managed).forEach(function(k){ if(!used[k]) Settings.push({Key:k,Value:managed[k]}); });
   return {Players,Handicaps,GameDays,Cash,Appointments,Settings};
 }
 
@@ -2159,13 +2328,17 @@ function save(){ if(!LOADED){ setSync('err','Not saved – data not loaded yet')
    STANDINGS / PLAYOFF
    ================================================================= */
 function standingsBefore(beforeDate){
+  // Regular-season standings of the viewed season (final rounds never count).
   const pts={};state.players.forEach(p=>pts[p.name]=0);
-  visibleGameDays().forEach(g=>{if(g.isPlayoff)return;if(beforeDate&&g.date>=beforeDate)return;
+  visibleGameDays().forEach(g=>{if(isFinalRound(g))return;if(beforeDate&&g.date>=beforeDate)return;
     g.rows.forEach(r=>{if(pts[r.player]!==undefined)pts[r.player]+=num(r.points);});});
   return Object.entries(pts).sort((a,b)=>b[1]-a[1]);
 }
-function playoffShotsFor(name,beforeDate){const st=standingsBefore(beforeDate);const i=st.findIndex(e=>e[0]===name);return(i>=0&&i<PLAYOFF_SHOTS.length)?PLAYOFF_SHOTS[i]:0;}
-function projectedShots(name){const st=standingsBefore(null);const i=st.findIndex(e=>e[0]===name);return(i>=0&&i<PLAYOFF_SHOTS.length)?PLAYOFF_SHOTS[i]:0;}
+/* Shots by competition rank (ties share the rank AND the shots). */
+function shotsByStandings(st){ const rk=competitionRanks(st.map(e=>e[1])); const o={}; st.forEach((e,i)=>{const v=num(PLAYOFF_SHOTS[rk[i]-1]);o[e[0]]=v>0?v:0;}); return o; }
+function playoffShotsFor(name,beforeDate){ return finalShotsFor(viewSeason(),name); }   // kept for compatibility
+function projectedShots(name){ const f=storedFinal(viewSeason()); if(f) return finalShotsFor(viewSeason(),name); return shotsByStandings(standingsBefore(null))[name]||0; }
+function shotListText(){ const l=[]; for(let i=0;i<PLAYOFF_SHOTS.length;i++){ const v=num(PLAYOFF_SHOTS[i]); if(v>0) l.push("−"+v); } return l.length?l.join(" / "):"no bonus"; }
 
 /* =================================================================
    FORM BUILDERS
@@ -2187,7 +2360,7 @@ function buildPlayersForm(){
       <div class="row"><div class="field"><label>Course Handicap (optional, actual CH for this course/day)</label><input type="number" step="1" class="pf-coursehcp" data-slot="${i}" placeholder="e.g. 13"></div></div>
     </div>`).join("");
   const rc=slot=>{const name=wrap.querySelector(`.pf-player[data-slot="${slot}"]`).value;const str=wrap.querySelector(`.pf-strokes[data-slot="${slot}"]`);
-    const date=$("#gd_date").value||todayYmd();const bonus=$("#gd_playoff").checked?playoffShotsFor(name,date):0;
+    const date=$("#gd_date").value||todayYmd();const _pd=formPlayoffDay();const bonus=($("#gd_playoff").checked&&(_pd===1||_pd===2))?finalShotsFor(seasonForNewGame(date,_pd,editingGameId),name):0;
     wrap.querySelector(`.pf-bonus[data-slot="${slot}"]`).value=bonus;
     var _chInp=wrap.querySelector(`.pf-coursehcp[data-slot="${slot}"]`);var _ch=(_chInp&&_chInp.value!=="")?Number(_chInp.value):null;var _hdc=(_ch!==null&&!isNaN(_ch))?_ch:hdcOn(name,date);const net=str.value===""?"":(Number(str.value)-_hdc-bonus);wrap.querySelector(`.pf-net[data-slot="${slot}"]`).value=net===""?"":net;};
   wrap.querySelectorAll(".pf-strokes").forEach(inp=>inp.addEventListener("input",()=>rc(inp.dataset.slot)));
@@ -2248,14 +2421,28 @@ function pbRenderClassico(){
     box.innerHTML=head+bar+logHtml;
   }
 }
+function formPlayoffDay(){ var d=document.getElementById("gd_playoffDay"); var po=document.getElementById("gd_playoff"); return (po&&po.checked&&d&&d.value!=="")?Number(d.value):0; }
 function updatePlayoffInfo(){
   {var _w=document.getElementById("poDayWrap");var _cb=document.getElementById("gd_playoff");if(_w)_w.classList.toggle("hidden", !(_cb&&_cb.checked));}
   const po=$("#gd_playoff").checked;const box=$("#poInfo");
-  {var _psr=document.getElementById("poShotRule");if(_psr){var _lst=[];for(var _i=0;_i<PLAYOFF_SHOTS.length;_i++){if(num(PLAYOFF_SHOTS[_i])>0)_lst.push("−"+num(PLAYOFF_SHOTS[_i]));}_psr.textContent=_lst.length?_lst.join(" / "):"no bonus";}}
-  if(po){box.classList.remove("hidden");const date=$("#gd_date").value||todayYmd();const st=standingsBefore(date);
-    box.innerHTML="🏝️ <b>Play-off seeding (standings before this day):</b> "+st.map((e,i)=>`${i+1}. ${esc(e[0])} (${fmtNum(e[1],2)} pts, −${num(PLAYOFF_SHOTS[i])||0})`).join(" · ")+". Allocation rule: <b>"+shotRuleText()+"</b>. Bonus shots are subtracted from net automatically.";
-    if(!$("#gd_indivCounts").checked){$("#gd_indivCounts").checked=true;updateScoringNote();buildPlayersForm();}}
-  else box.classList.add("hidden");}
+  document.querySelectorAll(".js-shot-rule").forEach(e=>e.textContent=shotListText());
+  const date=$("#gd_date").value||todayYmd(), pd=formPlayoffDay();
+  const target=seasonForNewGame(date,po?pd:0,editingGameId);
+  const sn=document.getElementById("gdSeasonNote");
+  if(sn) sn.innerHTML="📅 This game day will be saved to <b>Season "+esc(target)+"</b>"+(po&&pd===3?" · <b>opens the new season</b>":"")+(po&&pd===2?" · <b>closes the season</b>":"")+".";
+  if(!po){ box.classList.add("hidden"); return; }
+  box.classList.remove("hidden");
+  if(!pd){ box.innerHTML="⚠️ <b>Select the Island Masters day (1–4).</b> Saving is blocked until a day is chosen."; return; }
+  if(pd===1||pd===2){
+    const f=storedFinal(target)||computeFreeze(target);
+    box.innerHTML="🏆 <b>Final round "+pd+" · Season "+esc(target)+"</b> — counts only in the Championship Final (not in the season leaderboard). "+
+      "Net = score − course handicap. Frozen shots: "+f.entries.map(e=>esc(e.player)+" −"+num(e.shots)).join(" · ")+
+      (storedFinal(target)?"":" <i>(standings will be frozen when this day is saved)</i>")+".";
+    if(!$("#gd_indivCounts").checked){$("#gd_indivCounts").checked=true;updateScoringNote();buildPlayersForm();}
+  }else{
+    box.innerHTML="🆕 <b>Island Masters Day "+pd+"</b> — regular game day of <b>Season "+esc(target)+"</b>"+(pd===3?" (first game day of the new season)":"")+". No play-off shots.";
+  }
+}
 
 /* =================================================================
    GAME CRUD
@@ -2270,22 +2457,36 @@ function addOrSaveGame(){
   if(!isViewingCurrent()){ toast("Historical seasons are read-only. Switch to the Current Season to add data.","err"); return; }
   const g=readGameForm();
   if(!g.date)return toast("Please pick a date.","err");if(g.uniq!==state.players.length)return toast("Each slot must have a different player.","err");
-  if(g.indiv&&g.rows.some(r=>r.strokes===null))return toast("Individual counts: enter strokes for all 4 players.","err");
+  if(g.po && ![1,2,3,4].includes(g.playoffDay)) return toast("Play-off: please select the Island Masters day (Day 1–4).","err");
+  const pd=g.po?g.playoffDay:0, isFin=(pd===1||pd===2);
+  if((g.indiv||isFin)&&g.rows.some(r=>r.strokes===null))return toast(isFin?"Final round: enter the score of every player.":"Individual counts: enter strokes for all 4 players.","err");
   if(g.elc && !["A","B","T"].includes(g.elcWinner))return toast("El Clásico: bitte das Siegerteam auswählen.","err");
+  const target=seasonForNewGame(g.date,pd,editingGameId);
+  if(Number(target)<Number(currentSeason())) return toast("This date belongs to the completed Season "+target+" (read-only). Corrections to archived seasons are made in Google Sheets.","err");
+  if(pd){ const dup=state.gameDays.find(x=>x.id!==editingGameId && seasonOf(x)===target && x.isPlayoff && Number(x.playoffDay)===pd);
+    if(dup) return toast("Island Masters Day "+pd+" already exists for Season "+target+" ("+fmtDate(dup.date)+").","err"); }
   if(editingGameId){const prev=state.gameDays.find(x=>x.id===editingGameId);if(prev){g.rows.forEach(r=>{const pr=prev.rows.find(p=>p.player===r.player);if(pr&&pr.paid)r.paid=true;});}}
-  const entry={id:editingGameId||("G"+uid()),date:g.date,mode:g.mode,course:g.course,indivCounts:g.indiv,isPlayoff:g.po,isElClassico:g.elc,elWinner:(g.elc?g.elcWinner:""),playoffDay:(g.playoffDay||null),rows:g.rows};entry.season=seasonOf(entry);
+  // Final round without a started final → freeze the regular-season standings now (automatic).
+  if(isFin && !storedFinal(target)){ state.finals=state.finals||{}; state.finals[target]=computeFreeze(target); }
+  const entry={id:editingGameId||("G"+uid()),date:g.date,mode:g.mode,course:g.course,indivCounts:g.indiv||isFin,isPlayoff:g.po,isElClassico:g.elc,elWinner:(g.elc?g.elcWinner:""),playoffDay:(pd||null),rows:g.rows,season:target};
   if(editingGameId){state.gameDays[state.gameDays.findIndex(x=>x.id===editingGameId)]=entry;toast("Game day updated ✔");exitEdit();}
-  else{state.gameDays.push(entry);toast(g.po?"🏝️ Play-off day added ✔":"Game day added ✔");}
+  else{state.gameDays.push(entry);toast(pd?("🏝️ Island Masters Day "+pd+" added ✔ (Season "+target+")"):"Game day added ✔");}
   syncGameCashIns(entry);
-  save();renderAll();resetGameFormValues();closeModal();}
+  save();
+  if(pd===2){
+    SELECTED_SEASON=target;   // show the completed season with its champion banner + final table
+    const ch=seasonChampion(target);
+    setTimeout(function(){ toast(ch&&ch.names.length ? (ch.tie?("🏆 Season "+target+" completed — tie for the title: "+ch.names.join(" & ")+" (decide via follow-up match)"):("🏆 Season "+target+" completed — Champion: "+ch.names[0])) : ("Season "+target+" completed."),"ok"); },900);
+  }
+  renderAll();resetGameFormValues();closeModal();}
 function resetGameFormValues(){$("#gd_course").value="";$("#gd_playoff").checked=false;{var _pd=document.getElementById("gd_playoffDay");if(_pd)_pd.value="";}{var _w=document.getElementById("poDayWrap");if(_w)_w.classList.add("hidden");}{var _ec=document.getElementById("gd_elclassico");if(_ec)_ec.checked=false;var _ew=document.getElementById("gd_elc_winner");if(_ew)_ew.value="";if(typeof updateElClassicoField==="function")updateElClassicoField();}$$(".pf-points,.pf-money,.pf-strokes,.pf-net").forEach(i=>i.value="");}
-function editGame(id){const g=state.gameDays.find(x=>x.id===id);if(!g)return;editingGameId=id;openModal("game");
+function editGame(id){if(!isViewingCurrent()){toast("Historical seasons are read-only.","err");return;}const g=state.gameDays.find(x=>x.id===id);if(!g)return;editingGameId=id;openModal("game");
   $("#gameModalTitle").textContent="Edit Game Day";$("#gd_date").value=g.date;$("#gd_mode").value=g.mode;$("#gd_course").value=g.course||"";
   $("#gd_indivCounts").checked=!!g.indivCounts;$("#gd_playoff").checked=!!g.isPlayoff;{var _pd=document.getElementById("gd_playoffDay");if(_pd)_pd.value=(g.playoffDay===null||g.playoffDay===undefined)?"":String(g.playoffDay);}{var _ec=document.getElementById("gd_elclassico");if(_ec)_ec.checked=!!g.isElClassico;var _ew=document.getElementById("gd_elc_winner");if(_ew)_ew.value=g.elWinner||"";if(typeof updateElClassicoField==="function")updateElClassicoField();}updateScoringNote();updatePlayoffInfo();buildPlayersForm();
   g.rows.forEach((r,i)=>{$(`.pf-player[data-slot="${i}"]`).value=r.player;$(`.pf-points[data-slot="${i}"]`).value=r.points;$(`.pf-money[data-slot="${i}"]`).value=r.money;const st=$(`.pf-strokes[data-slot="${i}"]`);if(r.strokes!==null){st.value=r.strokes;st.dispatchEvent(new Event("input"));}var _ch=document.querySelector(`.pf-coursehcp[data-slot="${i}"]`);if(_ch)_ch.value=(r.courseHcp===null||r.courseHcp===undefined)?"":r.courseHcp;});
   $("#addGameBtn").textContent="💾 Save changes";$("#cancelEditBtn").classList.remove("hidden");$("#gameFormCard").classList.add("editing");}
 function exitEdit(){editingGameId=null;$("#gameModalTitle").textContent="Add a Game Day";$("#addGameBtn").textContent="➕ Add Game Day";$("#cancelEditBtn").classList.add("hidden");$("#gameFormCard").classList.remove("editing");}
-function deleteGame(id){if(!confirm("Delete this game day?"))return;state.gameDays=state.gameDays.filter(x=>x.id!==id);removeGameCashIns(id);if(editingGameId===id)exitEdit();save();renderAll();toast("Game day deleted");}
+function deleteGame(id){if(!isViewingCurrent()){toast("Historical seasons are read-only.","err");return;}if(!confirm("Delete this game day?"))return;state.gameDays=state.gameDays.filter(x=>x.id!==id);removeGameCashIns(id);if(editingGameId===id)exitEdit();save();renderAll();toast("Game day deleted");}
 
 /* CASH / APPT / HDC */
 function addCashIn(){if(!isViewingCurrent()){toast("Historical seasons are read-only. Switch to the Current Season to add data.","err");return;}const flow=$("#ng_flow").value,type=$("#ng_type").value,date=$("#ng_date").value,name=$("#ng_name").value.trim(),payer=$("#ng_payer").value,amount=parseFloat($("#ng_amount").value);
@@ -2318,8 +2519,9 @@ function saveHdc(){const date=$("#hdc_date").value;if(!date)return toast("Pick a
    ================================================================= */
 function computeStats(){const stats={};
   state.players.forEach(p=>stats[p.name]={name:p.name,color:p.color,curHdc:currentHdc(p.name),points:0,rounds:0,totalStrokes:0,scoredRounds:0,netSum:0,best:null,worst:null,bestCourse:"",worstCourse:"",money:0});
-  visibleGameDays().forEach(g=>g.rows.forEach(r=>{const s=stats[r.player];if(!s)return;s.points+=num(r.points);s.rounds++;s.money+=num(r.money);
-    if(r.strokes!==null&&!isNaN(r.strokes)){const bonus=g.isPlayoff?playoffShotsFor(r.player,g.date):0;s.totalStrokes+=r.strokes;s.scoredRounds++;s.netSum+=r.strokes-hdcOn(r.player,g.date)-bonus;
+  // Final rounds (Island Masters Day 1/2) are excluded: they only count in the Championship Final.
+  visibleGameDays().forEach(g=>g.rows.forEach(r=>{const s=stats[r.player];if(!s)return;s.money+=num(r.money);if(isFinalRound(g))return;s.points+=num(r.points);s.rounds++;
+    if(r.strokes!==null&&!isNaN(r.strokes)){s.totalStrokes+=r.strokes;s.scoredRounds++;s.netSum+=r.strokes-hdcOn(r.player,g.date);
       if(s.best===null||r.strokes<s.best){s.best=r.strokes;s.bestCourse=g.course||"";}if(s.worst===null||r.strokes>s.worst){s.worst=r.strokes;s.worstCourse=g.course||"";}}}));
   Object.values(stats).forEach(s=>{s.avgGross=s.scoredRounds?s.totalStrokes/s.scoredRounds:null;s.avgNet=s.scoredRounds?s.netSum/s.scoredRounds:null;s.projShots=projectedShots(s.name);});return stats;}
 function syncGameCashIns(game){
@@ -2351,6 +2553,7 @@ function removeGameCashIns(gameId){state.cashIns=state.cashIns.filter(c=>c.gameI
 function budgetInWindow(c){
   const d=String(BUDGET_BASELINE_DATE||"");
   const cd=String((c&&c.date)||"");
+  if(isCarryForward(c)) return false;             // "Übertrag" rows are informational — the fund is continuous (no double count)
   if(d && !(cd>d)) return false;                 // already contained in the opening balance
   const baseSea=Number(yearOfDate(d)||0);
   const sea=Number(seasonOfCash(c)||0);
@@ -2425,17 +2628,24 @@ function renderLeaderboard(stats){const arr=Object.values(stats).sort((a,b)=>b.p
   {const _th=document.querySelector("#lbHead th.lb-proj"); if(_th) _th.style.display=_showProj?"":"none";}
   M_LABELS.leaderboard=_showProj?LB_LABELS_FULL.slice():LB_LABELS_FULL.filter(function(l){return l!=="Proj. shots";});
   const rankNums=competitionRanks(arr.map(a=>a.points));
+  // Archived seasons: the 🏆 marks the season champion (Final table), not the points leader.
+  const _champNames=_showProj?null:((seasonChampion(viewSeason())||{names:[]}).names||[]);
   tb.innerHTML=arr.map((s,i)=>`<tr class="${rankNums[i]===1&&s.points>0?'leader':''}"><td><span class="rankbadge ${rankNums[i]===1?'r1':''}">${rankNums[i]}</span></td>
-    <td><span class="player-dot" style="background:${s.color};margin-right:6px"></span>${esc(s.name)} ${rankNums[i]===1&&s.points>0?'🏆':''}</td>
+    <td><span class="player-dot" style="background:${s.color};margin-right:6px"></span>${esc(s.name)} ${_champNames?(_champNames.indexOf(s.name)>-1?'🏆':''):(rankNums[i]===1&&s.points>0?'🏆':'')}</td>
     <td>${fmtNum(s.curHdc,1)}</td><td class="pts">${fmtNum(s.points,2)}</td>${_showProj?`<td>${s.projShots>0?`<span class="shotbadge">−${s.projShots} shots</span>`:'–'}</td>`:''}
     <td>${s.totalStrokes?fmtPar(s.totalStrokes):'–'}</td><td>${s.avgGross!==null?fmtPar(s.avgGross):'–'}</td><td>${s.avgNet!==null?fmtPar(s.avgNet):'–'}</td>
     <td>${s.best!==null?fmtPar(s.best)+(s.bestCourse?' · '+esc(s.bestCourse):''):'–'}</td><td>${s.worst!==null?fmtPar(s.worst)+(s.worstCourse?' · '+esc(s.worstCourse):''):'–'}</td></tr>`).join("");
   tb.classList.remove("flash");void tb.offsetWidth;tb.classList.add("flash");
-  const st=standingsBefore(null);const topN=Math.min(st.length,PLAYOFF_SHOTS.length);const alloc=[];for(let bi=0;bi<topN;bi++){const sh=num(PLAYOFF_SHOTS[bi]);if(sh>0)alloc.push(`${esc(st[bi][0])} gets −${sh} shot${sh===1?'':'s'}`);}$("#poBanner").querySelector("span").innerHTML="<b>Projected shots for final round:</b> if the season ended today, "+(alloc.length?alloc.join(", "):"no bonus shots are configured")+" on the Island Masters final round.";}
+  const _fz=storedFinal(viewSeason());
+  const _sh=_fz?Object.fromEntries(_fz.entries.map(e=>[e.player,num(e.shots)])):shotsByStandings(standingsBefore(null));
+  const alloc=Object.keys(_sh).filter(n=>_sh[n]>0).sort((a,b)=>_sh[b]-_sh[a]).map(n=>`${esc(n)} −${_sh[n]} shot${_sh[n]===1?'':'s'}`);
+  $("#poBanner").querySelector("span").innerHTML=_fz
+    ? "<b>Final rounds started</b> — standings frozen on "+esc(fmtDate(_fz.frozenAt))+". Shots: "+(alloc.length?alloc.join(", "):"none")+"."
+    : "<b>Projected shots for final round:</b> if the season ended today, "+(alloc.length?alloc.join(", "):"no bonus shots are configured")+" on the Island Masters final round.";}
 function renderHistory(){const tb=$("#history tbody");const sorted=visibleGameDays().slice().sort((a,b)=>b.date.localeCompare(a.date));
-  tb.innerHTML=sorted.length?sorted.map(g=>`<tr><td>${fmtDate(g.date)}</td><td><span class="pill ${g.isPlayoff?'po':''}">${esc(g.isPlayoff?'🏝️ '+g.mode:g.mode)}</span></td><td>${g.course?esc(g.course):'–'}</td><td>${g.indivCounts?'✔ yes':'–'}</td>
-    <td>${g.rows.map(r=>{const b=g.isPlayoff?playoffShotsFor(r.player,g.date):0;return `<div style="font-size:12.5px"><span class="player-dot" style="background:${playerColor(r.player)}"></span> ${esc(r.player)}: ${r.strokes!==null?fmtPar(r.strokes)+(b?` (−${b})`:'')+' · ':''}${fmtNum(r.points,2)} pts${r.money?' · '+fmtMoney(r.money):''}</div>`;}).join("")}</td>
-    <td class="hist-actions-cell"><div class="hist-actions"><button class="btn-outline btn-sm" onclick="editGame(${jsArg(g.id)})" aria-label="Edit game day ${esc(fmtDate(g.date))}">✏️</button><button class="btn-red btn-sm" onclick="deleteGame(${jsArg(g.id)})" aria-label="Delete game day ${esc(fmtDate(g.date))}">🗑️</button></div></td></tr>`).join(""):`<tr><td colspan="6" style="color:var(--muted)">No game days yet.</td></tr>`;}
+  tb.innerHTML=sorted.length?sorted.map(g=>`<tr><td>${fmtDate(g.date)}</td><td><span class="pill ${g.isPlayoff?'po':''}">${esc(g.isPlayoff?(imDay(g)?('🏝️ IM Day '+imDay(g)+(isFinalRound(g)?' · Final':'')):'🏝️ '+g.mode):g.mode)}</span></td><td>${g.course?esc(g.course):'–'}</td><td>${g.indivCounts?'✔ yes':'–'}</td>
+    <td>${g.rows.map(r=>{const b=finalBonus(g,r.player);return `<div style="font-size:12.5px"><span class="player-dot" style="background:${playerColor(r.player)}"></span> ${esc(r.player)}: ${r.strokes!==null?fmtPar(r.strokes)+(b?` (−${b})`:'')+' · ':''}${fmtNum(r.points,2)} pts${r.money?' · '+fmtMoney(r.money):''}</div>`;}).join("")}</td>
+    <td class="hist-actions-cell">${isViewingCurrent()?`<div class="hist-actions"><button class="btn-outline btn-sm" onclick="editGame(${jsArg(g.id)})" aria-label="Edit game day ${esc(fmtDate(g.date))}">✏️</button><button class="btn-red btn-sm" onclick="deleteGame(${jsArg(g.id)})" aria-label="Delete game day ${esc(fmtDate(g.date))}">🗑️</button></div>`:'<span class="small-muted" title="Archived season — read-only">🔒</span>'}</td></tr>`).join(""):`<tr><td colspan="6" style="color:var(--muted)">No game days yet.</td></tr>`;}
 /* ---- Single source of truth for "outstanding payment" ----
    A cash-in is an OPEN (outstanding) payment when it is money coming IN,
    is attributable to a payer, was NOT auto-generated from a game day
@@ -2460,17 +2670,18 @@ function renderSettlement(){
         items.push({
           uid:"golf::"+g.id+"::"+r.player,
           kind:"golf", gameId:g.id, player:r.player,
-          what:`⛳ Golf · ${fmtDate(g.date)}${g.course?' · '+esc(g.course):''}`,
+          what:`⛳ Golf · ${fmtDate(g.date)}${g.course?' · '+esc(g.course):''}${seasonOf(g)!==currentSeason()?' · <span class="pill">Season '+esc(seasonOf(g))+'</span>':''}`,
           amount:num(r.money)
         });
       });
     });
   // --- Non-golf outstanding payments: every unconfirmed manual cash-in (any category). ---
-  visibleCashIns().filter(c=>isOpenPayment(c) && !c.paid).forEach(c=>{
+  // ALL seasons: unpaid liabilities carry over until confirmed — they never disappear at a season rollover.
+  (state.cashIns||[]).filter(c=>isOpenPayment(c) && !c.paid).forEach(c=>{
     items.push({
       uid:"cash::"+c.id,
       kind:"cash", cashId:c.id, player:c.payer,
-      what:`${c.type?esc(c.type)+" · ":""}${esc(c.name||"")} (${fmtDate(c.date)})`,
+      what:`${c.type?esc(c.type)+" · ":""}${esc(c.name||"")} (${fmtDate(c.date)})${seasonOfCash(c)!==currentSeason()?' · <span class="pill">Season '+esc(seasonOfCash(c))+'</span>':''}`,
       amount:num(c.amount)
     });
   });
@@ -2506,7 +2717,7 @@ function renderSettlement(){
    (which writes back to Google Sheets through the normal sync), then re-render
    so the settled row disappears. */
 function confirmSettlePaid(uid){
-  if(!uid) return;
+  if(!uid || !isViewingCurrent()) return;
   const parts=String(uid).split("::");
   const kind=parts[0];
   if(kind==="golf"){
@@ -2523,6 +2734,7 @@ function confirmSettlePaid(uid){
 }
 window.confirmSettlePaid=confirmSettlePaid;
 function toggleCashPaid(cashId){
+  if(!isViewingCurrent()){ toast("Historical seasons are read-only.","err"); renderAll(); return; }
   const c=state.cashIns.find(x=>x.id===cashId); if(!c) return;
   c.paid=!c.paid; save(); renderAll(); toast(c.paid?"Marked as paid ✔":"Marked as unpaid");
 }
@@ -2530,6 +2742,7 @@ function toggleCashPaid(cashId){
 function toggleGameCashPaid(cashId){
   // Linked (⛳ game-day) cash-ins mirror the authoritative paid flag on the game-day row.
   // Toggle writes back to that row (single source of truth), mirrors onto the cash-in, saves & refreshes.
+  if(!isViewingCurrent()){ toast("Historical seasons are read-only.","err"); renderAll(); return; }
   const c=state.cashIns.find(x=>x.id===cashId); if(!c || !c.gameId) return;
   const g=(state.gameDays||[]).find(x=>x.id===c.gameId); if(!g) return;
   const row=(g.rows||[]).find(r=>r.player===c.payer); if(!row) return;
@@ -2561,7 +2774,7 @@ function renderCash(){const _cins=visibleCashIns(),_outs=visibleOutflows();const
   $("#cashTable tbody").innerHTML=arr.map((m,i)=>`<tr><td><span class="rankbadge ${i===0&&m.total>0?'r1':''}">${i+1}</span></td><td><span class="player-dot" style="background:${m.color}"></span> ${esc(m.name)}</td><td class="pts">${fmtMoney(m.total)}</td><td>${fmtMoney(m.Golf)}</td><td>${fmtMoney(m.PGA)}</td><td>${fmtMoney(m.FIFA)}</td><td>${fmtMoney(m.Others)}</td><td>${m.count}</td></tr>`).join("");
   buildCashFilterChips();
   const inR=_cins.map(c=>({...c,flow:"In"}));const outR=_outs.map(o=>({...o,flow:"Out",type:"Expense",payer:""}));const all=inR.concat(outR).filter(cashFilterPass).sort((a,b)=>b.date.localeCompare(a.date));
-  $("#ngHistory tbody").innerHTML=all.length?all.map(c=>{const payable=isOpenPayment(c);const paidCell = c.gameId ? `<input type="checkbox" class="paid-chk" title="Mark as paid / confirm payment" style="width:20px;height:20px;cursor:pointer" ${c.paid?"checked":""} onclick="toggleGameCashPaid(${jsArg(c.id)})" aria-label="Paid">` : (payable ? `<input type="checkbox" class="paid-chk" title="Mark as received / confirm payment" style="width:20px;height:20px;cursor:pointer" ${c.paid?"checked":""} onclick="toggleCashPaid(${jsArg(c.id)})" aria-label="Paid">` : '<span class="small-muted">—</span>');const actionCell = c.gameId ? '<span class="small-muted">⛳ from game</span>' : `<button class="btn-red btn-sm" onclick="deleteCashIn(${jsArg(c.id)})" aria-label="Delete entry">🗑️</button>`;return `<tr><td>${fmtDate(c.date)}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type?esc(c.type):'–'}${c.gameId?' <span class=\'pill\'>⛳</span>':''}</td><td>${c.name?esc(c.name):'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${esc(c.payer)}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td style="text-align:center">${paidCell}</td><td style="text-align:center">${actionCell}</td></tr>`;}).join(""):`<tr><td colspan="8" style="color:var(--muted)">${cashFilter.size?"No entries for the selected "+(cashFilter.size>1?"people":"person")+".":"No entries yet."}</td></tr>`;}
+  $("#ngHistory tbody").innerHTML=all.length?all.map(c=>{const payable=isOpenPayment(c);const _ro=!isViewingCurrent()?" disabled":"";const paidCell = c.gameId ? `<input type="checkbox" class="paid-chk" title="Mark as paid / confirm payment" style="width:20px;height:20px;cursor:pointer" ${c.paid?"checked":""}${_ro} onclick="toggleGameCashPaid(${jsArg(c.id)})" aria-label="Paid">` : (payable ? `<input type="checkbox" class="paid-chk" title="Mark as received / confirm payment" style="width:20px;height:20px;cursor:pointer" ${c.paid?"checked":""}${_ro} onclick="toggleCashPaid(${jsArg(c.id)})" aria-label="Paid">` : '<span class="small-muted">—</span>');const actionCell = c.gameId ? '<span class="small-muted">⛳ from game</span>' : (_ro ? '<span class="small-muted">🔒</span>' : `<button class="btn-red btn-sm" onclick="deleteCashIn(${jsArg(c.id)})" aria-label="Delete entry">🗑️</button>`);return `<tr><td>${fmtDate(c.date)}</td><td><span class="pill" style="${c.flow==='Out'?'background:var(--red-bg);color:var(--red)':''}">${c.flow==='Out'?'OUT':'IN'}</span></td><td>${c.type?esc(c.type):'–'}${c.gameId?' <span class=\'pill\'>⛳</span>':''}</td><td>${c.name?esc(c.name):'–'}</td><td>${c.payer?`<span class="player-dot" style="background:${playerColor(c.payer)}"></span> ${esc(c.payer)}`:(c.count===false&&c.flow==='In'?'<i>carry-over</i>':'–')}</td><td><span class="${c.flow==='Out'?'money-neg':'money-pos'}">${c.flow==='Out'?'-':''}${fmtMoney(c.amount)}</span></td><td style="text-align:center">${paidCell}</td><td style="text-align:center">${actionCell}</td></tr>`;}).join(""):`<tr><td colspan="8" style="color:var(--muted)">${cashFilter.size?"No entries for the selected "+(cashFilter.size>1?"people":"person")+".":"No entries yet."}</td></tr>`;}
 /* ---- What's Next: chronological sorting of appointments ----
    "When" is free text (e.g. "07.08.26", "11.-15.09.26", "11.09.-15.09.2026",
    "2026-10-12", "09.26", "März 2027", "tbd"). apptDateRange() extracts the start
@@ -2635,6 +2848,7 @@ var LB_LABELS_FULL=["#","Player","Hdc","Points","Proj. shots","Total","Avg gross
 const M_LABELS={
   leaderboard:["#","Player","Hdc","Points","Proj. shots","Total","Avg gross","Avg net","Best","Worst"],  // switched per season in renderLeaderboard
   history:["Date","Mode","Course","Indiv?","Details","Actions"],
+  finalTable:["Rank","Player","Shots","Round 1","Round 2","Total"],
   settleTable:["Player","What","Amount to pay in","Paid?"],
   cashTable:["#","Name","Total","Golf","PGA","FIFA","Others","#"],
   ngHistory:["Date","Flow","Category","Name / details","Player","Amount","Paid?",""]
@@ -2666,7 +2880,7 @@ function setupScrollSpy(){
    broken by name for stable positions). The last column equals the current
    leaderboard order by points. Recomputes on every renderAll(). */
 function rankingHistorySeries(){
-  var days=visibleGameDays().filter(function(g){return !g.isPlayoff;})
+  var days=visibleGameDays().filter(function(g){return !isFinalRound(g);})
                          .slice().sort(function(a,b){return a.date.localeCompare(b.date);});
   var players=state.players.map(function(p){return {name:p.name,color:p.color};});
   var cum={}; players.forEach(function(p){cum[p.name]=0;});
@@ -2976,7 +3190,7 @@ function plRenderProfile(idx){
   // trophies
   var totalTitles=0;
   var trophyRows=PL_COMPETITIONS.map(function(c){
-    var years=plParseYears(p.trophies?p.trophies[c.key]:""); totalTitles+=years.length;
+    var years=plTrophyYears(p,c.key); totalTitles+=years.length;
     var yearsHtml = years.length
       ? years.map(function(y){return '<span class="pl-year win">'+plEsc(y)+'</span>';}).join("")
       : '<span class="pl-none">\u2013</span>';
@@ -2995,7 +3209,7 @@ function plRenderProfile(idx){
         ? otherList.map(function(x){return '<span class="pl-year win pl-other">'+plEsc(x)+'</span>';}).join("")
         : '<span class="pl-none">\u2013</span>')+'</div></div>';
 
-  var cSB=plParseYears(p.trophies?p.trophies["Swing Bros Championship"]:"").length;
+  var cSB=plTrophyYears(p,"Swing Bros Championship").length;
   var cHT=plParseYears(p.trophies?p.trophies["Hacker Tour"]:"").length;
   var cLG=plParseYears(p.trophies?p.trophies["Live Golf"]:"").length;
   var cIM=plParseYears(p.trophies?p.trophies["Island Master"]:"").length;
@@ -3309,7 +3523,7 @@ function renderSeasonUI(){
   // Champion banner (only for a completed season with a confirmed champion) + read-only notice.
   var banner=document.getElementById("seasonBanner");
   var _lb=document.getElementById("lbBadge");
-  if(_lb){ _lb.textContent = isViewingCurrent() ? "Play-off until Island Masters" : ("Final standings · "+view); }
+  if(_lb){ _lb.textContent = isViewingCurrent() ? (storedFinal(view)?"Final rounds in progress":"Play-off until Island Masters") : ("Final standings · "+view); }
   if(banner){
     var html2="";
     if(isViewingArchiveOnly()){
@@ -3331,15 +3545,17 @@ function renderSeasonUI(){
     }
     else if(!isViewingCurrent()){
       var champ=seasonChampion(view);
-      if(champ){
-        var photo=playerPhotoFor(champ.name);
-        var face = photo
-          ? '<img class="champ-face" src="'+photo+'" alt="'+escapeHtml(champ.name)+'">'
-          : '<div class="champ-face initials" style="background:'+champ.color+'">'+escapeHtml(champ.name.slice(0,1))+'</div>';
-        html2+='<div class="champ-banner">'+face+
-          '<div class="champ-txt"><span class="champ-k">Season '+view+' Champion</span>'+
-          '<span class="champ-name">'+escapeHtml(champ.name)+'</span>'+
-          '<span class="champ-sub">🥇 1st place · '+fmtNum(champ.points,2)+' points · final standings</span></div>'+
+      if(champ && champ.names && champ.names.length){
+        var faces=champ.names.map(function(n){ var ph=playerPhotoFor(n);
+          return ph ? '<img class="champ-face" src="'+ph+'" alt="'+escapeHtml(n)+'">' : '<div class="champ-face initials" style="background:'+playerColor(n)+'">'+escapeHtml(n.slice(0,1))+'</div>'; }).join("");
+        var sub = champ.tie ? '🤝 Tie in the '+(champ.source==="final"?'Championship Final':'final standings')+' — decided by a follow-up match'
+                : champ.source==="final" ? '🥇 Championship Final winner · final score '+fmtPar(champ.total)
+                : champ.source==="override" ? '🥇 Season champion (confirmed)'
+                : '🥇 1st place · '+fmtNum(champ.points,2)+' points · final standings';
+        html2+='<div class="champ-banner">'+faces+
+          '<div class="champ-txt"><span class="champ-k">Season '+escapeHtml(view)+(champ.tie?' · Title tie':' Champion')+'</span>'+
+          '<span class="champ-name">'+champ.names.map(escapeHtml).join(" &amp; ")+'</span>'+
+          '<span class="champ-sub">'+sub+'</span></div>'+
           '<div class="champ-trophy">🏆</div></div>';
       }
       html2+='<div class="readonly-note">🔒 <span>You are viewing the completed <b>'+view+'</b> season. This archive is read-only — switch to the Current Season to add data.</span></div>';
@@ -3364,7 +3580,80 @@ function applySeasonVisibility(){
     a.classList.toggle("hist-hide",arch);
   });
 }
-function renderAll(){renderSeasonUI();applySeasonVisibility();const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderHistory();renderSettlement();renderCash();renderAppts();renderRankChart();decorateMobileTables();enableDragScroll();if(typeof PL_OPEN!=="undefined"&&PL_OPEN){try{var _pv=document.getElementById("plProfile");if(_pv&&_pv.getAttribute("aria-hidden")==="false"){/* keep current profile */}else{plRenderLanding();}}catch(e){}}try{if(typeof pbRenderClassico==="function")pbRenderClassico();}catch(e){}}
+
+/* ---- Championship Final UI ---- */
+function refreshShotTexts(){ var txt=shotListText(); document.querySelectorAll(".js-shot-rule").forEach(function(e){ e.textContent=txt; }); }
+function startFinalRounds(){
+  var sea=currentSeason();
+  if(!isViewingCurrent()) return toast("Switch to the current season first.","err");
+  if(storedFinal(sea)) return toast("The final for Season "+sea+" has already been started.","err");
+  if(!regularGamesOf(sea).length) return toast("No regular game days in Season "+sea+" yet.","err");
+  var f=computeFreeze(sea);
+  if(!confirm("Start the Championship Final for Season "+sea+"?\n\nThe current standings are frozen and the play-off shots are assigned:\n"+
+     f.entries.map(function(e){return e.rank+". "+e.player+"  (−"+num(e.shots)+")";}).join("\n"))) return;
+  state.finals=state.finals||{}; state.finals[sea]=f;
+  save(); renderAll(); toast("🏆 Final rounds started — standings frozen ✔");
+}
+function cancelFinalRounds(){
+  var sea=currentSeason(), ft=finalTable(sea);
+  if(!storedFinal(sea) || !isViewingCurrent()) return;
+  if(ft && (ft.hasR1||ft.hasR2)) return toast("Final rounds already recorded — delete Island Masters Day 1/2 first.","err");
+  if(!confirm("Undo the start of the final? The standings will be unfrozen.")) return;
+  delete state.finals[sea]; save(); renderAll(); toast("Final start undone");
+}
+window.startFinalRounds=startFinalRounds; window.cancelFinalRounds=cancelFinalRounds;
+function renderFinal(){
+  var box=document.getElementById("finalBox"), act=document.getElementById("finalActions");
+  var sea=viewSeason(), cur=isViewingCurrent(), f=finalTable(sea);
+  if(act){
+    var html="";
+    if(cur && !storedFinal(sea) && regularGamesOf(sea).length) html='<button type="button" class="btn-gold final-start" onclick="startFinalRounds()">🏆 Start Final Rounds</button>';
+    else if(cur && storedFinal(sea) && f && !f.hasR1 && !f.hasR2) html='<button type="button" class="btn-outline btn-sm" onclick="cancelFinalRounds()">↺ Undo final start</button>';
+    act.innerHTML=html; act.classList.toggle("hidden",!html);
+  }
+  if(!box) return;
+  if(!f){ box.classList.add("hidden"); box.innerHTML=""; return; }
+  var champs=f.champions||[], ov=championOverride(sea);
+  if(ov) champs=[ov];
+  var rows=f.rows.slice();
+  if(f.hasR1||f.hasR2) rows.sort(function(a,b){ return (a.complete===b.complete?0:(a.complete?-1:1)) || (a.total-b.total) || (a.rank-b.rank); });
+  else rows.sort(function(a,b){ return a.rank-b.rank; });
+  var tie=champs.length>1;
+  var head='<div class="final-head"><h3>🏆 Championship Final · Season '+esc(sea)+'</h3>'
+    +'<span class="final-sub">Standings frozen '+esc(fmtDate(f.frozenAt))+' · Final score = shots + net round 1 + net round 2 · lowest wins</span></div>';
+  var status = f.hasR2 ? (champs.length ? (tie ? '<div class="final-status tie">🤝 Tie for the title: <b>'+champs.map(esc).join(" &amp; ")+'</b> — decided by a follow-up match (Playbook). Record the winner in Settings as <code>ChampionOverride_'+esc(sea)+'</code>.</div>'
+                                                 : '<div class="final-status win">🏆 Champion '+esc(sea)+': <b>'+esc(champs[0])+'</b>'+(ov?' (confirmed)':'')+'</div>')
+                            : '<div class="final-status">Enter the scores of all players for both rounds to determine the champion.</div>')
+             : '<div class="final-status">'+(f.hasR1?'Round 1 recorded · waiting for Island Masters Day 2.':'Waiting for Island Masters Day 1.')+'</div>';
+  var tb=rows.map(function(r){
+    var isCh=champs.indexOf(r.player)>-1;
+    return '<tr class="'+(isCh?'leader final-champ':'')+'"><td><span class="rankbadge '+(r.rank===1?'r1':'')+'">'+r.rank+'</span></td>'
+      +'<td><span class="player-dot" style="background:'+playerColor(r.player)+';margin-right:6px"></span>'+esc(r.player)+(isCh?' 🏆':'')+'</td>'
+      +'<td>'+(r.shots>0?'<span class="shotbadge">−'+fmtNum(r.shots,0)+'</span>':'0')+'</td>'
+      +'<td>'+(r.r1===null?'–':fmtPar(r.r1))+'</td><td>'+(r.r2===null?'–':fmtPar(r.r2))+'</td>'
+      +'<td class="pts">'+fmtPar(r.total)+'</td></tr>';
+  }).join("");
+  box.innerHTML=head+status+'<div class="tablebox"><div class="table-scroll"><table id="finalTable" class="m-stack"><thead><tr><th scope="col" title="Frozen regular-season rank">Rank</th><th scope="col">Player</th><th scope="col">Shots</th><th scope="col">Score Round 1</th><th scope="col">Score Round 2</th><th scope="col">Total Score</th></tr></thead><tbody>'+tb+'</tbody></table></div></div>';
+  box.classList.remove("hidden");
+}
+/* Automatic title years (completed seasons with a single champion) merged with the
+   Players-sheet "Swing Bros Championship" years — no manual sheet update required. */
+function autoChampionYears(name){
+  var out=[];
+  try{
+    historicalSeasons().forEach(function(y){
+      if(isArchiveOnlySeason(y)){ if(ARCHIVE_ONLY_SEASONS[y].champion===name) out.push(String(y)); return; }
+      var c=seasonChampion(y); if(c && !c.tie && c.names.length===1 && c.names[0]===name) out.push(String(y));
+    });
+  }catch(e){}
+  return out;
+}
+function plTrophyYears(p,key){
+  var ys=plParseYears(p&&p.trophies?p.trophies[key]:"");
+  if(key==="Swing Bros Championship"){ autoChampionYears(p.name).forEach(function(y){ if(ys.indexOf(y)===-1) ys.push(y); }); }
+  return ys.sort(function(a,b){ return String(a).localeCompare(String(b)); });
+}
+function renderAll(){renderSeasonUI();applySeasonVisibility();const s=computeStats();renderDashboard(s);renderLeaderboard(s);renderFinal();refreshShotTexts();renderHistory();renderSettlement();renderCash();renderAppts();renderRankChart();decorateMobileTables();enableDragScroll();if(typeof PL_OPEN!=="undefined"&&PL_OPEN){try{var _pv=document.getElementById("plProfile");if(_pv&&_pv.getAttribute("aria-hidden")==="false"){/* keep current profile */}else{plRenderLanding();}}catch(e){}}try{if(typeof pbRenderClassico==="function")pbRenderClassico();}catch(e){}}
 
 /* EXPORT */
 function csvCell(v){ v=(v===null||v===undefined)?"":String(v); if(/^(?:[=+@\t\r]|-(?![\d.,\s]))/.test(v)) v="'"+v; return /[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
@@ -3377,7 +3666,7 @@ function exportCSV(){
   const ranks=competitionRanks(arr.map(a=>a.points));
   arr.forEach((s,i)=>row([ranks[i],s.name,s.curHdc,fmtNum(s.points,2),s.projShots,s.rounds,s.totalStrokes,fmtNum(s.avgGross,2),fmtNum(s.avgNet,2),s.best??"",s.worst??"",fmtNum(s.money,2)]));
   row([]); row(["GAME DAY HISTORY"]); row(["Date","Mode","Playoff","Course","Player","Strokes","Hdc","Bonus","Net","Points","Money"]);
-  visibleGameDays().forEach(g=>g.rows.forEach(r=>{const hc=r.strokes!==null?hdcOn(r.player,g.date):"";const b=g.isPlayoff&&r.strokes!==null?playoffShotsFor(r.player,g.date):0;const net=r.strokes!==null?r.strokes-hc-b:"";
+  visibleGameDays().forEach(g=>g.rows.forEach(r=>{const hc=r.strokes!==null?hdcOn(r.player,g.date):"";const b=r.strokes!==null?finalBonus(g,r.player):0;const net=r.strokes!==null?r.strokes-hc-b:"";
     row([g.date,g.mode,g.isPlayoff?"yes":"no",g.course||"",r.player,r.strokes??"",hc,b,net,fmtNum(r.points,2),fmtNum(r.money,2)]);}));
   row([]); row(["CASH-INS"]); row(["Date","Category","Name","Payer","Amount"]); visibleCashIns().forEach(c=>row([c.date,c.type,c.name,c.payer,fmtNum(c.amount,2)]));
   row([]); row(["EXPENSES"]); row(["Date","Name","Amount"]); visibleOutflows().forEach(o=>row([o.date,o.name,fmtNum(o.amount,2)]));
@@ -3509,6 +3798,7 @@ function wireUI(){
   setTheme(state.theme||"light");
   $("#gd_indivCounts").addEventListener("change",()=>{updateScoringNote();buildPlayersForm();});
   $("#gd_playoff").addEventListener("change",()=>{updatePlayoffInfo();buildPlayersForm();});
+  {const _pdSel=document.getElementById("gd_playoffDay"); if(_pdSel) _pdSel.addEventListener("change",()=>{updatePlayoffInfo();buildPlayersForm();});}
   $("#gd_date").addEventListener("change",()=>{updatePlayoffInfo();$$(".pf-player").forEach(s=>s.dispatchEvent(new Event("change")));});
   $("#gd_mode").addEventListener("change",()=>{if($("#gd_mode").value.toLowerCase().includes("play-off")){$("#gd_playoff").checked=true;updatePlayoffInfo();buildPlayersForm();}});
   $("#addGameBtn").addEventListener("click",guardClick($("#addGameBtn"),addOrSaveGame));
